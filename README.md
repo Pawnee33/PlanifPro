@@ -171,3 +171,10 @@ pytest -v
 | `python-dotenv` | Variables d'environnement |
 | `pytest` | Tests unitaires |
 | `pytest-flask` | Tests Flask |
+
+
+## Génération de clé JWT 
+
+```
+python3 -c "import secrets; print(secrets.token_hex(32))"
+```
