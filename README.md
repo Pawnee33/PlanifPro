@@ -89,7 +89,7 @@ pip install -r requirements.txt
 Ou manuellement :
 
 ```bash
-pip install flask flask-sqlalchemy flask-migrate flask-jwt-extended flask-bcrypt flask-cors psycopg2-binary sendgrid firebase-admin google-api-python-client google-auth-oauthlib python-dotenv pytest pytest-flask
+pip install flask flask-restx flask-sqlalchemy flask-migrate flask-jwt-extended flask-bcrypt flask-cors psycopg2-binary sendgrid firebase-admin google-api-python-client google-auth-oauthlib python-dotenv pytest pytest-flask
 ```
 
 ---
@@ -158,6 +158,7 @@ pytest -v
 | Package | Usage |
 |---------|-------|
 | `flask` | Framework web |
+| `flask-restx` | API REST + Swagger |
 | `flask-sqlalchemy` | ORM base de données |
 | `flask-migrate` | Migrations BDD |
 | `flask-jwt-extended` | Authentification JWT |
@@ -177,4 +178,79 @@ pytest -v
 
 ```
 python3 -c "import secrets; print(secrets.token_hex(32))"
+```
+
+# Convention de nommage — PlanifPro
+
+## Branches
+
+| Format | Usage |
+|--------|-------|
+| `feature/nom-de-la-feature` | Nouvelle fonctionnalité |
+| `fix/nom-du-bug` | Correction de bug |
+| `hotfix/nom-du-fix` | Correction urgente en production |
+
+**Exemples :**
+```
+feature/setup-flask-postgres
+feature/authentification
+feature/classes
+fix/correction-jwt-token
+hotfix/erreur-base-de-donnees
+```
+
+---
+
+## Commits
+
+| Préfixe | Usage |
+|---------|-------|
+| `feat:` | Nouvelle fonctionnalité |
+| `fix:` | Correction de bug |
+| `chore:` | Tâche technique (config, dépendances) |
+| `test:` | Ajout de tests |
+| `docs:` | Documentation |
+| `scm:` | Tâche Git / SCM |
+
+**Exemples :**
+```
+feat: ajout endpoint POST /classes
+fix: correction erreur JWT expired
+chore: mise à jour requirements.txt
+test: tests unitaires modèle User
+docs: mise à jour README
+scm: ajout template Pull Request
+```
+
+---
+
+## Workflow Git
+
+```
+main        → production uniquement (merge via PR depuis develop)
+develop     → branche de développement principale
+feature/*   → fonctionnalités (merge via PR vers develop)
+fix/*       → corrections (merge via PR vers develop)
+hotfix/*    → corrections urgentes (merge via PR vers main)
+```
+
+**Étapes pour chaque feature :**
+```bash
+# 1. Partir de develop
+git checkout develop
+git pull origin develop
+
+# 2. Créer la branche
+git checkout -b feature/nom-de-la-feature
+
+# 3. Coder + commiter
+git add .
+git commit -m "feat: description du changement"
+
+# 4. Pusher
+git push origin feature/nom-de-la-feature
+
+# 5. Créer une Pull Request vers develop sur GitHub
+# 6. Merger après validation
+# 7. Fermer l'issue liée (Closes #N)
 ```
