@@ -28,3 +28,229 @@ PlanifPro/
 │ 
 └── README.md
 ```
+
+# Installation : PlanifPro Backend
+
+## Prérequis
+- Python 3.x
+- PostgreSQL
+- Git
+
+---
+
+## 0. Installer PostgreSQL
+
+```bash
+sudo apt-get update
+sudo apt install postgresql postgresql-contrib
+```
+
+Démarrer le service PostgreSQL :
+
+```bash
+sudo service postgresql start
+```
+
+Vérifier l'installation :
+
+```bash
+psql --version
+```
+
+---
+
+## 1. Cloner le projet
+
+```bash
+git clone https://github.com/ton-repo/planifpro.git
+cd planifpro
+```
+
+---
+
+## 2. Créer et activer l'environnement virtuel
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+> ⚠️ À chaque nouveau terminal, réactive le venv avec `source venv/bin/activate`
+> Tu verras `(venv)` apparaître au début de ta ligne de commande.
+
+---
+
+## 3. Installer les dépendances
+
+```bash
+pip install -r requirements.txt
+```
+
+Ou manuellement :
+
+```bash
+pip install flask flask-restx flask-sqlalchemy flask-migrate flask-jwt-extended flask-bcrypt flask-cors psycopg2-binary sendgrid firebase-admin google-api-python-client google-auth-oauthlib python-dotenv pytest pytest-flask
+```
+
+---
+
+## 4. Configurer les variables d'environnement
+
+Copie le fichier `.env.example` et remplis les valeurs :
+
+```bash
+cp .env.example .env
+```
+
+Contenu du `.env` :
+
+```
+DATABASE_URL=postgresql://user:motdepasse@localhost/planifpro
+JWT_SECRET_KEY=
+SENDGRID_API_KEY=
+FIREBASE_CREDENTIALS=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+```
+
+---
+
+## 5. Créer la base de données
+
+```bash
+psql -U postgres
+CREATE DATABASE planifpro;
+\q
+```
+
+---
+
+## 6. Appliquer les migrations
+
+```bash
+flask db init
+flask db migrate -m "initial migration"
+flask db upgrade
+```
+
+---
+
+## 7. Lancer le serveur
+
+```bash
+flask run
+```
+
+Le serveur tourne sur `http://localhost:5000`
+
+---
+
+## 8. Lancer les tests
+
+```bash
+pytest -v
+```
+
+---
+
+## Dépendances principales
+
+| Package | Usage |
+|---------|-------|
+| `flask` | Framework web |
+| `flask-restx` | API REST + Swagger |
+| `flask-sqlalchemy` | ORM base de données |
+| `flask-migrate` | Migrations BDD |
+| `flask-jwt-extended` | Authentification JWT |
+| `flask-bcrypt` | Hachage des mots de passe |
+| `flask-cors` | Gestion des CORS |
+| `psycopg2-binary` | Connecteur PostgreSQL |
+| `sendgrid` | Envoi d'emails |
+| `firebase-admin` | Notifications push FCM |
+| `google-api-python-client` | Google Calendar API |
+| `google-auth-oauthlib` | OAuth 2.0 Google |
+| `python-dotenv` | Variables d'environnement |
+| `pytest` | Tests unitaires |
+| `pytest-flask` | Tests Flask |
+
+
+## Génération de clé JWT 
+
+```
+python3 -c "import secrets; print(secrets.token_hex(32))"
+```
+
+# Convention de nommage — PlanifPro
+
+## Branches
+
+| Format | Usage |
+|--------|-------|
+| `feature/nom-de-la-feature` | Nouvelle fonctionnalité |
+| `fix/nom-du-bug` | Correction de bug |
+| `hotfix/nom-du-fix` | Correction urgente en production |
+
+**Exemples :**
+```
+feature/setup-flask-postgres
+feature/authentification
+feature/classes
+fix/correction-jwt-token
+hotfix/erreur-base-de-donnees
+```
+
+---
+
+## Commits
+
+| Préfixe | Usage |
+|---------|-------|
+| `feat:` | Nouvelle fonctionnalité |
+| `fix:` | Correction de bug |
+| `chore:` | Tâche technique (config, dépendances) |
+| `test:` | Ajout de tests |
+| `docs:` | Documentation |
+| `scm:` | Tâche Git / SCM |
+
+**Exemples :**
+```
+feat: ajout endpoint POST /classes
+fix: correction erreur JWT expired
+chore: mise à jour requirements.txt
+test: tests unitaires modèle User
+docs: mise à jour README
+scm: ajout template Pull Request
+```
+
+---
+
+## Workflow Git
+
+```
+main        → production uniquement (merge via PR depuis develop)
+develop     → branche de développement principale
+feature/*   → fonctionnalités (merge via PR vers develop)
+fix/*       → corrections (merge via PR vers develop)
+hotfix/*    → corrections urgentes (merge via PR vers main)
+```
+
+**Étapes pour chaque feature :**
+```bash
+# 1. Partir de develop
+git checkout develop
+git pull origin develop
+
+# 2. Créer la branche
+git checkout -b feature/nom-de-la-feature
+
+# 3. Coder + commiter
+git add .
+git commit -m "feat: description du changement"
+
+# 4. Pusher
+git push origin feature/nom-de-la-feature
+
+# 5. Créer une Pull Request vers develop sur GitHub
+# 6. Merger après validation
+# 7. Fermer l'issue liée (Closes #N)
+```
