@@ -1,7 +1,9 @@
 venv/
 .env
 __pycache__/
+**/__pycache__/
 *.pyc
 *.pyo
+**/*.pyc
 instance/
 .pytest_cache/
