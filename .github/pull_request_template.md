@@ -7,8 +7,11 @@ Closes #
 ## Type de changement
 - [ ] feat
 - [ ] fix
+- [ ] chore
 - [ ] test
+- [ ] docs
 - [ ] scm
+- [ ] setup
 
 ## Checklist
 - [ ] Mon code respecte les conventions du projet
