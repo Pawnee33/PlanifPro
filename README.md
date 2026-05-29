@@ -254,3 +254,41 @@ git push origin feature/nom-de-la-feature
 # 6. Merger après validation
 # 7. Fermer l'issue liée (Closes #N)
 ```
+
+# Rituels de développement — PlanifPro
+
+## À chaque fonctionnalité terminée
+
+1. `git add` fichiers concernés
+2. `git commit -m "feat/fix/chore: description"`
+3. `git push origin feature/ma-branche`
+4. Créer une PR vers `develop` sur GitHub
+5. Remplir le template de PR (description, issue liée, checklist)
+6. Merger la PR
+7. Fermer l'issue liée (`Closes #N`)
+
+---
+
+## À chaque fin de sprint
+
+1. Vérifier que toutes les issues du sprint sont fermées
+2. Faire une sprint review (démonstration des fonctionnalités)
+3. Faire une rétrospective (ce qui a bien marché / blocages)
+4. Planifier le sprint suivant
+
+---
+
+## À chaque fin de journée
+
+1. Pusher ton travail en cours même si pas terminé
+2. Mettre à jour le statut des issues sur GitHub
+3. Noter les blocages ou questions pour le lendemain
+
+---
+
+## Bonnes pratiques Git
+
+1. Toujours partir de `develop` avant de créer une branche
+2. Ne jamais pusher directement sur `main` ou `develop`
+3. Un commit = une tâche précise
+4. `requirements.txt` à jour si nouveau package installé
