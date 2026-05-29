@@ -37,6 +37,7 @@ class Classe(EntiteBase):
     date_debut = db.Column(db.Date, nullable=False)
     date_fin = db.Column(db.Date, nullable=False)
     jours_horaires = db.Column(db.JSON, nullable=False)
+    nombre_propositions = db.Column(db.Integer, nullable=False)
     nombre_voeux_requis = db.Column(db.Integer, nullable=False)
     nombre_jours_min = db.Column(db.Integer, nullable=False)
     code_classe = db.Column(db.String(8), nullable=False, unique=True)
@@ -136,4 +137,16 @@ class Classe(EntiteBase):
                 "Le code de la classe doit être une chaîne de caractères")
         if len(value) != 8:
             raise ValueError("Le code de la classe doit avoir exactement 8 caractères")
+        return value
+
+    @validates('nombre_propositions')
+    def validate_nombre_propositions(self, key, value):
+        """
+        Vérifie si le nombre de propositions est un entier et
+        supérieur à zéro.
+        """
+        if not isinstance(value, int):
+            raise ValueError("Le nombre de propositions doit être un entier")
+        if value <= 0:            
+            raise ValueError("Le nombre de propositions doit être supérieur à 0")
         return value
