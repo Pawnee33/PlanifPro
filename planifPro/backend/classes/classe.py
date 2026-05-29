@@ -12,6 +12,7 @@ contraintes de vœux.
 
 from planifPro import db
 from planifPro.backend.classes.entitebase import EntiteBase
+from datetime import date, datetime, timezone
 from sqlalchemy.orm import validates
 
 
@@ -36,6 +37,7 @@ class Classe(EntiteBase):
     date_debut = db.Column(db.Date, nullable=False)
     date_fin = db.Column(db.Date, nullable=False)
     jours_horaires = db.Column(db.JSON, nullable=False)
+    nombre_propositions = db.Column(db.Integer, nullable=False)
     nombre_voeux_requis = db.Column(db.Integer, nullable=False)
     nombre_jours_min = db.Column(db.Integer, nullable=False)
     code_classe = db.Column(db.String(8), nullable=False, unique=True)
@@ -62,6 +64,34 @@ class Classe(EntiteBase):
             raise ValueError("Le nom ne doit pas dépasser 50 caractères")
         return value
 
+    @validates('date_debut')
+    def validate_date_debut(self, key, value):
+        """Vérifie si la date de début est une date valide."""
+        if not isinstance(value, date):
+            raise ValueError("La date de début doit être une date valide")
+        return value
+        
+    @validates('date_fin')
+    def validate_date_fin(self, key, value):
+        """Vérifie si la date de fin est une date valide et
+        si elle est postérieure à la date de début."""
+        if not isinstance(value, date):
+            raise ValueError("La date de fin doit être une date valide")
+        if self.date_debut and value <= self.date_debut:
+            raise ValueError("La date de fin doit être après la date de début")
+        return value
+
+    @validates('jours_horaires')
+    def validate_jours_horaires(self, key, value):
+        """
+        Vérifie si les jours horaires sont un dictionnaire non vide.
+        """
+        if not isinstance(value, dict):
+            raise ValueError("Les jours horaires doivent être un dictionnaire")
+        if not value:
+            raise ValueError("Les jours horaires doivent être remplit")
+        return value
+
     @validates('statut')
     def validate_statut(self, key, value):
         """
@@ -69,7 +99,7 @@ class Classe(EntiteBase):
         classe activé, collecte activé, planning généré et planning terminé
         """
         if not isinstance(value, str) or not value.strip():
-            raise ValueError("Le statut doit être une chîne de caractères")
+            raise ValueError("Le statut doit être une chaîne de caractères")
         if value not in [
             'classe_active',
             'collecte_active',
@@ -107,4 +137,16 @@ class Classe(EntiteBase):
                 "Le code de la classe doit être une chaîne de caractères")
         if len(value) != 8:
             raise ValueError("Le code de la classe doit avoir exactement 8 caractères")
+        return value
+
+    @validates('nombre_propositions')
+    def validate_nombre_propositions(self, key, value):
+        """
+        Vérifie si le nombre de propositions est un entier et
+        supérieur à zéro.
+        """
+        if not isinstance(value, int):
+            raise ValueError("Le nombre de propositions doit être un entier")
+        if value <= 0:            
+            raise ValueError("Le nombre de propositions doit être supérieur à 0")
         return value
