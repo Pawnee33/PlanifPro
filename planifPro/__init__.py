@@ -13,12 +13,14 @@ from flask_restx import Api
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 
 jwt = JWTManager()
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 cors = CORS()
+migrate = Migrate()
 
 
 def create_app(config_class="config.DevelopmentConfig"):
@@ -41,6 +43,18 @@ def create_app(config_class="config.DevelopmentConfig"):
     jwt.init_app(app)
     db.init_app(app)
     cors.init_app(app, resources={r"/api/*": {"origins": "*"}})
+    migrate.init_app(app, db)
+
+    from planifPro.backend.classes.utilisateur import Utilisateur
+    from planifPro.backend.classes.professeur import Professeur
+    from planifPro.backend.classes.eleve import Eleve
+    from planifPro.backend.classes.classe import Classe
+    from planifPro.backend.classes.voeu import Voeu
+    from planifPro.backend.classes.creneau import Creneau
+    from planifPro.backend.classes.planning import Planning
+    from planifPro.backend.classes.objectif import Objectif
+    from planifPro.backend.classes.evenement import Evenement
+    from planifPro.backend.classes.notification import Notification
 
     from planifPro.backend.routes.authentification import api as authentification_ns
     from planifPro.backend.routes.calendrier import api as calendrier_ns
