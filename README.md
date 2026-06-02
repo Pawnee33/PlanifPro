@@ -292,3 +292,100 @@ git push origin feature/nom-de-la-feature
 2. Ne jamais pusher directement sur `main` ou `develop`
 3. Un commit = une tâche précise
 4. `requirements.txt` à jour si nouveau package installé
+
+---
+# Migrations Flask-Migrate — PlanifPro
+
+## Prérequis
+
+- PostgreSQL installé et démarré
+- Environnement virtuel activé
+- Variables d'environnement configurées dans `.env`
+
+---
+
+## 1. Démarrer PostgreSQL
+
+```bash
+sudo service postgresql start
+```
+
+---
+
+## 2. Créer la base de données
+
+```bash
+sudo -u postgres psql
+```
+
+Dans le shell PostgreSQL :
+
+```sql
+CREATE DATABASE planifpro;
+\q
+```
+
+---
+
+## 3. Initialiser Flask-Migrate
+
+À faire **une seule fois** au début du projet :
+
+```bash
+flask --app planifPro.run db init
+```
+
+Crée le dossier `migrations/` avec la configuration d'Alembic.
+
+---
+
+## 4. Générer la migration
+
+À faire à chaque fois que tu **ajoutes ou modifies un modèle** :
+
+```bash
+flask --app planifPro.run db migrate -m "description des changements"
+```
+
+Génère un fichier dans `migrations/versions/` qui décrit les changements à appliquer en base.
+
+---
+
+## 5. Appliquer la migration
+
+```bash
+flask --app planifPro.run db upgrade
+```
+
+Applique les changements en base de données.
+
+---
+
+## 6. Vérifier les tables créées
+
+```bash
+sudo -u postgres psql -d planifpro
+\dt
+\q
+```
+
+---
+
+## Workflow à chaque modification de modèle
+
+```
+Modifier un modèle → flask db migrate -m "description" → flask db upgrade
+```
+
+---
+
+## Commandes utiles
+
+| Commande | Description |
+|----------|-------------|
+| `flask db init` | Initialiser Flask-Migrate (une seule fois) |
+| `flask db migrate -m "message"` | Générer un fichier de migration |
+| `flask db upgrade` | Appliquer les migrations |
+| `flask db downgrade` | Annuler la dernière migration |
+| `flask db history` | Voir l'historique des migrations |
+| `flask db current` | Voir la migration actuelle |

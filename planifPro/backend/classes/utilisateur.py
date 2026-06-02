@@ -9,7 +9,7 @@ de validation pour les champs principaux.
 
 
 from planifPro import bcrypt
-from planifPro.backend.entitebase import EntiteBase
+from planifPro.backend.classes.entitebase import EntiteBase
 from planifPro import db
 from sqlalchemy.orm import validates
 import re
