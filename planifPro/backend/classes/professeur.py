@@ -46,3 +46,17 @@ class Professeur(Utilisateur):
         lazy=True,
         cascade='all, delete-orphan'
     )
+
+    def to_dict(self):
+        """
+        Convertit l'instance Professeur en dictionnaire.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            du professeur (héritées de Utilisateur + utilisateur_id).
+        """
+        donnees = super().to_dict()
+        donnees.update({
+            'utilisateur_id': self.utilisateur_id
+        })
+        return donnees

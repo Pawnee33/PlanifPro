@@ -118,3 +118,26 @@ class Creneau(EntiteBase):
         if value <= 0:
             raise ValueError("La durée des minutes doit être supérieur à 0")
         return value
+
+    def to_dict(self):
+        """
+        Convertit l'instance Creneau en dictionnaire.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            des creneaux (id, planning_id, eleve_id, classe_id, type,
+            jour, heure_debut, heure_fin, duree_minutes et statut).
+        """
+        donnees = super().to_dict()
+        donnees.update({
+            'planning_id': self.planning_id,
+            'eleve_id': self.eleve_id,
+            'classe_id': self.classe_id,
+            'type': self.type,
+            'jour': self.jour,
+            'heure_debut': self.heure_debut.isoformat() if self.heure_debut else None,
+            'heure_fin': self.heure_fin.isoformat() if self.heure_fin else None,
+            'duree_minutes': self.duree_minutes,
+            'statut': self.statut
+        })
+        return donnees

@@ -67,3 +67,21 @@ class Planning(EntiteBase):
         if value <= 0:            
             raise ValueError("Le numéro de proposition doit être supérieur à 0")
         return value
+
+    def to_dict(self):
+        """
+        Convertit l'instance Planning en dictionnaire.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            du planning (id, classe_id, numero_proposition,
+            statut et valide_le).
+        """
+        donnees = super().to_dict()
+        donnees.update({
+            'classe_id': self.classe_id,
+            'numero_proposition': self.numero_proposition,
+            'statut': self.statut,
+            'valide_le': self.valide_le.isoformat() if self.valide_le else None
+        })
+        return donnees

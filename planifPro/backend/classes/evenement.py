@@ -71,3 +71,22 @@ class Evenement(EntiteBase):
         if not value:
             raise ValueError("Les destinataires doivent être remplit")
         return value
+
+    def to_dict(self):
+        """
+        Convertit l'instance Evenement en dictionnaire.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            des événements (id, professeur_id, titre, description, date_heure,
+            et destinataires).
+        """
+        donnees = super().to_dict()
+        donnees.update({
+            'professeur_id': self.professeur_id,
+            'titre': self.titre,
+            'description': self.description,
+            'date_heure': self.date_heure.isoformat() if self.date_heure else None,
+            'destinataires': self.destinataires,
+        })
+        return donnees
