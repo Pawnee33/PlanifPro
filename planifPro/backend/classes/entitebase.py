@@ -61,3 +61,8 @@ class EntiteBase(db.Model):
             if hasattr(self, key):
                 setattr(self, key, value)
         self.sauvegarder()
+
+    def to_dict(self):
+        return {
+            'id': self.id
+        }

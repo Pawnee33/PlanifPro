@@ -8,7 +8,7 @@ et conseils des cours attribué à un élève.
 
 
 from planifPro import db
-from planifPro.backend.classes.entitebase import EntiteBase
+from planifPro.backend.creneaus.entitebase import EntiteBase
 from datetime import date, time, datetime, timezone
 from sqlalchemy.orm import validates
 
@@ -63,3 +63,22 @@ class Objectif(EntiteBase):
         if not isinstance(value, str) or not value.strip():
             raise ValueError("Les conseils dois être une chaîne de caractères")
         return value
+
+    def to_dict(self):
+        """
+        Convertit l'instance Objectif en dictionnaire.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            des objectifs (id, professeur_id, eleve_id, creneau_id, contenu,
+            et conseils).
+        """
+        donnees = super().to_dict()
+        donnees.update({
+            'professeur_id': self.professeur_id,
+            'eleve_id': self.eleve_id,
+            'creneau_id': self.creneau_id,
+            'contenu': self.contenu,
+            'conseils': self.conseils
+        })
+        return donnees

@@ -67,3 +67,22 @@ class Voeu(EntiteBase):
         if not value:
             raise ValueError("Les créneaux souhaités doivent être remplit")
         return value
+
+    def to_dict(self):
+        """
+        Convertit l'instance Voeu en dictionnaire.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            du vœu (id, eleve_id, classe_id, creneaux_souhaites,
+            statut et soumis_le).
+        """
+        donnees = super().to_dict()
+        donnees.update({
+            'eleve_id': self.eleve_id,
+            'classe_id': self.classe_id,
+            'creneaux_souhaites': self.creneaux_souhaites,
+            'statut': self.statut,
+            'soumis_le': self.soumis_le.isoformat() if self.soumis_le else None
+        })
+        return donnees
