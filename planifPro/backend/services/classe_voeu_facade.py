@@ -9,6 +9,7 @@ from planifPro.backend.persistence.classe_repository import ClasseRepository
 from planifPro.backend.persistence.voeu_repository import VoeuRepository
 from planifPro.backend.classes.classe import Classe
 from planifPro.backend.classes.voeu import Voeu
+from planifPro.backend.services.fcm_service import envoyer_notification
 import uuid
 
 
@@ -120,7 +121,14 @@ class ClasseVoeuFacade:
             raise ValueError("La collecte ne peut être lancée que si la classe est active")
         classe.statut = 'collecte_active'
         self.classe_repo.mis_a_jour(classe_id, {'statut': 'collecte_active'})
-        # TODO: envoyer une notification FCM à tous les élèves de la classe
+        # Envoyer une notification FCM à tous les élèves de la classe
+        for eleve in classe.eleves:
+            if eleve.token_fcm:
+                envoyer_notification(
+                    eleve.token_fcm,
+                    "Collecte des vœux",
+                    f"La collecte des vœux est ouverte pour la classe {classe.nom}"
+                )
         return classe.to_dict()
 
     def supprimer_classe(self, classe_id):

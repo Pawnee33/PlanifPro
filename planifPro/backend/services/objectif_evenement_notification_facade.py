@@ -9,9 +9,13 @@ from planifPro.backend.persistence import SQLAlchemyRepository
 from planifPro.backend.persistence.objectif_repository import ObjectifRepository
 from planifPro.backend.persistence.evenement_repository import EvenementRepository
 from planifPro.backend.persistence.notification_repository import NotificationRepository
+from planifPro.backend.persistence.classe_repository import ClasseRepository
+from planifPro.backend.persistence.eleve_repository import EleveRepository
 from planifPro.backend.classes.objectif import Objectif
 from planifPro.backend.classes.evenement import Evenement
 from planifPro.backend.classes.notification import Notification
+from planifPro.backend.classes.eleve import Eleve
+from planifPro.backend.classes.classe import Classe
 
 
 class ObjectifEvenementNotificationFacade:
@@ -26,6 +30,8 @@ class ObjectifEvenementNotificationFacade:
         self.objectif_repo = ObjectifRepository()
         self.evenement_repo = EvenementRepository()
         self.notification_repo = NotificationRepository()
+        self.classe_repo = ClasseRepository()
+        self.eleve_repo = EleveRepository()
 
     # Objectif
     def creer_objectif(self, donnees):
@@ -112,6 +118,44 @@ class ObjectifEvenementNotificationFacade:
             destinataires=donnees['destinataires']
         )
         self.evenement_repo.ajouter(evenement)
+
+        # Résolution des destinataires
+        type_destinataires = donnees['destinataires']['type']
+        eleves = []
+
+        if type_destinataires == 'toutes_classes':
+            # Récupère tous les élèves de toutes les classes du professeur
+            classes = self.classe_repo.obtenir_classes_par_professeur(donnees['professeur_id'])
+            for classe in classes:
+                eleves.extend(classe.eleves)
+
+        elif type_destinataires == 'classes':
+            # Récupère les élèves des classes sélectionnées
+            for classe_id in donnees['destinataires']['ids']:
+                classe = self.classe_repo.obtenir(classe_id)
+                if classe:
+                    eleves.extend(classe.eleves)
+
+        elif type_destinataires == 'eleves':
+            # Récupère directement les élèves sélectionnés
+            for eleve_id in donnees['destinataires']['ids']:
+                eleve = self.eleve_repo.obtenir(eleve_id)
+                if eleve:
+                    eleves.append(eleve)
+
+        elif type_destinataires == 'mixte':
+            # Récupère les élèves des classes + les élèves spécifiques
+            for classe_id in donnees['destinataires']['classes_ids']:
+                classe = self.classe_repo.obtenir(classe_id)
+                if classe:
+                    eleves.extend(classe.eleves)
+            for eleve_id in donnees['destinataires']['eleves_ids']:
+                eleve = self.eleve_repo.obtenir(eleve_id)
+                if eleve:
+                    eleves.append(eleve)
+
+        # Peuplement de la table eleve_evenement
+        evenement.eleves = list(set(eleves))
         return evenement.to_dict()
 
     def obtenir_evenement(self, evenement_id):
@@ -121,12 +165,30 @@ class ObjectifEvenementNotificationFacade:
             return None
         return evenement.to_dict()
 
-    def obtenir_tout_evenements(self):
-        """obtenir_tout_evenements permet de récupérer tout les evenements"""
-        tout_evenements = self.evenement_repo.tout_obtenir()
-        if not tout_evenements:
+    def obtenir_evenements_par_eleve(self, eleve_id):
+        """
+        Récupère tous les événements d'un élève.
+
+        Arguments :
+            eleve_id (str) : Identifiant unique de l'élève.
+
+        Retourne :
+            list : Liste des événements de l'élève ou None si aucun trouvé.
+        """
+        eleve = self.eleve_repo.obtenir(eleve_id)
+        if not eleve:
             return None
-        return [evenement.to_dict() for evenement in tout_evenements]
+        return [evenement.to_dict() for evenement in eleve.evenements]
+
+    def obtenir_evenements_par_professeur(self, professeur_id):
+        """
+        obtenir_evenement_par_professeur permet de récupérer
+        les événements à partir de ID du professeur.
+        """
+        evenements = self.evenement_repo.obtenir_evenements_par_professeur(professeur_id)
+        if not evenements:
+            return None
+        return [evenement.to_dict() for evenement in evenements]
 
     def mettre_a_jour_evenement(self, evenement_id, donnees_evenement):
         """Mettre à jour un evenement existant"""
@@ -139,3 +201,92 @@ class ObjectifEvenementNotificationFacade:
     def supprimer_evenement(self, evenement_id):
         """Supprimer un evenement existant et toutes les données associées (cascade)."""
         self.evenement_repo.supprime(evenement_id)
+
+    # Notification
+    def creer_notification(self, donnees):
+        """
+        Crée une nouvelle notification dans le système.
+
+        Arguments :
+            donnees (dict) : Dictionnaire contenant les informations
+            de la notification (utilisateur_id, type, titre
+            et message).
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            de la notification créée.
+        """
+        notification = Notification(
+            utilisateur_id=donnees['utilisateur_id'],
+            type=donnees['type'],
+            titre=donnees['titre'],
+            message=donnees['message'],
+            lu=False
+        )
+        self.notification_repo.ajouter(notification)
+        return notification.to_dict()
+
+    def obtenir_notification(self, notification_id):
+        """obtenir_notification permet de récupère une notification"""
+        notification = self.notification_repo.obtenir(notification_id)
+        if not notification:
+            return None
+        return notification.to_dict()
+
+    def obtenir_notifications_par_utilisateur(self, utilisateur_id):
+        """
+        obtenir_notifications_par_utilisateur permet de récupérer
+        les notifications à partir de ID de l'utilisateur'.
+        """
+        notifications = self.notification_repo.obtenir_notifications_par_utilisateur(utilisateur_id)
+        if not notifications:
+            return None
+        return [notification.to_dict() for notification in notifications]
+
+    def obtenir_notifications_non_lues(self, utilisateur_id):
+        """
+        obtenir_notifications_non_lues permet de récupérer
+        les notifications à partir de ID de l'utilisateur'.
+        """
+        notifications = self.notification_repo.obtenir_notifications_non_lues(utilisateur_id)
+        if not notifications:
+            return None
+        return [notification.to_dict() for notification in notifications]
+
+    def marquer_notification_lue(self, notification_id):
+        """
+        Marque une notification comme lue.
+
+        Arguments :
+            notification_id (str) : Identifiant unique de la notification.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            de la notification mise à jour.
+        """
+        notification = self.notification_repo.obtenir(notification_id)
+        if not notification:
+            return None
+        self.notification_repo.mis_a_jour(notification_id, {'lu': True})
+        return self.notification_repo.obtenir(notification_id).to_dict()
+
+    def marquer_toutes_notifications_lue(self, utilisateur_id):
+        """
+        Marque toutes les notifications d'un utilisateur comme lues.
+
+        Arguments :
+            utilisateur_id (str) : Identifiant unique de l'utilisateur.
+
+        Retourne :
+            list : Liste des notifications mises à jour.
+        """
+        notifications = self.notification_repo.obtenir_notifications_par_utilisateur(utilisateur_id)
+        if not notifications:
+            return None
+        for notification in notifications:
+            self.notification_repo.mis_a_jour(notification.id, {'lu': True})
+        return [notification.to_dict() for notification in notifications]
+
+    def supprimer_notification(self, notification_id):
+        """Supprimer une notification existant et toutes les données associées (cascade)."""
+        self.notification_repo.supprime(notification_id)

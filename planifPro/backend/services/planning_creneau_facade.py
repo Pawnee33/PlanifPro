@@ -7,8 +7,10 @@ métier liée aux plannings et aux créneaux des élèves.
 from planifPro.backend.persistence import SQLAlchemyRepository
 from planifPro.backend.persistence.planning_repository import PlanningRepository
 from planifPro.backend.persistence.creneau_repository import CreneauRepository
+from planifPro.backend.persistence.classe_repository import ClasseRepository
 from planifPro.backend.classes.planning import Planning
 from planifPro.backend.classes.creneau import Creneau
+from planifPro.backend.services.fcm_service import envoyer_notification
 from datetime import datetime, timezone
 
 
@@ -23,6 +25,7 @@ class PlanningCreneauFacade:
     def __init__(self):
         self.planning_repo = PlanningRepository()
         self.creneau_repo = CreneauRepository()
+        self.classe_repo = ClasseRepository()
 
     # Planning
     def creer_planning(self, donnees):
@@ -174,7 +177,15 @@ class PlanningCreneauFacade:
         planning.statut = 'valide'
         planning.valide_le = datetime.now(timezone.utc)
         self.planning_repo.mis_a_jour(planning_id, {'statut': 'valide', 'valide_le': datetime.now(timezone.utc)})
-        # TODO: envoyer une notification FCM à tous les élèves de la classe
+        # Envoyer une notification FCM à tous les élèves de la classe
+        classe = self.classe_repo.obtenir(planning.classe_id)
+        for eleve in classe.eleves:
+            if eleve.token_fcm:
+                envoyer_notification(
+                    eleve.token_fcm,
+                    "Planning validé",
+                    f"Votre planning pour la classe {classe.nom} a été validé"
+                )
         return planning.to_dict()
 
     def supprimer_planning(self, planning_id):
