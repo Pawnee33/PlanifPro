@@ -1,319 +1,281 @@
-"""Facade is an intermediary between the API layer and
-the persistance layer.
+"""
+Facade de gestion des classes et des vœux de PlanifPro.
+
+Ce module définit la classe PlanningCreneauFacade qui gère la logique
+métier liée aux plannings et aux créneaux des élèves.
 """
 from planifPro.backend.persistence import SQLAlchemyRepository
-from planifPro.backend.persistence.utilisateur_repository import UtilisateurRepository
-from planifPro.backend.persistence.professeur_repository import ProfesseurRepository
-from planifPro.backend.persistence.eleve_repository import EleveRepository
-from planifPro.backend.persistence.classe_repository import ClasseRepository
-from planifPro.backend.persistence.voeu_repository import VoeuRepository
 from planifPro.backend.persistence.planning_repository import PlanningRepository
 from planifPro.backend.persistence.creneau_repository import CreneauRepository
-from planifPro.backend.persistence.objectif_repository import ObjectifRepository
-from planifPro.backend.persistence.evenement_repository import EvenementRepository
-from planifPro.backend.persistence.notification_repository import NotificationRepository
-from planifPro.backend.classes.utilisateur import Utilisateur
-from planifPro.backend.classes.professeur import Professeur
-from planifPro.backend.classes.eleve import Eleve
-from planifPro.backend.classes.classe import Classe
-from planifPro.backend.classes.voeu import Voeu
 from planifPro.backend.classes.planning import Planning
 from planifPro.backend.classes.creneau import Creneau
-from planifPro.backend.classes.objectif import Objectif
-from planifPro.backend.classes.evenement import Evenement
-from planifPro.backend.classes.notification import Notification
+from datetime import datetime, timezone
 
 
-class PlanifProFacade:
-    """HBnBFacade acts as an intermediary between the API layer and the
-        persistence layer. It centralizes business logic and abstracts
-        direct access to the repositories.
+class PlanningCreneauFacade:
+    """
+    Facade pour la gestion des plannings et des créneaux.
+
+    Centralise la logique métier liée à la création et gestion
+    des plannings ainsi que la gestion des créneaux.
+    Fait le lien entre les routes API et les repositories correspondants.
     """
     def __init__(self):
-        self.utilisateur_repo = UtilisateurRepository()
-        self.professeur_repo = ProfesseurRepository()
-        self.eleve_repo = EleveRepository()
-        self.classe_repo = ClasseRepository()
-        self.voeu_repo = VoeuRepository()
         self.planning_repo = PlanningRepository()
         self.creneau_repo = CreneauRepository()
-        self.objectif_repo = ObjectifRepository()
-        self.evenement_repo = EvenementRepository()
-        self.notification_repo = NotificationRepository()
 
-    # USER
-    def create_user(self, user_data):
-        """create_user that create user"""
-        user = User(
-            first_name=user_data['first_name'],
-            last_name=user_data['last_name'],
-            email=user_data['email'],
-            password='temp'
-            )
-        user.hash_password(user_data["password"])
-        self.user_repo.add(user)
-        return user
-
-    def get_user(self, user_id):
-        """get_user that retrieved an user"""
-        return self.user_repo.get(user_id)
-
-    def get_all_users(self):
-        """get_all_users that retrieved all users"""
-        return self.user_repo.get_all()
-
-    def update_user(self, user_id, user_data):
-        """update_user that update an user"""
-        user = self.get_user(user_id)
-        if not user:
-            return None
-        self.user_repo.update(user_id, user_data)
-        return self.get_user(user_id)
-
-    def get_user_by_email(self, email):
-        """get_user_by_email that retrieved an user via an email"""
-        return self.user_repo.get_by_attribute('email', email)
-
-    def delete_user(self, user_id):
-        """Delete an existing user and all related data (cascade)."""
-        self.user_repo.delete(user_id)
-
-    # PLACE
-    def create_place(self, place_data):
-        """Create a new place with validation"""
-
-        try:
-            owner_id = place_data["owner_id"]
-            title = place_data["title"]
-            description = place_data.get("description")
-            price = place_data["price"]
-            latitude = place_data["latitude"]
-            longitude = place_data["longitude"]
-            amenities_ids = place_data.get("amenities", [])
-        except KeyError as e:
-            raise ValueError(f"Missing field: {str(e)}")
-
-        owner = self.get_user(owner_id)
-        if not owner:
-            raise ValueError("Owner not found")
-
-        place = Place(
-            title=title,
-            description=description,
-            price=price,
-            latitude=latitude,
-            longitude=longitude,
-            user_id=owner_id
-            )
-
-        for amenity_id in amenities_ids:
-            amenity = self.amenity_repo.get(amenity_id)
-            if not amenity:
-                raise ValueError("Amenity not found")
-            place.add_amenity(amenity)
-
-        self.place_repo.add(place)
-        return place
-
-    def get_place(self, place_id):
-        """get_place that retrieved place"""
-        return self.place_repo.get(place_id)
-
-    def get_all_places(self):
-        """get_all_places that retrieved all places"""
-        return self.place_repo.get_all()
-
-    def update_place(self, place_id, place_data):
-        """update_place that update a place"""
-        place = self.get_place(place_id)
-        if not place:
-            return None
-
-        place_data.pop("owner_id", None)
-        place_data.pop("amenities", None)
-
-        self.place_repo.update(place_id, place_data)
-        return self.get_place(place_id)
-
-    def create_amenity(self, amenity_data):
+    # Planning
+    def creer_planning(self, donnees):
         """
-        Creates a new Amenity instance after
-        validating the data provided.
+        Crée un nouveau planning dans le système.
 
-        This method checks that the
-        data entered is valid and contains the
-        required fields before creating
-        a new Amenity object. If the data
-        is invalid or if required information
-        is missing, a ValueError error is raised.
+        Arguments :
+            donnees (dict) : Dictionnaire contenant les informations
+            du planning (classe_id, numero_proposition).
 
-        Once validated, the Amenity instance
-        is instantiated and stored in the
-        internal amenities collection, then returned.
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            du planning créé.
         """
-
-        if not amenity_data or not isinstance(amenity_data, dict):
-            raise ValueError("Invalid amenity data")
-        if "name" not in amenity_data or not amenity_data["name"]:
-            raise ValueError("Amenity name is required")
-
-        amenity = Amenity(**amenity_data)
-        self.amenity_repo.add(amenity)
-        return amenity
-
-    # AMENITY
-    def get_amenity(self, amenity_id):
-
-        """
-        Retrieves a commodity from its identifier.
-
-        Verifies that the identifier is valid and exists in
-        memory storage before returning the corresponding object.
-        """
-        return self.amenity_repo.get(amenity_id)
-
-    def get_all_amenities(self):
-        """
-        Retrieves all amenities stored in the database.
-
-        Performs a query to return all
-        Amenity objects present in the database.
-        """
-        return self.amenity_repo.get_all()
-
-    def update_amenity(self, amenity_id, amenity_data):
-        """
-        Updates an existing convenience.
-
-        Searches for the convenience by its identifier, updates its
-        attributes with the provided data, then saves the
-        changes to the database.
-        """
-        amenity = self.get_amenity(amenity_id)
-        if not amenity:
-            return None
-
-        self.amenity_repo.update(amenity_id, amenity_data)
-        return self.get_amenity(amenity_id)
-
-    # REVIEW
-    def create_review(self, review_data):
-        """
-        Create a new review after validating the data.
-
-        This method validates the data provided, verifies
-        the existence of the associated user and location,
-        then creates and saves a new review.
-
-        Args:
-        review_data (dict): Review data containing
-            text, rating, user_id, and place_id.
-
-        Returns:
-        Review: Instance of the review created.
-
-        Raises:
-        ValueError: If the data is invalid, if a required field
-        is missing, or if the user or place
-        does not exist.
-        """
-        user = self.user_repo.get(review_data['user_id'])
-        if not user:
-            raise KeyError('Invalid input data')
-
-        place = self.place_repo.get(review_data['place_id'])
-        if not place:
-            raise KeyError('Invalid input data')
-
-        review = Review(
-            text=review_data['text'],
-            rating=review_data['rating'],
-            user_id=review_data['user_id'],
-            place_id=review_data['place_id']
+        planning = Planning(
+            classe_id=donnees['classe_id'],
+            numero_proposition=donnees['numero_proposition'],
+            statut='genere'
         )
-        self.review_repo.add(review)
-        return review
+        self.planning_repo.ajouter(planning)
+        return planning.to_dict()
 
-    def get_review(self, review_id):
-        """
-        Retrieve a review by its ID.
-
-        Args:
-        review_id (int): Unique ID of the review.
-
-        Returns:
-        Review: Instance corresponding to the ID provided.
-
-        Raises:
-        ValueError: If the ID is invalid or if the
-        review does not exist.
-        """
-        return self.review_repo.get(review_id)
-
-    def get_all_reviews(self):
-        """
-        Retrieve all saved reviews.
-
-        Returns:
-        list: List of all Review instances.
-        """
-        return self.review_repo.get_all()
-
-    def get_reviews_by_place(self, place_id):
-        """
-        Retrieve all reviews associated with a given location.
-
-        Args:
-        place_id (str): Unique identifier for the location.
-
-        Returns:
-        list: List of reviews associated with the location.
-
-        Raises:
-        ValueError: If the location identifier is invalid
-        or if the location does not exist.
-        """
-        place = self.place_repo.get(place_id)
-        if not place:
-            raise KeyError('Place not found')
-        return place.reviews
-
-    def update_review(self, review_id, review_data):
-        """
-        Update an existing review.
-
-        This method updates only the authorized fields
-        of a review, then saves the changes to the database.
-
-
-        Args:
-        review_id (int): Unique identifier of the review.
-        review_data (dict): Data to be modified.
-
-        Returns:
-        Review: Updated instance.
-
-        Raises:
-        ValueError: If the review does not exist.
-        """
-        review = self.get_review(review_id)
-        if not review:
+    def obtenir_planning(self, planning_id):
+        """obtenir_planning permet de récupère un planning"""
+        planning = self.planning_repo.obtenir(planning_id)
+        if not planning:
             return None
+        return planning.to_dict()
 
-        self.review_repo.update(review_id, review_data)
-        return self.get_review(review_id)
+    def obtenir_tout_plannings(self):
+        """obtenir_tout_plannings permet de récupérer toute les plannings"""
+        tout_plannings = self.planning_repo.tout_obtenir()
+        if not tout_plannings:
+            return None
+        return [planning.to_dict() for planning in tout_plannings]
 
-    def delete_review(self, review_id):
+    def mettre_a_jour_planning(self, planning_id, donnees_planning):
+        """Mettre à jour un planning existant"""
+        planning = self.planning_repo.obtenir(planning_id)
+        if not planning:
+            return None
+        self.planning_repo.mis_a_jour(planning_id, donnees_planning)
+        return self.planning_repo.obtenir(planning_id).to_dict()
+
+    def obtenir_plannings_par_classe(self, classe_id):
         """
-        Delete an existing review.
-
-        Args:
-        review_id (int): Unique identifier of the review.
-
-        Returns:
-        bool: True if the deletion is successful.
-
-        Raises:
-        ValueError: If the review does not exist.
+        obtenir_plannings_par_classe permet de récupérer
+        les plannings à partir de ID de la classe.
         """
-        self.review_repo.delete(review_id)
+        plannings = self.planning_repo.obtenir_plannings_par_classe(classe_id)
+        if not plannings:
+            return None
+        return [planning.to_dict() for planning in plannings]
+
+    def obtenir_planning_valide(self, classe_id):
+        """
+        obtenir_planning_valide permet de récupérer
+        un planning à partir d'une classe validé.
+        """
+        planning = self.planning_repo.obtenir_planning_valide(classe_id)
+        if not planning:
+            return None
+        return planning.to_dict()
+
+    def generer_planning(self, classe_id):
+        """
+        Génère les propositions de planning pour une classe.
+        """
+        # TODO: implémenter l'algorithme de génération
+        pass
+
+    def selectionner_planning(self, planning_id):
+        """
+        Sélectionne un planning parmi les propositions générées.
+
+        Vérifie que le planning est généré avant de passer
+        le statut à 'selectionne'.
+
+        Arguments :
+            planning_id (str) : Identifiant unique du planning.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            du planning sélectionné.
+
+        Lève :
+            ValueError : Si le planning n'est pas en statut 'genere'.
+        """
+        planning = self.planning_repo.obtenir(planning_id)
+        if not planning:
+            return None
+        if planning.statut != 'genere':
+            raise ValueError("Le planning ne peut être selectionné que s'il est généré")
+        planning.statut = 'selectionne'
+        self.planning_repo.mis_a_jour(planning_id, {'statut': 'selectionne'})
+        return planning.to_dict()
+
+    def modifier_planning(self, planning_id):
+        """
+        Modifie manuellement un planning sélectionné.
+
+        Vérifie que le planning est généré ou sélectionné avant
+        de passer le statut à 'modifie'.
+
+        Arguments :
+            planning_id (str) : Identifiant unique du planning.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            du planning modifié.
+
+        Lève :
+            ValueError : Si le planning n'est pas en statut
+            'genere' ou 'selectionne'.
+        """
+        planning = self.planning_repo.obtenir(planning_id)
+        if not planning:
+            return None
+        if planning.statut not in ['genere', 'selectionne']:
+            raise ValueError("Le planning ne peut être modifié que s'il est généré et selectionné")
+        planning.statut = 'modifie'
+        self.planning_repo.mis_a_jour(planning_id, {'statut': 'modifie'})
+        return planning.to_dict()
+
+    def valider_planning(self, planning_id):
+        """
+        Valide un planning sélectionné.
+
+        Vérifie que le planning est dans un statut valide avant
+        de passer le statut à 'valide' et d'enregistrer la date
+        de validation.
+
+        Arguments :
+            planning_id (str) : Identifiant unique du planning.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            du planning validé.
+
+        Lève :
+            ValueError : Si le planning n'est pas en statut
+            'genere', 'selectionne' ou 'modifie'.
+        """
+        planning = self.planning_repo.obtenir(planning_id)
+        if not planning:
+            return None
+        if planning.statut not in ['genere', 'selectionne', 'modifie']:
+            raise ValueError("Le planning ne peut être validé que s'il est généré, sélectionné ou modifié")
+        planning.statut = 'valide'
+        planning.valide_le = datetime.now(timezone.utc)
+        self.planning_repo.mis_a_jour(planning_id, {'statut': 'valide', 'valide_le': datetime.now(timezone.utc)})
+        # TODO: envoyer une notification FCM à tous les élèves de la classe
+        return planning.to_dict()
+
+    def supprimer_planning(self, planning_id):
+        """Supprimer un planning existant et toutes les données associées (cascade)."""
+        self.planning_repo.supprime(planning_id)
+
+    # Créneaux
+    def creer_creneau(self, donnees):
+        """
+        Crée un nouveau créneau dans le système.
+
+        Arguments :
+            donnees (dict) : Dictionnaire contenant les informations
+            du créneau (planning_id, eleve_id, classe_id, type,
+            jour, heure_debut, heure_fin, duree_minutes).
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            du créneau créé.
+        """
+        creneau = Creneau(
+            planning_id=donnees['planning_id'],
+            eleve_id=donnees['eleve_id'],
+            classe_id=donnees['classe_id'],
+            type=donnees['type'],
+            jour=donnees['jour'],
+            heure_debut=donnees['heure_debut'],
+            heure_fin=donnees['heure_fin'],
+            duree_minutes=donnees['duree_minutes'],
+            statut='en_attente'
+        )
+        self.creneau_repo.ajouter(creneau)
+        return creneau.to_dict()
+
+    def obtenir_creneau(self, creneau_id):
+        """obtenir_creneau permet de récupérer un creneau"""
+        creneau = self.creneau_repo.obtenir(creneau_id)
+        if not creneau:
+            return None
+        return creneau.to_dict()
+
+    def obtenir_tout_creneaux(self):
+        """obtenir_tout_creneaux permet de récupérer tout les creneaux"""
+        tout_creneaux = self.creneau_repo.tout_obtenir()
+        if not tout_creneaux:
+            return None
+        return [creneau.to_dict() for creneau in tout_creneaux]
+
+    def mettre_a_jour_creneau(self, creneau_id, donnees_creneau):
+        """Mettre à jour un creneau existant"""
+        creneau = self.creneau_repo.obtenir(creneau_id)
+        if not creneau:
+            return None
+        self.creneau_repo.mis_a_jour(creneau_id, donnees_creneau)
+        return self.creneau_repo.obtenir(creneau_id).to_dict()
+
+    def obtenir_creneau_par_classe(self, classe_id):
+        """
+        Récupère tous les créneaux d'une classe.
+
+        Arguments :
+            classe_id (str) : Identifiant unique de la classe.
+
+        Retourne :
+            list : Liste des créneaux de la classe ou None si aucun trouvé.
+        """
+        creneaux = self.creneau_repo.obtenir_creneaux_par_classe(classe_id)
+        if not creneaux:
+            return None
+        return [creneau.to_dict() for creneau in creneaux]
+
+    def obtenir_creneaux_par_eleve(self, eleve_id):
+        """
+        Récupère tous les créneaux d'une classe.
+
+        Arguments :
+            classe_id (str) : Identifiant unique de la classe.
+
+        Retourne :
+            list : Liste des créneaux de la classe ou None si aucun trouvé.
+        """
+        creneaux = self.creneau_repo.obtenir_creneaux_par_eleve(eleve_id)
+        if not creneaux:
+            return None
+        return [creneau.to_dict() for creneau in creneaux]
+
+    def obtenir_creneaux_par_planning(self, planning_id):
+        """
+        Récupère tous les créneaux d'un planning.
+
+        Arguments :
+            planning_id (str) : Identifiant unique du planning.
+
+        Retourne :
+            list : Liste des créneaux du planning ou None si aucun trouvé.
+        """
+        creneaux = self.creneau_repo.obtenir_creneaux_par_planning(planning_id)
+        if not creneaux:
+            return None
+        return [creneau.to_dict() for creneau in creneaux]
+
+    def supprimer_creneau(self, creneau_id):
+        """Supprimer un creneau existant et toutes les données associées (cascade)."""
+        self.creneau_repo.supprime(creneau_id)
