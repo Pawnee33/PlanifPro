@@ -18,7 +18,7 @@ class Notification(EntiteBase):
     Le modèle Notification.
 
     Représente une notification dans le système. Contient le type,
-    le titre, le message ainsi que le statut de lecture de la
+    le type, le message ainsi que le statut de lecture de la
     notification envoyée à un utilisateur.
     """
     __tablename__ = 'notifications'
@@ -83,3 +83,22 @@ class Notification(EntiteBase):
         if not isinstance(value, bool):
             raise ValueError("Le statut de lecture doit être un booléen")
         return value
+
+    def to_dict(self):
+        """
+        Convertit l'instance Notification en dictionnaire.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            des notifications (id, utilisateur_id, type, titre,
+            message et lu).
+        """
+        donnees = super().to_dict()
+        donnees.update({
+            'utilisateur_id': self.utilisateur_id,
+            'type': self.type,
+            'titre': self.titre,
+            'message': self.message,
+            'lu': self.lu
+        })
+        return donnees

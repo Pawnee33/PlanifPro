@@ -97,3 +97,21 @@ class Utilisateur(EntiteBase):
         if not isinstance(value, str) or not value.strip():
             raise ValueError("Le token FCM doit être une chaîne de caractères valide")
         return value
+
+    def to_dict(self):
+        """
+        Convertit l'instance Utilisateur en dictionnaire.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            de l'utilisateur (id, prenom, nom, email, role, token_fcm).
+        """
+        donnees = super().to_dict()
+        donnees.update({
+            'prenom': self.prenom,
+            'nom': self.nom,
+            'email': self.email,
+            'role': self.role,
+            'token_fcm': self.token_fcm
+        })
+        return donnees

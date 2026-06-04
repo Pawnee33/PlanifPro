@@ -57,3 +57,17 @@ class Eleve(Utilisateur):
         'Objectif', backref='eleve_objectifs',
         lazy=True, cascade='all, delete-orphan'
     )
+
+    def to_dict(self):
+        """
+        Convertit l'instance Eleve en dictionnaire.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            de l'élève (héritées de Utilisateur + utilisateur_id).
+        """
+        donnees = super().to_dict()
+        donnees.update({
+            'utilisateur_id': self.utilisateur_id
+        })
+        return donnees

@@ -150,3 +150,27 @@ class Classe(EntiteBase):
         if value <= 0:            
             raise ValueError("Le nombre de propositions doit être supérieur à 0")
         return value
+
+    def to_dict(self):
+        """
+        Convertit l'instance Classe en dictionnaire.
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            de la classe (id, professeur_id, nom, dates, jours_horaires,
+            contraintes de vœux, code_classe et statut).
+        """
+        donnees = super().to_dict()
+        donnees.update({
+            'professeur_id': self.professeur_id,
+            'nom': self.nom,
+            'date_debut': self.date_debut.isoformat() if self.date_debut else None,
+            'date_fin': self.date_fin.isoformat() if self.date_fin else None,
+            'jours_horaires': self.jours_horaires,
+            'nombre_propositions': self.nombre_propositions,
+            'nombre_voeux_requis': self.nombre_voeux_requis,
+            'nombre_jours_min': self.nombre_jours_min,
+            'code_classe': self.code_classe,
+            'statut': self.statut
+        })
+        return donnees
