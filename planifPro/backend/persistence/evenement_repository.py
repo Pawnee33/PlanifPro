@@ -35,3 +35,15 @@ class EvenementRepository(SQLAlchemyRepository):
             list : Liste des événements du professeur ou une liste vide si aucun trouvé.
         """
         return self.model.query.filter_by(professeur_id=professeur_id).all()
+
+    def obtenir_evenements_par_eleve(self, eleve_id):
+        """
+        Récupère tous les événements d'un élève.
+
+        Arguments :
+            eleve_id (str) : Identifiant unique de l'élève.
+
+        Retourne :
+            list : Liste des événements de l'élève ou une liste vide si aucun trouvé.
+        """
+        return self.model.query.filter_by(eleve_id=eleve_id).all()

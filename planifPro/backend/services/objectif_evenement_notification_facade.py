@@ -1,319 +1,141 @@
-"""Facade is an intermediary between the API layer and
-the persistance layer.
+"""
+Facade de gestion des objectifs, événements et notifications de PlanifPro.
+
+Ce module définit la classe ObjectifEvenementNotificationFacade qui gère
+la logique métier liée aux objectifs pédagogiques, aux événements
+et aux notifications.
 """
 from planifPro.backend.persistence import SQLAlchemyRepository
-from planifPro.backend.persistence.utilisateur_repository import UtilisateurRepository
-from planifPro.backend.persistence.professeur_repository import ProfesseurRepository
-from planifPro.backend.persistence.eleve_repository import EleveRepository
-from planifPro.backend.persistence.classe_repository import ClasseRepository
-from planifPro.backend.persistence.voeu_repository import VoeuRepository
-from planifPro.backend.persistence.planning_repository import PlanningRepository
-from planifPro.backend.persistence.creneau_repository import CreneauRepository
 from planifPro.backend.persistence.objectif_repository import ObjectifRepository
 from planifPro.backend.persistence.evenement_repository import EvenementRepository
 from planifPro.backend.persistence.notification_repository import NotificationRepository
-from planifPro.backend.classes.utilisateur import Utilisateur
-from planifPro.backend.classes.professeur import Professeur
-from planifPro.backend.classes.eleve import Eleve
-from planifPro.backend.classes.classe import Classe
-from planifPro.backend.classes.voeu import Voeu
-from planifPro.backend.classes.planning import Planning
-from planifPro.backend.classes.creneau import Creneau
 from planifPro.backend.classes.objectif import Objectif
 from planifPro.backend.classes.evenement import Evenement
 from planifPro.backend.classes.notification import Notification
 
 
-class PlanifProFacade:
-    """HBnBFacade acts as an intermediary between the API layer and the
-        persistence layer. It centralizes business logic and abstracts
-        direct access to the repositories.
+class ObjectifEvenementNotificationFacade:
+    """
+    Facade pour la gestion des objectifs, événements et notifications.
+
+    Centralise la logique métier liée aux objectifs pédagogiques,
+    à la création d'événements et à la gestion des notifications.
+    Fait le lien entre les routes API et les repositories correspondants.
     """
     def __init__(self):
-        self.utilisateur_repo = UtilisateurRepository()
-        self.professeur_repo = ProfesseurRepository()
-        self.eleve_repo = EleveRepository()
-        self.classe_repo = ClasseRepository()
-        self.voeu_repo = VoeuRepository()
-        self.planning_repo = PlanningRepository()
-        self.creneau_repo = CreneauRepository()
         self.objectif_repo = ObjectifRepository()
         self.evenement_repo = EvenementRepository()
         self.notification_repo = NotificationRepository()
 
-    # USER
-    def create_user(self, user_data):
-        """create_user that create user"""
-        user = User(
-            first_name=user_data['first_name'],
-            last_name=user_data['last_name'],
-            email=user_data['email'],
-            password='temp'
-            )
-        user.hash_password(user_data["password"])
-        self.user_repo.add(user)
-        return user
-
-    def get_user(self, user_id):
-        """get_user that retrieved an user"""
-        return self.user_repo.get(user_id)
-
-    def get_all_users(self):
-        """get_all_users that retrieved all users"""
-        return self.user_repo.get_all()
-
-    def update_user(self, user_id, user_data):
-        """update_user that update an user"""
-        user = self.get_user(user_id)
-        if not user:
-            return None
-        self.user_repo.update(user_id, user_data)
-        return self.get_user(user_id)
-
-    def get_user_by_email(self, email):
-        """get_user_by_email that retrieved an user via an email"""
-        return self.user_repo.get_by_attribute('email', email)
-
-    def delete_user(self, user_id):
-        """Delete an existing user and all related data (cascade)."""
-        self.user_repo.delete(user_id)
-
-    # PLACE
-    def create_place(self, place_data):
-        """Create a new place with validation"""
-
-        try:
-            owner_id = place_data["owner_id"]
-            title = place_data["title"]
-            description = place_data.get("description")
-            price = place_data["price"]
-            latitude = place_data["latitude"]
-            longitude = place_data["longitude"]
-            amenities_ids = place_data.get("amenities", [])
-        except KeyError as e:
-            raise ValueError(f"Missing field: {str(e)}")
-
-        owner = self.get_user(owner_id)
-        if not owner:
-            raise ValueError("Owner not found")
-
-        place = Place(
-            title=title,
-            description=description,
-            price=price,
-            latitude=latitude,
-            longitude=longitude,
-            user_id=owner_id
-            )
-
-        for amenity_id in amenities_ids:
-            amenity = self.amenity_repo.get(amenity_id)
-            if not amenity:
-                raise ValueError("Amenity not found")
-            place.add_amenity(amenity)
-
-        self.place_repo.add(place)
-        return place
-
-    def get_place(self, place_id):
-        """get_place that retrieved place"""
-        return self.place_repo.get(place_id)
-
-    def get_all_places(self):
-        """get_all_places that retrieved all places"""
-        return self.place_repo.get_all()
-
-    def update_place(self, place_id, place_data):
-        """update_place that update a place"""
-        place = self.get_place(place_id)
-        if not place:
-            return None
-
-        place_data.pop("owner_id", None)
-        place_data.pop("amenities", None)
-
-        self.place_repo.update(place_id, place_data)
-        return self.get_place(place_id)
-
-    def create_amenity(self, amenity_data):
+    # Objectif
+    def creer_objectif(self, donnees):
         """
-        Creates a new Amenity instance after
-        validating the data provided.
+        Crée un nouvel objectif dans le système.
 
-        This method checks that the
-        data entered is valid and contains the
-        required fields before creating
-        a new Amenity object. If the data
-        is invalid or if required information
-        is missing, a ValueError error is raised.
+        Arguments :
+            donnees (dict) : Dictionnaire contenant les informations
+            de l'objectif (professeur_id, eleve_id, creneau_id, contenu,
+            et conseils).
 
-        Once validated, the Amenity instance
-        is instantiated and stored in the
-        internal amenities collection, then returned.
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            de l'objectif créé.
         """
-
-        if not amenity_data or not isinstance(amenity_data, dict):
-            raise ValueError("Invalid amenity data")
-        if "name" not in amenity_data or not amenity_data["name"]:
-            raise ValueError("Amenity name is required")
-
-        amenity = Amenity(**amenity_data)
-        self.amenity_repo.add(amenity)
-        return amenity
-
-    # AMENITY
-    def get_amenity(self, amenity_id):
-
-        """
-        Retrieves a commodity from its identifier.
-
-        Verifies that the identifier is valid and exists in
-        memory storage before returning the corresponding object.
-        """
-        return self.amenity_repo.get(amenity_id)
-
-    def get_all_amenities(self):
-        """
-        Retrieves all amenities stored in the database.
-
-        Performs a query to return all
-        Amenity objects present in the database.
-        """
-        return self.amenity_repo.get_all()
-
-    def update_amenity(self, amenity_id, amenity_data):
-        """
-        Updates an existing convenience.
-
-        Searches for the convenience by its identifier, updates its
-        attributes with the provided data, then saves the
-        changes to the database.
-        """
-        amenity = self.get_amenity(amenity_id)
-        if not amenity:
-            return None
-
-        self.amenity_repo.update(amenity_id, amenity_data)
-        return self.get_amenity(amenity_id)
-
-    # REVIEW
-    def create_review(self, review_data):
-        """
-        Create a new review after validating the data.
-
-        This method validates the data provided, verifies
-        the existence of the associated user and location,
-        then creates and saves a new review.
-
-        Args:
-        review_data (dict): Review data containing
-            text, rating, user_id, and place_id.
-
-        Returns:
-        Review: Instance of the review created.
-
-        Raises:
-        ValueError: If the data is invalid, if a required field
-        is missing, or if the user or place
-        does not exist.
-        """
-        user = self.user_repo.get(review_data['user_id'])
-        if not user:
-            raise KeyError('Invalid input data')
-
-        place = self.place_repo.get(review_data['place_id'])
-        if not place:
-            raise KeyError('Invalid input data')
-
-        review = Review(
-            text=review_data['text'],
-            rating=review_data['rating'],
-            user_id=review_data['user_id'],
-            place_id=review_data['place_id']
+        objectif = Objectif(
+            professeur_id=donnees['professeur_id'],
+            eleve_id=donnees['eleve_id'],
+            creneau_id=donnees['creneau_id'],
+            contenu=donnees['contenu'],
+            conseils=donnees.get('conseils')
         )
-        self.review_repo.add(review)
-        return review
+        self.objectif_repo.ajouter(objectif)
+        return objectif.to_dict()
 
-    def get_review(self, review_id):
-        """
-        Retrieve a review by its ID.
-
-        Args:
-        review_id (int): Unique ID of the review.
-
-        Returns:
-        Review: Instance corresponding to the ID provided.
-
-        Raises:
-        ValueError: If the ID is invalid or if the
-        review does not exist.
-        """
-        return self.review_repo.get(review_id)
-
-    def get_all_reviews(self):
-        """
-        Retrieve all saved reviews.
-
-        Returns:
-        list: List of all Review instances.
-        """
-        return self.review_repo.get_all()
-
-    def get_reviews_by_place(self, place_id):
-        """
-        Retrieve all reviews associated with a given location.
-
-        Args:
-        place_id (str): Unique identifier for the location.
-
-        Returns:
-        list: List of reviews associated with the location.
-
-        Raises:
-        ValueError: If the location identifier is invalid
-        or if the location does not exist.
-        """
-        place = self.place_repo.get(place_id)
-        if not place:
-            raise KeyError('Place not found')
-        return place.reviews
-
-    def update_review(self, review_id, review_data):
-        """
-        Update an existing review.
-
-        This method updates only the authorized fields
-        of a review, then saves the changes to the database.
-
-
-        Args:
-        review_id (int): Unique identifier of the review.
-        review_data (dict): Data to be modified.
-
-        Returns:
-        Review: Updated instance.
-
-        Raises:
-        ValueError: If the review does not exist.
-        """
-        review = self.get_review(review_id)
-        if not review:
+    def obtenir_objectif(self, objectif_id):
+        """obtenir_objectif permet de récupère un objectif"""
+        objectif = self.objectif_repo.obtenir(objectif_id)
+        if not objectif:
             return None
+        return objectif.to_dict()
 
-        self.review_repo.update(review_id, review_data)
-        return self.get_review(review_id)
+    def mettre_a_jour_objectif(self, objectif_id, donnees_objectif):
+        """Mettre à jour un objectif existant"""
+        objectif = self.objectif_repo.obtenir(objectif_id)
+        if not objectif:
+            return None
+        self.objectif_repo.mis_a_jour(objectif_id, donnees_objectif)
+        return self.objectif_repo.obtenir(objectif_id).to_dict()
 
-    def delete_review(self, review_id):
+    def obtenir_objectifs_par_eleve(self, eleve_id):
         """
-        Delete an existing review.
-
-        Args:
-        review_id (int): Unique identifier of the review.
-
-        Returns:
-        bool: True if the deletion is successful.
-
-        Raises:
-        ValueError: If the review does not exist.
+        obtenir_objectifs_par_eleve permet de récupérer
+        les objectifs à partir de ID de la eleve.
         """
-        self.review_repo.delete(review_id)
+        objectifs = self.objectif_repo.obtenir_objectifs_par_eleve(eleve_id)
+        if not objectifs:
+            return None
+        return [objectif.to_dict() for objectif in objectifs]
+
+    def obtenir_objectifs_par_creneau(self, creneau_id):
+        """
+        obtenir_objectifs_par_creneau permet de récupérer
+        les objectifs à partir de ID du créneau.
+        """
+        objectifs = self.objectif_repo.obtenir_objectifs_par_creneau(creneau_id)
+        if not objectifs:
+            return None
+        return [objectif.to_dict() for objectif in objectifs]
+
+    def supprimer_objectif(self, objectif_id):
+        """Supprimer un objectif existant et toutes les données associées (cascade)."""
+        self.objectif_repo.supprime(objectif_id)
+
+    # Événement
+    def creer_evenement(self, donnees):
+        """
+        Crée un nouvel événement dans le système.
+
+        Arguments :
+            donnees (dict) : Dictionnaire contenant les informations
+            de l'événement (professeur_id, titre, description,
+            date_heure et destinataires).
+
+        Retourne :
+            dict : Dictionnaire contenant les informations
+            de l'événement créé.
+        """
+        evenement = Evenement(
+            professeur_id=donnees['professeur_id'],
+            titre=donnees['titre'],
+            description=donnees['description'],
+            date_heure=donnees['date_heure'],
+            destinataires=donnees['destinataires']
+        )
+        self.evenement_repo.ajouter(evenement)
+        return evenement.to_dict()
+
+    def obtenir_evenement(self, evenement_id):
+        """obtenir_evenement permet de récupérer un evenement"""
+        evenement = self.evenement_repo.obtenir(evenement_id)
+        if not evenement:
+            return None
+        return evenement.to_dict()
+
+    def obtenir_tout_evenements(self):
+        """obtenir_tout_evenements permet de récupérer tout les evenements"""
+        tout_evenements = self.evenement_repo.tout_obtenir()
+        if not tout_evenements:
+            return None
+        return [evenement.to_dict() for evenement in tout_evenements]
+
+    def mettre_a_jour_evenement(self, evenement_id, donnees_evenement):
+        """Mettre à jour un evenement existant"""
+        evenement = self.evenement_repo.obtenir(evenement_id)
+        if not evenement:
+            return None
+        self.evenement_repo.mis_a_jour(evenement_id, donnees_evenement)
+        return self.evenement_repo.obtenir(evenement_id).to_dict()
+
+    def supprimer_evenement(self, evenement_id):
+        """Supprimer un evenement existant et toutes les données associées (cascade)."""
+        self.evenement_repo.supprime(evenement_id)
