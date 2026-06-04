@@ -120,7 +120,7 @@ class ClasseVoeuFacade:
             raise ValueError("La collecte ne peut être lancée que si la classe est active")
         classe.statut = 'collecte_active'
         self.classe_repo.mis_a_jour(classe_id, {'statut': 'collecte_active'})
-         # TODO: envoyer une notification FCM à tous les élèves de la classe
+        # TODO: envoyer une notification FCM à tous les élèves de la classe
         return classe.to_dict()
 
     def supprimer_classe(self, classe_id):
