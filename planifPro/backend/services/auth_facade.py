@@ -82,6 +82,10 @@ class AuthFacade:
             return None
         return utilisateur.to_dict()
 
+    def obtenir_utilisateur_objet_par_email(self, email):
+        """Retourne l'objet Utilisateur pour la vérification du mot de passe."""
+        return self.utilisateur_repo.obtenir_par_email(email)
+
     def supprimer_utilisateur(self, utilisateur_id):
         """Supprimer un utilisateur existant et toutes les données associées (cascade)."""
         self.utilisateur_repo.supprime(utilisateur_id)

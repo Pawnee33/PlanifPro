@@ -43,7 +43,7 @@ class Inscription(Resource):
             return {'error': 'Erreur interne du serveur'}, 500
 
         return {
-            'id': nouveau_utilisateur.id,
+            'id': nouveau_utilisateur['id'],
             'message': 'Utilisateur a été créé avec succès'
         }, 201
 
@@ -58,7 +58,7 @@ class Connexion(Resource):
         """Authentifier l'utilisateur et renvoyer un jeton JWT"""
         credentials = api.payload
 
-        utilisateur = facade.obtenir_utilisateur_par_email(credentials['email'])
+        utilisateur = facade.obtenir_utilisateur_objet_par_email(credentials['email'])
         if not utilisateur or not utilisateur.verify_password(credentials['mot_de_passe']):
             return {'error': 'Identifiants non valides'}, 401
         try:
