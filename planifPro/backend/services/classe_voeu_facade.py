@@ -7,8 +7,10 @@ métier liée aux classes et aux vœux des élèves.
 from planifPro.backend.persistence import SQLAlchemyRepository
 from planifPro.backend.persistence.classe_repository import ClasseRepository
 from planifPro.backend.persistence.voeu_repository import VoeuRepository
+from planifPro.backend.persistence.eleve_repository import EleveRepository
 from planifPro.backend.classes.classe import Classe
 from planifPro.backend.classes.voeu import Voeu
+from planifPro.backend.classes.eleve import Eleve
 from planifPro.backend.services.fcm_service import envoyer_notification
 import uuid
 
@@ -24,6 +26,7 @@ class ClasseVoeuFacade:
     def __init__(self):
         self.classe_repo = ClasseRepository()
         self.voeu_repo = VoeuRepository()
+        self.eleve_repo = EleveRepository()
 
     # Classe
     def creer_classe(self, donnees):
@@ -76,6 +79,18 @@ class ClasseVoeuFacade:
             return None
         self.classe_repo.mis_a_jour(classe_id, donnees_classe)
         return self.classe_repo.obtenir(classe_id).to_dict()
+
+    def ajouter_eleve_classe(self, classe_id, eleve_id):
+        """Ajoute un élève à une classe."""
+        classe = self.classe_repo.obtenir(classe_id)
+        if not classe:
+            return None
+        eleve = self.eleve_repo.obtenir(eleve_id)
+        if not eleve:
+            return None
+        classe.eleves.append(eleve)
+        self.classe_repo.mis_a_jour(classe_id, {})
+        return classe.to_dict()
 
     def obtenir_classes_par_professeur(self, professeur_id):
         """
