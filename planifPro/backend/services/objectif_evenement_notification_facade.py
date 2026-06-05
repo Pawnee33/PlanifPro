@@ -16,6 +16,7 @@ from planifPro.backend.classes.evenement import Evenement
 from planifPro.backend.classes.notification import Notification
 from planifPro.backend.classes.eleve import Eleve
 from planifPro.backend.classes.classe import Classe
+from planifPro.backend.services.fcm_service import envoyer_notification
 
 
 class ObjectifEvenementNotificationFacade:
@@ -36,7 +37,8 @@ class ObjectifEvenementNotificationFacade:
     # Objectif
     def creer_objectif(self, donnees):
         """
-        Crée un nouvel objectif dans le système.
+        Crée un nouvel objectif dans le système et notifie
+        l'élève via une notification push FCM.
 
         Arguments :
             donnees (dict) : Dictionnaire contenant les informations
@@ -55,6 +57,13 @@ class ObjectifEvenementNotificationFacade:
             conseils=donnees.get('conseils')
         )
         self.objectif_repo.ajouter(objectif)
+        eleve = self.eleve_repo.obtenir(objectif.eleve_id)
+        if eleve and eleve.token_fcm:
+                envoyer_notification(
+                    eleve.token_fcm,
+                    "Notification objectif",
+                    f"Votre professeur vous a laissé un objectif"
+                )
         return objectif.to_dict()
 
     def obtenir_objectif(self, objectif_id):
