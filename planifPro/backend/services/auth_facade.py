@@ -128,6 +128,21 @@ class AuthFacade:
             return None
         return [professeur.to_dict() for professeur in tout_professeurs]
 
+    def obtenir_professeurs_par_eleve(self, eleve_id):
+        """Retourne la liste des professeurs d'un élève via ses classes."""
+        eleve = self.eleve_repo.obtenir(eleve_id)
+        if not eleve:
+            return None
+        professeurs_ids = set()
+        professeurs = []
+        for classe in eleve.classes:
+            if classe.professeur_id not in professeurs_ids:
+                professeurs_ids.add(classe.professeur_id)
+                prof = self.professeur_repo.obtenir(classe.professeur_id)
+                if prof:
+                    professeurs.append(prof.to_dict())
+        return professeurs
+
     def mettre_a_jour_professeur(self, professeur_id, donnees_professeur):
         """Mettre à jour d'un professeur existant"""
         professeur = self.professeur_repo.obtenir(professeur_id)
@@ -145,6 +160,20 @@ class AuthFacade:
         if not professeur:
             return None
         return professeur.to_dict()
+
+    def retirer_eleve_professeur(self, professeur_id, eleve_id):
+        """Retire un élève de toutes les classes d'un professeur."""
+        classes = self.classe_repo.obtenir_classes_par_professeur(professeur_id)
+        if not classes:
+            return None
+        eleve = self.eleve_repo.obtenir(eleve_id)
+        if not eleve:
+            return None
+        for classe in classes:
+            if eleve in classe.eleves:
+                classe.eleves.remove(eleve)
+        self.classe_repo.mis_a_jour(classe.id, {})
+        return True
 
     def supprimer_professeur(self, professeur_id):
         """Supprimer un professeur existant et toutes les données associées (cascade)."""
