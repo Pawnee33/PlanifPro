@@ -8,9 +8,11 @@ from planifPro.backend.persistence import SQLAlchemyRepository
 from planifPro.backend.persistence.classe_repository import ClasseRepository
 from planifPro.backend.persistence.voeu_repository import VoeuRepository
 from planifPro.backend.persistence.eleve_repository import EleveRepository
+from planifPro.backend.persistence.professeur_repository import ProfesseurRepository
 from planifPro.backend.classes.classe import Classe
 from planifPro.backend.classes.voeu import Voeu
 from planifPro.backend.classes.eleve import Eleve
+from planifPro.backend.classes.professeur import Professeur
 from planifPro.backend.services.fcm_service import envoyer_notification
 import uuid
 
@@ -27,6 +29,7 @@ class ClasseVoeuFacade:
         self.classe_repo = ClasseRepository()
         self.voeu_repo = VoeuRepository()
         self.eleve_repo = EleveRepository()
+        self.professeur_repo = ProfesseurRepository()
 
     # Classe
     def creer_classe(self, donnees):
@@ -102,6 +105,35 @@ class ClasseVoeuFacade:
             return None
         return [classe.to_dict() for classe in classes]
 
+    def obtenir_professeurs_par_eleve(self, eleve_id):
+        """Retourne la liste des professeurs d'un élève via ses classes."""
+        eleve = self.eleve_repo.obtenir(eleve_id)
+        if not eleve:
+            return None
+        professeurs_ids = set()
+        professeurs = []
+        for classe in eleve.classes:
+            if classe.professeur_id not in professeurs_ids:
+                professeurs_ids.add(classe.professeur_id)
+                prof = self.professeur_repo.obtenir(classe.professeur_id)
+                if prof:
+                    professeurs.append(prof.to_dict())
+        return professeurs
+
+    def obtenir_eleves_par_professeur(self, professeur_id):
+            """Retourne la liste des élèves d'un professeur via ses classes."""
+            professeur = self.professeur_repo.obtenir(professeur_id)
+            if not professeur:
+                return None
+            eleve_ids = set()
+            eleves = []
+            for classe in professeur.classes:
+                for eleve in classe.eleves:
+                    if eleve.id not in eleve_ids:
+                        eleve_ids.add(eleve.id)
+                        eleves.append(eleve.to_dict())
+            return eleves
+
     def obtenir_classe_par_code(self, code_classe):
         """
         obtenir_classe_par_code permet de récupérer
@@ -145,6 +177,20 @@ class ClasseVoeuFacade:
                     f"La collecte des vœux est ouverte pour la classe {classe.nom}"
                 )
         return classe.to_dict()
+
+    def retirer_eleve_classes_professeur(self, professeur_id, eleve_id):
+            """Retire un élève de toutes les classes d'un professeur."""
+            classes = self.classe_repo.obtenir_classes_par_professeur(professeur_id)
+            if not classes:
+                return None
+            eleve = self.eleve_repo.obtenir(eleve_id)
+            if not eleve:
+                return None
+            for classe in classes:
+                if eleve in classe.eleves:
+                    classe.eleves.remove(eleve)
+            self.classe_repo.mis_a_jour(classe.id, {})
+            return True
 
     def supprimer_classe(self, classe_id):
         """Supprimer un classe existant et toutes les données associées (cascade)."""

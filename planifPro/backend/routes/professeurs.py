@@ -16,10 +16,7 @@ api = Namespace('professeurs', description='Opération de Professeur')
 professeur_model = api.model('Professeur', {
     'prenom': fields.String(required=True, description='Prénom professeur'),
     'nom': fields.String(required=True, description='Nom professeur'),
-    'email': fields.String(description='Email professeur'),
-    'mot_de_passe': fields.String(description='Mot de passe professeur'),
-    'role': fields.String(description='Role professeur'),
-    'token_fcm': fields.String(description='Token FCM professeur')
+    'email': fields.String(description='Email professeur')
 })
 
 rejoindre_model = api.model('Rejoindre', {
@@ -128,7 +125,7 @@ class ProfesseurResource(Resource):
             professeur = facade.obtenir_professeur(professeur_id)
             if not professeur:
                 return {'error': 'Professeur introuvable'}, 404
-            facade.retirer_eleve_professeur(professeur_id, eleve_id)
+            facade.retirer_eleve_classes_professeur(professeur_id, eleve_id)
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
         return {'message': 'Élève retiré du professeur avec succès'}, 200
