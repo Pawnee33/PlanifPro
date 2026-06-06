@@ -112,7 +112,7 @@ class ProfesseurResource(Resource):
             return {'error': 'Erreur interne du serveur'}, 500
         return professeur, 200
 
-    @api.response(200, 'Désinscrit avec succès')
+    @api.response(200, 'Élève retiré du professeur avec succès')
     @api.response(403, 'Rôle incorrect')
     @api.response(404, 'Professeur introuvable')
     @api.response(500, 'Erreur interne du serveur')
@@ -131,4 +131,4 @@ class ProfesseurResource(Resource):
             facade.retirer_eleve_professeur(professeur_id, eleve_id)
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
-        return {'message': 'Désinscrit avec succès'}, 200
+        return {'message': 'Élève retiré du professeur avec succès'}, 200
