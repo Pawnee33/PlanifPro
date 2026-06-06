@@ -90,6 +90,44 @@ class ClassesList(Resource):
         return nouvelle_classe, 201
 
 
+@api.route('/rejoindre')
+class Rejoindre(Resource):
+    """
+    Resource pour rejoindre une classe via un code unique.
+    """
+    @api.expect(rejoindre_model)
+    @api.response(201, 'Élève rattaché à la classe')
+    @api.response(400, 'Code invalide')
+    @api.response(403, 'Accès réservé aux élèves')
+    @api.response(404, 'Classe introuvable')
+    @api.response(409, 'Déjà inscrit dans cette classe')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def post(self):
+        """Rejoindre une classe via un code unique"""
+        claims = get_jwt()
+        if claims.get('role') != 'eleve':
+            return {'error': 'Accès réservé aux élèves'}, 403
+
+        eleve_id = get_jwt_identity()
+        code_unique = api.payload['code_unique']
+
+        classe = facade.obtenir_classe_par_code(code_unique)
+        if not classe:
+            return {'error': 'Classe introuvable'}, 404
+
+        # Vérifier si l'élève est déjà dans la classe
+        eleves_classe = facade.obtenir_eleves_par_classe(classe['id'])
+        if eleves_classe and any(eleve['id'] == eleve_id for eleve in eleves_classe):
+            return {'error': 'Déjà inscrit dans cette classe'}, 409
+
+        try:
+            facade.ajouter_eleve_classe(classe['id'], eleve_id)
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return classe, 201
+
+
 @api.route('/<classe_id>')
 class ClasseResource(Resource):
     """
@@ -223,44 +261,6 @@ class ClasseEleves(Resource):
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
         return {'message': 'Élève ajouté avec succès'}, 201
-
-
-@api.route('/rejoindre')
-class Rejoindre(Resource):
-    """
-    Resource pour rejoindre une classe via un code unique.
-    """
-    @api.expect(rejoindre_model)
-    @api.response(201, 'Élève rattaché à la classe')
-    @api.response(400, 'Code invalide')
-    @api.response(403, 'Accès réservé aux élèves')
-    @api.response(404, 'Classe introuvable')
-    @api.response(409, 'Déjà inscrit dans cette classe')
-    @api.response(500, 'Erreur interne du serveur')
-    @jwt_required()
-    def post(self):
-        """Rejoindre une classe via un code unique"""
-        claims = get_jwt()
-        if claims.get('role') != 'eleve':
-            return {'error': 'Accès réservé aux élèves'}, 403
-
-        eleve_id = get_jwt_identity()
-        code_unique = api.payload['code_unique']
-
-        classe = facade.obtenir_classe_par_code(code_unique)
-        if not classe:
-            return {'error': 'Classe introuvable'}, 404
-
-        # Vérifier si l'élève est déjà dans la classe
-        eleves_classe = facade.obtenir_eleves_par_classe(classe['id'])
-        if eleves_classe and any(eleve['id'] == eleve_id for eleve in eleves_classe):
-            return {'error': 'Déjà inscrit dans cette classe'}, 409
-
-        try:
-            facade.ajouter_eleve_classe(classe['id'], eleve_id)
-        except Exception as e:
-            return {'error': 'Erreur interne du serveur'}, 500
-        return classe, 201
 
 
 @api.route('/<classe_id>/collecte')
