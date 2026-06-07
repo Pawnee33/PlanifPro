@@ -272,6 +272,18 @@ class PlanningCreneauFacade:
             return None
         return [creneau.to_dict() for creneau in creneaux]
 
+    def obtenir_creneaux_par_professeur(self, professeur_id):
+        """Retourne tous les créneaux validés des classes d'un professeur."""
+        classes = self.classe_repo.obtenir_classes_par_professeur(professeur_id)
+        if not classes:
+            return None
+        creneaux = []
+        for classe in classes:
+            creneaux_classe = self.creneau_repo.obtenir_creneaux_par_classe(classe.id)
+            if creneaux_classe:
+                creneaux.extend([creneau.to_dict() for creneau in creneaux_classe])
+        return creneaux if creneaux else None
+
     def obtenir_creneaux_par_planning(self, planning_id):
         """
         Récupère tous les créneaux d'un planning.
