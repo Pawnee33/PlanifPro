@@ -1,5 +1,5 @@
 ## Description
-Décris les changements effectués
+Décris les changements effectués :
 
 ## Issue liée
 Closes #
@@ -7,6 +7,7 @@ Closes #
 ## Type de changement
 - [ ] feat
 - [ ] fix
+- [ ] refactoring
 - [ ] chore
 - [ ] test
 - [ ] docs
