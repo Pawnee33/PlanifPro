@@ -277,6 +277,18 @@ class ClasseVoeuFacade:
             return None
         return [eleve.to_dict() for eleve in classe.eleves]
 
+    def obtenir_voeux_par_professeur(self, professeur_id):
+        """Retourne tous les vœux des classes d'un professeur."""
+        classes = self.classe_repo.obtenir_classes_par_professeur(professeur_id)
+        if not classes:
+            return None
+        voeux = []
+        for classe in classes:
+            voeux_classe = self.voeu_repo.obtenir_voeux_par_classe(classe.id)
+            if voeux_classe:
+                voeux.extend([voeu.to_dict() for voeu in voeux_classe])
+        return voeux if voeux else None
+
     def supprimer_voeu(self, voeu_id):
         """Supprimer un voeu existant et toutes les données associées (cascade)."""
         self.voeu_repo.supprime(voeu_id)
