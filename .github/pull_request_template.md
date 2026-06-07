@@ -5,17 +5,17 @@ Décris les changements effectués :
 Closes #
 
 ## Type de changement
-- [] feat
-- [] fix
-- [] refactoring
-- [] chore
-- [] test
-- [] docs
-- [] scm
-- [] setup
+- [ ] feat
+- [ ] fix
+- [ ] refactoring
+- [ ] chore
+- [ ] test
+- [ ] docs
+- [ ] scm
+- [ ] setup
 
 ## Checklist
-- [] Mon code respecte les conventions du projet
-- [] J'ai commenté mon code
-- [] J'ai mis à jour le requirements.txt si nécessaire
-- [] Les tests passent
+- [ ] Mon code respecte les conventions du projet
+- [ ] J'ai commenté mon code
+- [ ] J'ai mis à jour le requirements.txt si nécessaire
+- [ ] Les tests passent
