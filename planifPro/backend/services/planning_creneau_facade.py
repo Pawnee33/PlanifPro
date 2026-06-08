@@ -206,6 +206,12 @@ class PlanningCreneauFacade:
             dict : Dictionnaire contenant les informations
             du créneau créé.
         """
+        creneaux_existants = self.creneau_repo.obtenir_creneaux_par_eleve(donnees['eleve_id'])
+        for creneau in creneaux_existants:
+            if creneau.jour == donnees['jour']:
+                if donnees['heure_debut'] < creneau.heure_fin and donnees['heure_fin'] > creneau.heure_debut:
+                    raise ValueError("chevauchement avec un créneau existant")
+
         creneau = Creneau(
             planning_id=donnees['planning_id'],
             eleve_id=donnees['eleve_id'],
@@ -272,6 +278,18 @@ class PlanningCreneauFacade:
             return None
         return [creneau.to_dict() for creneau in creneaux]
 
+    def obtenir_creneaux_par_professeur(self, professeur_id):
+        """Retourne tous les créneaux validés des classes d'un professeur."""
+        classes = self.classe_repo.obtenir_classes_par_professeur(professeur_id)
+        if not classes:
+            return None
+        creneaux = []
+        for classe in classes:
+            creneaux_classe = self.creneau_repo.obtenir_creneaux_par_classe(classe.id)
+            if creneaux_classe:
+                creneaux.extend([creneau.to_dict() for creneau in creneaux_classe])
+        return creneaux if creneaux else None
+
     def obtenir_creneaux_par_planning(self, planning_id):
         """
         Récupère tous les créneaux d'un planning.
@@ -286,6 +304,41 @@ class PlanningCreneauFacade:
         if not creneaux:
             return None
         return [creneau.to_dict() for creneau in creneaux]
+
+    def echanger_creneaux(self, creneau_id_1, creneau_id_2):
+        """Échange deux créneaux entre deux élèves."""
+        creneau_1 = self.creneau_repo.obtenir(creneau_id_1)
+        creneau_2 = self.creneau_repo.obtenir(creneau_id_2)
+        
+        if not creneau_1 or not creneau_2:
+            return None
+        
+        if creneau_1.eleve_id == creneau_2.eleve_id:
+            raise ValueError("Les deux créneaux appartiennent au même élève")
+
+        # Vérifier chevauchement pour creneau_1 avec le nouvel eleve
+        creneaux_eleve_2 = self.creneau_repo.obtenir_creneaux_par_eleve(creneau_2.eleve_id)
+        for creneau in creneaux_eleve_2:
+            if creneau.id != creneau_id_2 and creneau.jour == creneau_1.jour:
+                if creneau_1.heure_debut < creneau.heure_fin and creneau_1.heure_fin > creneau.heure_debut:
+                    raise ValueError("chevauchement après échange")
+
+        # Vérifier chevauchement pour creneau_2 avec le nouvel eleve
+        creneaux_eleve_1 = self.creneau_repo.obtenir_creneaux_par_eleve(creneau_1.eleve_id)
+        for creneau in creneaux_eleve_1:
+            if creneau.id != creneau_id_1 and creneau.jour == creneau_2.jour:
+                if creneau_2.heure_debut < creneau.heure_fin and creneau_2.heure_fin > creneau.heure_debut:
+                    raise ValueError("chevauchement après échange")
+        
+        # Échanger les eleve_id
+        eleve_id_1 = creneau_1.eleve_id
+        self.creneau_repo.mis_a_jour(creneau_id_1, {'eleve_id': creneau_2.eleve_id})
+        self.creneau_repo.mis_a_jour(creneau_id_2, {'eleve_id': eleve_id_1})
+        
+        return {
+            'creneau_1': self.creneau_repo.obtenir(creneau_id_1).to_dict(),
+            'creneau_2': self.creneau_repo.obtenir(creneau_id_2).to_dict()
+        }
 
     def supprimer_creneau(self, creneau_id):
         """Supprimer un creneau existant et toutes les données associées (cascade)."""
