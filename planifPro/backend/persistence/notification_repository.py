@@ -10,7 +10,7 @@ notifications par utilisateur et des notifications non lues.
 
 from planifPro.backend.classes.notification import Notification
 from planifPro import db
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 
 
 class NotificationRepository(SQLAlchemyRepository):

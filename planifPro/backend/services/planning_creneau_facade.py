@@ -4,7 +4,7 @@ Facade de gestion des classes et des vœux de PlanifPro.
 Ce module définit la classe PlanningCreneauFacade qui gère la logique
 métier liée aux plannings et aux créneaux des élèves.
 """
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 from planifPro.backend.persistence.planning_repository import PlanningRepository
 from planifPro.backend.persistence.creneau_repository import CreneauRepository
 from planifPro.backend.persistence.classe_repository import ClasseRepository

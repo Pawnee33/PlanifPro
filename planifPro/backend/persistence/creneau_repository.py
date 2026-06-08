@@ -10,7 +10,7 @@ créneaux par classe, par élève et par planning.
 
 from planifPro.backend.classes.creneau import Creneau
 from planifPro import db
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 
 
 class CreneauRepository(SQLAlchemyRepository):

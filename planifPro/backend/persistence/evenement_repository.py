@@ -10,7 +10,7 @@ gestion des événements, telles que la récupération des
 
 from planifPro.backend.classes.evenement import Evenement
 from planifPro import db
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 
 
 class EvenementRepository(SQLAlchemyRepository):

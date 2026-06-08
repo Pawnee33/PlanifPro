@@ -8,7 +8,7 @@ et conseils des cours attribué à un élève.
 
 
 from planifPro import db
-from planifPro.backend.creneaus.entitebase import EntiteBase
+from planifPro.backend.classes.entitebase import EntiteBase
 from datetime import date, time, datetime, timezone
 from sqlalchemy.orm import validates
 

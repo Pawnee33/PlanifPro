@@ -9,7 +9,7 @@ gestion des créneaux personnels.
 
 from planifPro.backend.classes.creneau_perso import CreneauPerso
 from planifPro import db
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 
 
 class CreneauPersoRepository(SQLAlchemyRepository):

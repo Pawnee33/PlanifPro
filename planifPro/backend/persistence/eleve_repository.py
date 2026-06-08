@@ -8,7 +8,7 @@ SQLAlchemyRepository avec les opérations CRUD de base pour les Eleves.
 
 from planifPro.backend.classes.eleve import Eleve
 from planifPro import db
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 
 
 class EleveRepository(SQLAlchemyRepository):

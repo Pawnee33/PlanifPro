@@ -10,7 +10,7 @@ par classe et par élève.
 
 from planifPro.backend.classes.voeu import Voeu
 from planifPro import db
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 
 
 class VoeuRepository(SQLAlchemyRepository):

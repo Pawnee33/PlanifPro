@@ -5,7 +5,7 @@ Ce module définit la classe ObjectifEvenementNotificationFacade qui gère
 la logique métier liée aux objectifs pédagogiques, aux événements
 et aux notifications.
 """
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 from planifPro.backend.persistence.objectif_repository import ObjectifRepository
 from planifPro.backend.persistence.evenement_repository import EvenementRepository
 from planifPro.backend.persistence.notification_repository import NotificationRepository
