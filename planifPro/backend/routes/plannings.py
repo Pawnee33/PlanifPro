@@ -31,7 +31,7 @@ class PlanningsGlobal(Resource):
     """
     Resource pour la gestion des Plannings.
 
-    Fournit l'endpoint pour lister les pplannings.
+    Fournit l'endpoint pour lister les plannings.
     """
     @api.response(200, 'Planning affichée')
     @api.response(404, 'Aucun créneau trouvé')
