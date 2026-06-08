@@ -13,7 +13,7 @@ from planifPro.backend.classes.planning import Planning
 from planifPro.backend.classes.creneau import Creneau
 from planifPro.backend.classes.creneau_perso import CreneauPerso
 from planifPro.backend.services.fcm_service import envoyer_notification
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 
 class PlanningCreneauFacade:
@@ -29,6 +29,14 @@ class PlanningCreneauFacade:
         self.creneau_repo = CreneauRepository()
         self.classe_repo = ClasseRepository()
         self.creneau_perso_repo = CreneauPersoRepository()
+
+    def _parser_date(self, valeur):
+        """Convertit une chaîne 'AAAA-MM-JJ' en objet date. Tolère None et date déjà parsée."""
+        if valeur is None:
+            return None
+        if isinstance(valeur, str):
+            return datetime.strptime(valeur, '%Y-%m-%d').date()
+        return valeur
 
     # Planning
     def creer_planning(self, donnees):
@@ -224,6 +232,8 @@ class PlanningCreneauFacade:
             heure_debut=donnees['heure_debut'],
             heure_fin=donnees['heure_fin'],
             duree_minutes=donnees['duree_minutes'],
+            date_debut=self._parser_date(donnees.get('date_debut')),
+            date_fin=self._parser_date(donnees.get('date_fin')),
             statut='en_attente'
         )
         self.creneau_repo.ajouter(creneau)
@@ -343,9 +353,103 @@ class PlanningCreneauFacade:
             'creneau_2': self.creneau_repo.obtenir(creneau_id_2).to_dict()
         }
 
-    def supprimer_creneau(self, creneau_id):
-        """Supprimer un creneau existant et toutes les données associées (cascade)."""
-        self.creneau_repo.supprime(creneau_id)
+    def _decouper_periode(self, creneau, debut_jour, fin_jour):
+        """
+        Retire l'intervalle de dates [debut_jour, fin_jour] de la période
+        d'un créneau récurrent. Découpe en 0, 1 ou 2 lignes.
+
+        Arguments :
+            creneau : objet Creneau à découper.
+            debut_jour (date) : première date à retirer.
+            fin_jour (date) : dernière date à retirer.
+        """
+        # On récupère les bornes actuelles du créneau en base
+        date_debut = creneau.date_debut
+        date_fin = creneau.date_fin
+
+        # CAS 1 : le jour cible couvre toute la période du créneau
+        # On supprime la ligne entière
+        if debut_jour <= date_debut and fin_jour >= date_fin:
+            self.creneau_repo.supprime(creneau.id)
+        # CAS 2 : le jour cible est au début de la période
+        # On avance date_debut au lendemain du dernier jour supprimé
+        elif debut_jour <= date_debut:
+            self.creneau_repo.mis_a_jour(
+                creneau.id, {'date_debut': fin_jour + timedelta(days=1)})
+        # CAS 3 : le jour cible est à la fin de la période
+        # On recule date_fin à la veille du premier jour supprimé
+        elif fin_jour >= date_fin:
+            self.creneau_repo.mis_a_jour(
+                creneau.id, {'date_fin': debut_jour - timedelta(days=1)})
+        # CAS 4 : le jour cible est au milieu de la période
+        # On coupe en deux : une ligne avant (mois), une ligne après (mois)
+        else:
+            # La ligne existante devient la partie AVANT le jour supprimé
+            self.creneau_repo.mis_a_jour(
+                creneau.id, {'date_fin': debut_jour - timedelta(days=1)})
+            # On crée une nouvelle ligne pour la partie APRÈS le jour supprimé
+            partie_apres = Creneau(
+                planning_id=creneau.planning_id, eleve_id=creneau.eleve_id,
+                classe_id=creneau.classe_id, type=creneau.type, jour=creneau.jour,
+                heure_debut=creneau.heure_debut, heure_fin=creneau.heure_fin,
+                duree_minutes=creneau.duree_minutes, statut=creneau.statut,
+                date_debut=fin_jour + timedelta(days=1), date_fin=date_fin)
+            self.creneau_repo.ajouter(partie_apres)
+
+
+    def supprimer_creneau(self, creneau_id, scope='toute_la_periode',
+                          debut_jour=None, fin_jour=None):
+        """Supprime un créneau selon la portée (toute_la_periode / ce_jour / plusieurs_jours)."""
+        creneau = self.creneau_repo.obtenir(creneau_id)
+        if not creneau:
+            return None
+        # Si scope = toute_la_periode → suppression simple sans découpage
+        if scope == 'toute_la_periode':
+            self.creneau_repo.supprime(creneau_id)
+            return
+        # Sinon (ce_jour ou plusieurs_jours) → on découpe la période
+        self._decouper_periode(
+            creneau, self._parser_date(debut_jour), self._parser_date(fin_jour))
+
+
+    def mettre_a_jour_creneau(self, creneau_id, donnees_creneau,
+                              scope='toute_la_periode',
+                              debut_jour=None, fin_jour=None):
+        """Met à jour un créneau selon la portée ; pour ce_jour/plusieurs_jours,
+        découpe la récurrence et crée une ligne d'exception."""
+        creneau = self.creneau_repo.obtenir(creneau_id)
+        if not creneau:
+            return None
+
+        # Si scope = toute_la_periode → modification simple de tous les lundis
+        if scope == 'toute_la_periode':
+            self.creneau_repo.mis_a_jour(creneau_id, donnees_creneau)
+            return self.creneau_repo.obtenir(creneau_id).to_dict()
+
+        debut = self._parser_date(debut_jour)
+        fin = self._parser_date(fin_jour)
+
+        # On crée la ligne d'exception avec les nouvelles valeurs
+        # .get('champ', creneau.champ) = si le prof ne change pas ce champ,
+        # on garde la valeur d'origine du créneau
+        exception = Creneau(
+            planning_id=donnees_creneau.get('planning_id', creneau.planning_id),
+            eleve_id=donnees_creneau.get('eleve_id', creneau.eleve_id),
+            classe_id=donnees_creneau.get('classe_id', creneau.classe_id),
+            type=donnees_creneau.get('type', creneau.type),
+            jour=donnees_creneau.get('jour', creneau.jour),
+            heure_debut=donnees_creneau.get('heure_debut', creneau.heure_debut),
+            heure_fin=donnees_creneau.get('heure_fin', creneau.heure_fin),
+            duree_minutes=donnees_creneau.get('duree_minutes', creneau.duree_minutes),
+            statut=donnees_creneau.get('statut', creneau.statut),
+            # La ligne d'exception couvre exactement le jour ciblé
+            date_debut=debut, date_fin=fin)
+
+        # On découpe l'original pour libérer le jour ciblé
+        self._decouper_periode(creneau, debut, fin)
+        # On insère la ligne d'exception avec les nouvelles valeurs
+        self.creneau_repo.ajouter(exception)
+        return exception.to_dict()
 
     # Créneaux personnels
     def creer_creneau_perso(self, donnees):
