@@ -4,7 +4,7 @@ Facade de gestion des classes et des vœux de PlanifPro.
 Ce module définit la classe ClasseVoeuFacade qui gère la logique
 métier liée aux classes et aux vœux des élèves.
 """
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 from planifPro.backend.persistence.classe_repository import ClasseRepository
 from planifPro.backend.persistence.voeu_repository import VoeuRepository
 from planifPro.backend.persistence.eleve_repository import EleveRepository

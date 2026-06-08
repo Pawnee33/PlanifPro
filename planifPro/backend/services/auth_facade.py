@@ -4,7 +4,7 @@ Facade d'authentification de PlanifPro.
 Ce module définit la classe AuthFacade qui gère la logique
 métier liée aux utilisateurs, professeurs et élèves.
 """
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 from planifPro.backend.persistence.utilisateur_repository import UtilisateurRepository
 from planifPro.backend.persistence.professeur_repository import ProfesseurRepository
 from planifPro.backend.persistence.eleve_repository import EleveRepository

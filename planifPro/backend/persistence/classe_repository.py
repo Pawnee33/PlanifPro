@@ -10,7 +10,7 @@ et la récupération des classes d'un professeur.
 
 from planifPro.backend.classes.classe import Classe
 from planifPro import db
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 
 
 class ClasseRepository(SQLAlchemyRepository):

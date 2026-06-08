@@ -10,7 +10,7 @@ propositions par classe et du planning validé.
 
 from planifPro.backend.classes.planning import Planning
 from planifPro import db
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 
 
 class PlanningRepository(SQLAlchemyRepository):

@@ -8,7 +8,7 @@ SQLAlchemyRepository avec des méthodes spécifiques aux utilisateurs.
 
 from planifPro.backend.classes.utilisateur import Utilisateur
 from planifPro import db
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 
 
 class UtilisateurRepository(SQLAlchemyRepository):

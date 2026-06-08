@@ -8,7 +8,7 @@ SQLAlchemyRepository avec les opérations CRUD de base pour les professeurs.
 
 from planifPro.backend.classes.professeur import Professeur
 from planifPro import db
-from planifPro.backend.persistence import SQLAlchemyRepository
+from planifPro.backend.persistence.repository import SQLAlchemyRepository
 
 
 class ProfesseurRepository(SQLAlchemyRepository):
