@@ -8,8 +8,10 @@ from planifPro.backend.persistence import SQLAlchemyRepository
 from planifPro.backend.persistence.planning_repository import PlanningRepository
 from planifPro.backend.persistence.creneau_repository import CreneauRepository
 from planifPro.backend.persistence.classe_repository import ClasseRepository
+from planifPro.backend.persistence.creneau_perso_repository import CreneauPersoRepository
 from planifPro.backend.classes.planning import Planning
 from planifPro.backend.classes.creneau import Creneau
+from planifPro.backend.classes.creneau_perso import CreneauPerso
 from planifPro.backend.services.fcm_service import envoyer_notification
 from datetime import datetime, timezone
 
@@ -26,6 +28,7 @@ class PlanningCreneauFacade:
         self.planning_repo = PlanningRepository()
         self.creneau_repo = CreneauRepository()
         self.classe_repo = ClasseRepository()
+        self.creneau_perso_repo = CreneauPersoRepository()
 
     # Planning
     def creer_planning(self, donnees):
@@ -343,3 +346,43 @@ class PlanningCreneauFacade:
     def supprimer_creneau(self, creneau_id):
         """Supprimer un creneau existant et toutes les données associées (cascade)."""
         self.creneau_repo.supprime(creneau_id)
+
+    # Créneaux personnels
+    def creer_creneau_perso(self, donnees):
+        """Crée un nouveau créneau personnel."""
+        creneau_perso = CreneauPerso(
+            utilisateur_id=donnees['utilisateur_id'],
+            titre=donnees['titre'],
+            description=donnees.get('description'),
+            jour=donnees['jour'],
+            heure_debut=donnees['heure_debut'],
+            heure_fin=donnees['heure_fin']
+        )
+        self.creneau_perso_repo.ajouter(creneau_perso)
+        return creneau_perso.to_dict()
+
+    def obtenir_creneau_perso(self, creneau_perso_id):
+        """Récupère un créneau personnel par son ID."""
+        creneau_perso = self.creneau_perso_repo.obtenir(creneau_perso_id)
+        if not creneau_perso:
+            return None
+        return creneau_perso.to_dict()
+
+    def obtenir_creneaux_perso_par_utilisateur(self, utilisateur_id):
+        """Récupère tous les créneaux personnels d'un utilisateur."""
+        creneaux = self.creneau_perso_repo.obtenir_creneaux_perso_par_utilisateur(utilisateur_id)
+        if not creneaux:
+            return None
+        return [creneau.to_dict() for creneau in creneaux]
+
+    def mettre_a_jour_creneau_perso(self, creneau_perso_id, donnees):
+        """Met à jour un créneau personnel existant."""
+        creneau_perso = self.creneau_perso_repo.obtenir(creneau_perso_id)
+        if not creneau_perso:
+            return None
+        self.creneau_perso_repo.mis_a_jour(creneau_perso_id, donnees)
+        return self.creneau_perso_repo.obtenir(creneau_perso_id).to_dict()
+
+    def supprimer_creneau_perso(self, creneau_perso_id):
+        """Supprime un créneau personnel."""
+        self.creneau_perso_repo.supprime(creneau_perso_id)

@@ -51,6 +51,7 @@ def create_app(config_class="config.DevelopmentConfig"):
     from planifPro.backend.classes.classe import Classe
     from planifPro.backend.classes.voeu import Voeu
     from planifPro.backend.classes.creneau import Creneau
+    from planifPro.backend.classes.creneau_perso import CreneauPerso
     from planifPro.backend.classes.planning import Planning
     from planifPro.backend.classes.objectif import Objectif
     from planifPro.backend.classes.evenement import Evenement
@@ -60,6 +61,7 @@ def create_app(config_class="config.DevelopmentConfig"):
     from planifPro.backend.routes.calendrier import api as calendrier_ns
     from planifPro.backend.routes.classes import api as classes_ns
     from planifPro.backend.routes.creneaux import api as creneaux_ns
+    from planifPro.backend.routes.creneaux_perso import api as creneaux_perso_ns
     from planifPro.backend.routes.eleves import api as eleves_ns
     from planifPro.backend.routes.evenements import api as evenements_ns
     from planifPro.backend.routes.notifications import api as notifications_ns
@@ -82,6 +84,7 @@ def create_app(config_class="config.DevelopmentConfig"):
     api.add_namespace(calendrier_ns, path='/api/v1/calendrier')
     api.add_namespace(classes_ns, path='/api/v1/classes')
     api.add_namespace(creneaux_ns, path='/api/v1/creneaux')
+    api.add_namespace(creneaux_perso_ns, path='/api/v1/creneaux/perso')
     api.add_namespace(eleves_ns, path="/api/v1/eleves")
     api.add_namespace(evenements_ns, path='/api/v1/evenements')
     api.add_namespace(notifications_ns, path='/api/v1/notifications')
