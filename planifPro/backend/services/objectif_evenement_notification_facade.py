@@ -9,6 +9,7 @@ from planifPro.backend.persistence.repository import SQLAlchemyRepository
 from planifPro.backend.persistence.objectif_repository import ObjectifRepository
 from planifPro.backend.persistence.evenement_repository import EvenementRepository
 from planifPro.backend.persistence.notification_repository import NotificationRepository
+from planifPro.backend.persistence.creneau_repository import CreneauRepository
 from planifPro.backend.persistence.classe_repository import ClasseRepository
 from planifPro.backend.persistence.eleve_repository import EleveRepository
 from planifPro.backend.classes.objectif import Objectif
@@ -16,6 +17,7 @@ from planifPro.backend.classes.evenement import Evenement
 from planifPro.backend.classes.notification import Notification
 from planifPro.backend.classes.eleve import Eleve
 from planifPro.backend.classes.classe import Classe
+from planifPro.backend.classes.creneau import Creneau
 from planifPro.backend.services.fcm_service import envoyer_notification
 
 
@@ -31,6 +33,7 @@ class ObjectifEvenementNotificationFacade:
         self.objectif_repo = ObjectifRepository()
         self.evenement_repo = EvenementRepository()
         self.notification_repo = NotificationRepository()
+        self.creneau_repo = CreneauRepository()
         self.classe_repo = ClasseRepository()
         self.eleve_repo = EleveRepository()
 
@@ -80,6 +83,20 @@ class ObjectifEvenementNotificationFacade:
             return None
         self.objectif_repo.mis_a_jour(objectif_id, donnees_objectif)
         return self.objectif_repo.obtenir(objectif_id).to_dict()
+
+    def obtenir_objectifs_par_professeur(self, professeur_id):
+        """Retourne tous les objectifs des créneaux d'un professeur."""
+        classes = self.classe_repo.obtenir_classes_par_professeur(professeur_id)
+        if not classes:
+            return None
+        objectifs = []
+        for classe in classes:
+            creneaux = self.creneau_repo.obtenir_creneaux_par_classe(classe.id)
+            for creneau in creneaux:
+                objectifs_creneau = self.objectif_repo.obtenir_objectifs_par_creneau(creneau.id)
+                if objectifs_creneau:
+                    objectifs.extend([objectif.to_dict() for objectif in objectifs_creneau])
+        return objectifs if objectifs else None
 
     def obtenir_objectifs_par_eleve(self, eleve_id):
         """
