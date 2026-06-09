@@ -5,6 +5,7 @@ Ce module définit les routes REST liées aux créneaux,
 permettant aux professeurs d'échanger, déplacer et confirmer des
 créneaux d'élèves de consulter les créneaux global.
 """
+from flask import request
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from planifPro.backend.services.facade import PlanifProFacade
@@ -22,6 +23,8 @@ creneau_model = api.model('Creneau', {
     'heure_debut': fields.String(required=True, description='Heure de début du créneau'),
     'heure_fin': fields.String(required=True, description='Heure de fin du créneau'),
     'duree_minutes': fields.Integer(required=True, description='Durée du créneau'),
+    'date_debut': fields.String(required=False, description='Début de période (AAAA-MM-JJ)'),
+    'date_fin': fields.String(required=False, description='Fin de période (AAAA-MM-JJ)')
 })
 
 echanger_model = api.model('EchangerCreneaux', {
@@ -67,10 +70,9 @@ class CreneauList(Resource):
 
     @api.expect(creneau_model)
     @api.response(201, 'Créneau créé')
-    @api.response(400, 'Donnés invalides')
+    @api.response(400, 'Données invalides')
     @api.response(403, 'Accès réservé aux professeurs')
-    @api.response(404, 'Planning introuvable')
-    @api.response(404, 'Élève introuvable')
+    @api.response(404, 'Planning ou élève introuvable')
     @api.response(409, 'Chevauchement avec un créneau existant')
     @api.response(500, 'Erreur interne du serveur')
     @jwt_required()
@@ -104,7 +106,7 @@ class CreneauList(Resource):
 @api.route('/echanger')
 class CreneauxEchanger(Resource):
     """
-    Resource pour échangrer deux créneaux entre élèves.
+    Resource pour échanger deux créneaux entre élèves.
     """
     @api.expect(echanger_model)
     @api.response(200, 'Créneaux échangés')
@@ -114,8 +116,8 @@ class CreneauxEchanger(Resource):
     @api.response(409, 'Chevauchement après échange')
     @api.response(500, 'Erreur interne du serveur')
     @jwt_required()
-    def post(self):
-        """Échangrer deux créneaux entre élèves"""
+    def put(self):
+        """Échanger deux créneaux entre élèves"""
         claims = get_jwt()
         if claims.get('role') != 'professeur':
             return {'error': 'Accès réservé aux professeurs'}, 403
@@ -126,10 +128,10 @@ class CreneauxEchanger(Resource):
 
         creneau_1 = facade.obtenir_creneau(creneau_id_1)
         if not creneau_1:
-                return {'error': 'Un des deux créneaux introuvable'}, 404
+            return {'error': 'Un des deux créneaux introuvable'}, 404
         creneau_2 = facade.obtenir_creneau(creneau_id_2)
         if not creneau_2:
-                return {'error': 'Un des deux créneaux introuvable'}, 404
+            return {'error': 'Un des deux créneaux introuvable'}, 404
 
         try:
             echanger = facade.echanger_creneaux(creneau_id_1, creneau_id_2)
@@ -163,7 +165,9 @@ class CreneauResource(Resource):
 
     @api.expect(creneau_model)
     @api.response(200, 'Créneau modifié')
-    @api.response(400, 'Données invalide')
+    @api.response(400, 'Données invalides')
+    @api.response(400, 'Scope invalide')
+    @api.response(400, 'Dates cibles requises pour ce scope')
     @api.response(403, 'Accès réservé aux professeurs')
     @api.response(404, 'Créneau introuvable')
     @api.response(409, 'Chevauchement avec un créneau existant')
@@ -181,8 +185,26 @@ class CreneauResource(Resource):
         if not creneau:
             return {'error': 'Créneau introuvable'}, 404
 
+        # Extraire le scope et les dates du payload avant d'envoyer à la façade
+        scope = donnees_creneau.pop('scope', 'toute_la_periode')
+        debut_jour = donnees_creneau.pop('debut_jour', None)
+        fin_jour = donnees_creneau.pop('fin_jour', None)
+
+        # Si scope = ce_jour, fin_jour = debut_jour
+        if scope == 'ce_jour' and debut_jour and not fin_jour:
+            fin_jour = debut_jour
+
+        # Valider le scope
+        if scope not in ('toute_la_periode', 'ce_jour', 'plusieurs_jours'):
+            return {'error': 'Scope invalide'}, 400
+
+        # Vérifier que les dates sont fournies si scope != toute_la_periode
+        if scope != 'toute_la_periode' and (not debut_jour or not fin_jour):
+            return {'error': 'Dates cibles requises pour ce scope'}, 400
+
         try:
-            modifie_creneau = facade.mettre_a_jour_creneau(creneau_id, donnees_creneau)
+            modifie_creneau = facade.mettre_a_jour_creneau(
+                creneau_id, donnees_creneau, scope, debut_jour, fin_jour)
         except ValueError as e:
             if 'chevauchement' in str(e).lower():
                 return {'error': str(e)}, 409
@@ -191,26 +213,42 @@ class CreneauResource(Resource):
             return {'error': 'Erreur interne du serveur'}, 500
         return modifie_creneau, 200
 
-    @api.response(200, 'Créneau supprimée avec succès')
+    @api.response(200, 'Créneau supprimé avec succès')
+    @api.response(400, 'Scope invalide')
+    @api.response(400, 'Dates cibles requises pour ce scope')
     @api.response(403, 'Accès réservé aux professeurs')
     @api.response(404, 'Créneau introuvable')
     @api.response(500, 'Erreur interne du serveur')
     @jwt_required()
     def delete(self, creneau_id):
-        """Supprimer une classe"""
+        """Supprimer un créneau"""
         claims = get_jwt()
 
         if claims.get('role') != 'professeur':
             return {'error': 'Accès réservé aux professeurs'}, 403
 
+        # Scope et dates en query params ex: ?scope=ce_jour&debut_jour=2026-10-05
+        scope = request.args.get('scope', 'toute_la_periode')
+        debut_jour = request.args.get('debut_jour')
+        fin_jour = request.args.get('fin_jour')
+
+        if scope == 'ce_jour' and debut_jour and not fin_jour:
+            fin_jour = debut_jour
+
+        if scope not in ('toute_la_periode', 'ce_jour', 'plusieurs_jours'):
+            return {'error': 'Scope invalide'}, 400
+
+        if scope != 'toute_la_periode' and (not debut_jour or not fin_jour):
+            return {'error': 'Dates cibles requises pour ce scope'}, 400
+
         try:
             creneau = facade.obtenir_creneau(creneau_id)
             if not creneau:
                 return {'error': 'Créneau introuvable'}, 404
-            facade.supprimer_creneau(creneau_id)
+            facade.supprimer_creneau(creneau_id, scope, debut_jour, fin_jour)
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
-        return {'message': 'Créneau supprimée avec succès'}, 200
+        return {'message': 'Créneau supprimé avec succès'}, 200
 
 
 @api.route('/<creneau_id>/confirmer')
@@ -219,12 +257,17 @@ class CreneauConfirmation(Resource):
     Resource pour la confirmation d'un créneau.
     """
     @api.response(200, 'Créneau confirmé')
+    @api.response(403, 'Accès réservé aux élèves')
     @api.response(404, 'Créneau introuvable')
     @api.response(409, 'Créneau déjà confirmé')
     @api.response(500, 'Erreur interne du serveur')
     @jwt_required()
     def put(self, creneau_id):
         """confirmation d'un créneau"""
+        claims = get_jwt()
+        if claims.get('role') != 'eleve':
+            return {'error': 'Accès réservé aux élèves'}, 403
+
         creneau = facade.obtenir_creneau(creneau_id)
         if not creneau:
             return {'error': 'Créneau introuvable'}, 404
@@ -232,13 +275,13 @@ class CreneauConfirmation(Resource):
         if creneau['statut'] == 'confirme':
             return {'error': 'Créneau déjà confirmé'}, 409
         try:
-            maj_planning = facade.mettre_a_jour_creneau(
+            maj_creneau = facade.mettre_a_jour_creneau(
                 creneau_id,
                 {'statut': 'confirme'}
             )
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
-        return maj_planning, 200
+        return maj_creneau, 200
 
 
 @api.route('/<creneau_id>/deplacer')
