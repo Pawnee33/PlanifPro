@@ -8,6 +8,7 @@ et d'ajouter un élève à une classe via un code unique.
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from planifPro.backend.services.facade import PlanifProFacade
+from planifPro.backend.services.email_service import envoyer_email
 
 facade = PlanifProFacade()
 
@@ -313,5 +314,26 @@ class Inviter(Resource):
         if not classe:
             return {'error': 'Classe introuvable'}, 404
 
-        # TODO: implémenter l'envoi d'email via SendGrid
-        pass
+        donnees = api.payload
+        email = donnees.get('email')
+
+        if not email or '@' not in email:
+            return {'error': 'Format email invalide'}, 400
+
+        try:
+            envoyer_email(
+                destinataire_email=email,
+                destinataire_nom='Nouvel élève',
+                sujet='Invitation à rejoindre une classe PlanifPro',
+                contenu=f'''
+                    <h2>Vous avez été invité à rejoindre une classe sur PlanifPro</h2>
+                    <p>Votre professeur vous invite à rejoindre la classe 
+                    <strong>{classe['nom']}</strong>.</p>
+                    <p>Votre code d'accès : <strong>{classe['code_classe']}</strong></p>
+                    <p>Téléchargez l'application PlanifPro et utilisez ce code 
+                    pour rejoindre la classe.</p>
+                '''
+            )
+        except Exception as e:
+            return {'error': 'Erreur envoi email'}, 500
+        return {'message': 'Invitation envoyée'}, 200
