@@ -6,6 +6,7 @@ permettant aux professeurs et élèves d'ajouter et gérer leurs
 créneaux personnels dans leur calendrier.
 """
 from flask_restx import Namespace, Resource, fields
+from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from planifPro.backend.services.facade import PlanifProFacade
 
@@ -77,17 +78,70 @@ class CreneauPersoList(Resource):
 @api.route('/import')
 class CreneauxImport(Resource):
     """
-    Resource pour import des créneaux.
+    Resource pour importer des créneaux depuis Google Calendar.
     """
     @api.response(200, 'Créneaux importés')
-    @api.response(400, 'Token Google invalide')
-    @api.response(500, 'Erreur interne du serveur')
+    @api.response(400, 'Token Google invalide ou expiré')
+    @api.response(500, 'Erreur Google Calendar API ou BDD')
     @jwt_required()
     def post(self):
         """Importer les créneaux depuis Google Calendar"""
-        # TODO: implémenter l'import Google Calendar
-        pass
+        utilisateur_id = get_jwt_identity()
 
+        # Récupère le token Google depuis le header
+        access_token = request.headers.get('X-Google-Token')
+        if not access_token:
+            return {'error': 'Token Google invalide ou expiré'}, 400
+
+        try:
+            from googleapiclient.discovery import build
+            from google.oauth2.credentials import Credentials
+
+            # Crée les credentials Google avec le token
+            credentials = Credentials(token=access_token)
+            # Crée le service Google Calendar
+            service = build('calendar', 'v3', credentials=credentials)
+
+            # Récupère les événements Google Calendar
+            events_result = service.events().list(
+                calendarId='primary',
+                maxResults=50,
+                singleEvents=True,
+                orderBy='startTime'
+            ).execute()
+            events = events_result.get('items', [])
+
+            creneaux_importes = []
+            for event in events:
+                # Récupère les infos de l'événement
+                titre = event.get('summary', 'Sans titre')
+                description = event.get('description', '')
+                start = event.get('start', {})
+                end = event.get('end', {})
+
+                # Gère les événements avec dateTime (pas les journées entières)
+                if 'dateTime' not in start:
+                    continue
+
+                from datetime import datetime
+                debut = datetime.fromisoformat(start['dateTime'])
+                fin = datetime.fromisoformat(end['dateTime'])
+
+                # Crée le créneau perso
+                donnees = {
+                    'utilisateur_id': utilisateur_id,
+                    'titre': titre,
+                    'description': description,
+                    'jour': debut.strftime('%A').lower(),
+                    'heure_debut': debut.time(),
+                    'heure_fin': fin.time()
+                }
+                creneau = facade.creer_creneau_perso(donnees)
+                creneaux_importes.append(creneau)
+
+        except Exception as e:
+            return {'error': 'Erreur Google Calendar API ou BDD'}, 500
+        return {'message': f'{len(creneaux_importes)} créneaux importés', 'creneaux': creneaux_importes}, 200
 
 @api.route('/<creneau_perso_id>')
 class CreneauResource(Resource):
