@@ -85,6 +85,56 @@ class ObjectifList(Resource):
         return objectif, 201
 
 
+@api.route('/creneau/<creneau_id>')
+class ObjectifCreneau(Resource):
+    """
+    Resource pour récupérer les objectifs d'un créneau spécifique.
+    """
+    @api.response(200, 'Objectifs du créneau affichés')
+    @api.response(403, 'Accès réservé aux professeurs')
+    @api.response(404, 'Aucun objectif trouvé')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def get(self, creneau_id):
+        """Récupérer l'historique des objectifs d'un créneau"""
+        claims = get_jwt()
+        if claims.get('role') != 'professeur':
+            return {'error': 'Accès réservé aux professeurs'}, 403
+
+        try:
+            objectifs = facade.obtenir_objectifs_par_creneau(creneau_id)
+            if not objectifs:
+                return {'error': 'Aucun objectif trouvé'}, 404
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return objectifs, 200
+
+
+@api.route('/eleve/<eleve_id>')
+class ObjectifEleve(Resource):
+    """
+    Resource pour récupérer les objectifs d'un élève spécifique.
+    """
+    @api.response(200, 'Objectifs de l\'élève affichés')
+    @api.response(403, 'Accès réservé aux professeurs')
+    @api.response(404, 'Aucun objectif trouvé')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def get(self, eleve_id):
+        """Récupérer tous les objectifs d'un élève"""
+        claims = get_jwt()
+        if claims.get('role') != 'professeur':
+            return {'error': 'Accès réservé aux professeurs'}, 403
+
+        try:
+            objectifs = facade.obtenir_objectifs_par_eleve(eleve_id)
+            if not objectifs:
+                return {'error': 'Aucun objectif trouvé'}, 404
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return objectifs, 200
+
+
 @api.route('/<objectif_id>')
 class ObjectifResource(Resource):
     """
