@@ -34,6 +34,7 @@ class Classe(EntiteBase):
     )
     
     nom = db.Column(db.String(50), nullable=False)
+    couleur = db.Column(db.String(7), nullable=True)
     date_debut = db.Column(db.Date, nullable=False)
     date_fin = db.Column(db.Date, nullable=False)
     jours_horaires = db.Column(db.JSON, nullable=False)
@@ -164,6 +165,7 @@ class Classe(EntiteBase):
         donnees.update({
             'professeur_id': self.professeur_id,
             'nom': self.nom,
+            'couleur': self.couleur,
             'date_debut': self.date_debut.isoformat() if self.date_debut else None,
             'date_fin': self.date_fin.isoformat() if self.date_fin else None,
             'jours_horaires': self.jours_horaires,

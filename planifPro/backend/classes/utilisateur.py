@@ -31,6 +31,7 @@ class Utilisateur(EntiteBase):
     email = db.Column(db.String(120), nullable=False, unique=True)
     mot_de_passe_hash = db.Column(db.String(128), nullable=False)
     role = db.Column(db.String(50), nullable=False)
+    parametres = db.Column(db.JSON, nullable=True)
     token_fcm = db.Column(db.String(255), nullable=True)
 
     @validates('prenom')
@@ -112,6 +113,7 @@ class Utilisateur(EntiteBase):
             'nom': self.nom,
             'email': self.email,
             'role': self.role,
+            'parametres': self.parametres,
             'token_fcm': self.token_fcm
         })
         return donnees
