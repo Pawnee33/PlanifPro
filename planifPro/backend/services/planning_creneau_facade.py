@@ -111,6 +111,10 @@ class PlanningCreneauFacade:
         """
         Génère les propositions de planning pour une classe.
         """
+        plannings_existants = self.planning_repo.obtenir_plannings_par_classe(classe_id)
+        if plannings_existants:
+            raise ValueError("Un planning a déjà été généré pour cette classe")
+
         classe = self.classe_repo.obtenir(classe_id)
         jours_horaires = classe.jours_horaires
 

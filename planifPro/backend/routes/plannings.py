@@ -66,6 +66,7 @@ class PlanningGenerer(Resource):
     @api.response(400, 'Voeux insuffisants')
     @api.response(403, 'Accès réservé aux professeurs')
     @api.response(404, 'Classe introuvable')
+    @api.response(409, 'Planning déjà généré')
     @api.response(500, 'Erreur interne du serveur')
     @jwt_required()
     def post(self):
@@ -84,6 +85,8 @@ class PlanningGenerer(Resource):
         try:
             genere_planning = facade.generer_planning(classe_id)
         except ValueError as e:
+            if 'déjà été généré' in str(e):
+                return {'error': str(e)}, 409
             return {'error': str(e)}, 400
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
