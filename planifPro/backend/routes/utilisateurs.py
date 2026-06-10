@@ -22,6 +22,12 @@ utilisateur_model = api.model('Utilisateur', {
     'token_fcm': fields.String(description='Token FCM utilisateur')
 })
 
+parametres_model = api.model('Parametres', {
+    'notifications': fields.Boolean(description='Activer/désactiver les notifications'),
+    'langue': fields.String(description='Langue de l\'application (fr/en)'),
+    'theme': fields.String(description='Thème de l\'application (clair/sombre)')
+})
+
 
 @api.route('/profil')
 class Profil(Resource):
@@ -91,4 +97,64 @@ class Profil(Resource):
             return {'error': 'Erreur interne du serveur'}, 500
         return {'message': 'Compte supprimé'}, 200
 
-# TODO: Ajouter les endpoints GET /parametres, PUT /parametres et GET /aide
+@api.route('/parametres')
+class Parametres(Resource):
+    """
+    Resource pour la gestion des paramètres utilisateur.
+    """
+    @api.response(200, 'Paramètres récupérés')
+    @api.response(404, 'Utilisateur introuvable')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def get(self):
+        """Récupérer les paramètres de l'utilisateur connecté"""
+        utilisateur_id = get_jwt_identity()
+        try:
+            utilisateur = facade.obtenir_utilisateur(utilisateur_id)
+            if not utilisateur:
+                return {'error': 'Utilisateur introuvable'}, 404
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return utilisateur.get('parametres') or {}, 200
+
+    @api.expect(parametres_model)
+    @api.response(200, 'Paramètres mis à jour')
+    @api.response(400, 'Données invalides')
+    @api.response(404, 'Utilisateur introuvable')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def put(self):
+        """Modifier les paramètres de l'utilisateur connecté"""
+        utilisateur_id = get_jwt_identity()
+        donnees = api.payload
+
+        utilisateur = facade.obtenir_utilisateur(utilisateur_id)
+        if not utilisateur:
+            return {'error': 'Utilisateur introuvable'}, 404
+
+        try:
+            maj = facade.mettre_a_jour_utilisateur(utilisateur_id, {'parametres': donnees})
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return maj.get('parametres') or {}, 200
+
+
+@api.route('/aide')
+class Aide(Resource):
+    """
+    Resource pour l'aide utilisateur.
+    """
+    @api.response(200, 'Aide affichée')
+    @jwt_required()
+    def get(self):
+        """Récupérer l'aide de l'application"""
+        return {
+            'version': '1.0',
+            'contact': 'support@planifpro.fr',
+            'documentation': 'https://planifpro.fr/aide',
+            'faq': [
+                {'question': 'Comment rejoindre une classe ?', 'reponse': 'Utilisez le code fourni par votre professeur.'},
+                {'question': 'Comment soumettre mes vœux ?', 'reponse': 'Rendez-vous dans la section Vœux de votre classe.'},
+                {'question': 'Comment exporter mon planning ?', 'reponse': 'Utilisez le bouton Export dans votre planning.'}
+            ]
+        }, 200
