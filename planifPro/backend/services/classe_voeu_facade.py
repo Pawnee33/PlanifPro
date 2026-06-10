@@ -192,6 +192,20 @@ class ClasseVoeuFacade:
             self.classe_repo.mis_a_jour(classe.id, {})
             return True
 
+    def mettre_a_jour_duree_eleve_classe(self, eleve_id, classe_id, duree_minutes):
+        """Met à jour la durée de cours d'un élève dans une classe."""
+        from planifPro import db
+        from planifPro.backend.classes.tables_relations import eleve_classe
+
+        db.session.execute(
+            eleve_classe.update().where(
+                eleve_classe.c.eleve_id == eleve_id,
+                eleve_classe.c.classe_id == classe_id
+            ).values(duree_minutes=duree_minutes)
+        )
+        db.session.commit()
+        return {'eleve_id': eleve_id, 'classe_id': classe_id, 'duree_minutes': duree_minutes}
+
     def supprimer_classe(self, classe_id):
         """Supprimer un classe existant et toutes les données associées (cascade)."""
         self.classe_repo.supprime(classe_id)
