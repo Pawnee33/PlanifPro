@@ -18,6 +18,7 @@ from planifPro.backend.classes.voeu import Voeu
 from planifPro.backend.classes.tables_relations import eleve_classe
 from planifPro.backend.services.fcm_service import envoyer_notification
 from datetime import datetime, timezone, timedelta
+import random
 
 
 class PlanningCreneauFacade:
@@ -122,16 +123,36 @@ class PlanningCreneauFacade:
                 'debut': debut,
                 'fin': fin
             })
-        creneaux_tries = sorted(creneaux_dispo, key=lambda x: x['debut'])
 
         voeux = self.voeu_repo.obtenir_voeux_par_classe(classe_id)
-        voeux_tries = sorted(voeux, key=lambda v: v.soumis_le)
 
+        # Proposition 1 — ordre par heure la plus tôt + premier arrivé
+        creneaux_dispo_1 = sorted(creneaux_dispo, key=lambda x: x['debut'])
+        voeux_1 = sorted(voeux, key=lambda v: v.soumis_le)
+        self._helper_proposition(creneaux_dispo_1, voeux_1, classe, 1)
+
+        # Proposition 2 — ordre aléatoire + tirage au sort
+        creneaux_dispo_2 = creneaux_dispo.copy()
+        random.shuffle(creneaux_dispo_2)
+
+        voeux_2 = voeux.copy()
+        random.shuffle(voeux_2)
+
+        self._helper_proposition(creneaux_dispo_2, voeux_2, classe, 2)
+
+        # Proposition 3 — ordre par heure la plus tard + MRV
+        creneaux_dispo_3 = sorted(creneaux_dispo, key=lambda x: x['fin'], reverse=True)
+        voeux_3 = sorted(voeux, key=lambda v: v.soumis_le)
+        self._helper_proposition(creneaux_dispo_3, voeux_3, classe, 3)
+
+        return self.obtenir_plannings_par_classe(classe_id)
+
+    def _helper_proposition(self, creneaux_dispo, voeux, classe, numero_proposition):
         assigne = False
         eleves_assignes = []
-        for creneau in creneaux_tries:
+        for creneau in creneaux_dispo:
             assigne = False
-            for voeu in voeux_tries:
+            for voeu in voeux:
                 if voeu.eleve_id not in eleves_assignes:
                     for souhait in voeu.creneaux_souhaites:
                         if souhait['jour'] == creneau['jour'] and souhait['heure'] == creneau['debut']:
@@ -144,19 +165,19 @@ class PlanningCreneauFacade:
             if not assigne:
                 creneau['eleve_id'] = None
         planning = Planning(
-            classe_id=classe_id,
-            numero_proposition=1,
+            classe_id=classe.id,
+            numero_proposition=numero_proposition,
             statut='genere'
         )
         self.planning_repo.ajouter(planning)
 
-        for creneau in creneaux_tries:
+        for creneau in creneaux_dispo:
             # Récupère la durée seulement si un élève est assigné
             if creneau['eleve_id']:
                 result = db.session.execute(
                     eleve_classe.select().where(
                         eleve_classe.c.eleve_id == creneau['eleve_id'],
-                        eleve_classe.c.classe_id == classe_id
+                        eleve_classe.c.classe_id == classe.id
                     )
                 ).fetchone()
                 duree = result.duree_minutes if result and result.duree_minutes else 60
@@ -166,7 +187,7 @@ class PlanningCreneauFacade:
             nouveau_creneau = Creneau(
                 planning_id=planning.id,
                 eleve_id=creneau['eleve_id'],
-                classe_id=classe_id,
+                classe_id=classe.id,
                 type=classe.nom,
                 jour=creneau['jour'],
                 heure_debut=creneau['debut'],
