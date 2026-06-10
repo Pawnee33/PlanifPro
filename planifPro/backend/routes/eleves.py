@@ -21,7 +21,8 @@ eleve_model = api.model('Eleve', {
 })
 
 duree_model = api.model('Duree', {
-    'duree_minutes': fields.Integer(required=True, description='Durée du cours en minutes')
+    'duree_minutes': fields.Integer(required=True, description='Durée du cours en minutes'),
+    'classe_id': fields.String(required=True, description='ID de la classe')
 })
 
 inviter_model = api.model('InviterEleve', {
@@ -151,7 +152,9 @@ class EleveResource(Resource):
         if 'duree_minutes' not in donnees_eleve or donnees_eleve['duree_minutes'] <= 0:
             return {'error': 'Durée invalide'}, 400
         try:
-            maj_eleve = facade.mettre_a_jour_eleve(eleve_id, donnees_eleve)
+            maj_eleve = facade.mettre_a_jour_duree_eleve_classe(
+                eleve_id, donnees_eleve['classe_id'], donnees_eleve['duree_minutes']
+            )
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
         return maj_eleve, 200
