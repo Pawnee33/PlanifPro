@@ -47,15 +47,15 @@ CREATE_C2=$(curl -s -X POST $BASE_URL/classes/ \
     "date_debut": "2026-09-01",
     "date_fin": "2027-06-30",
     "jours_horaires": {
-        "lundi": {"debut": "09:00", "fin": "20:00"},
-        "mardi": {"debut": "09:00", "fin": "20:00"},
-        "mercredi": {"debut": "09:00", "fin": "20:00"},
-        "jeudi": {"debut": "09:00", "fin": "20:00"},
-        "vendredi": {"debut": "09:00", "fin": "20:00"}
+        "lundi":    {"debut": "09:00", "fin": "20:00"},
+        "mardi":    {"debut": "09:00", "fin": "20:00"},
+        "mercredi": {"debut": "14:00", "fin": "20:00"},
+        "jeudi":    {"debut": "09:00", "fin": "14:00"},
+        "vendredi": {"debut": "09:00", "fin": "14:00"}
     },
     "nombre_propositions": 3,
-    "nombre_voeux_requis": 3,
-    "nombre_jours_min": 2
+    "nombre_voeux_requis": 1,
+    "nombre_jours_min": 1
 }')
 echo $CREATE_C2
 CLASSE_C2_ID=$(echo $CREATE_C2 | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))")
