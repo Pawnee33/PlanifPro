@@ -214,6 +214,24 @@ class ClasseVoeuFacade:
         self.classe_repo.supprime(classe_id)
 
     # Voeu
+    def _valider_creneaux(self, creneaux, classe_id):
+        """Valide que les créneaux respectent les seuils de la classe."""
+        if not isinstance(creneaux, dict):
+            raise ValueError("Les créneaux souhaités doivent être un dictionnaire")
+
+        classe = self.classe_repo.obtenir(classe_id)
+        if not classe:
+            raise ValueError("Classe introuvable")
+
+        total = len(creneaux)
+        jours = len({souhait['jour'] for souhait in creneaux.values()})
+
+        if total < classe.nombre_voeux_requis or jours < classe.nombre_jours_min:
+            raise ValueError(
+                f"Vous devez soumettre au moins {classe.nombre_voeux_requis} "
+                f"créneaux répartis sur au moins {classe.nombre_jours_min} jours"
+            )
+
     def creer_voeu(self, donnees):
         """
         Crée un nouveau vœu dans le système.
@@ -226,6 +244,8 @@ class ClasseVoeuFacade:
             dict : Dictionnaire contenant les informations
             du vœu créé.
         """
+        self._valider_creneaux(donnees['creneaux_souhaites'], donnees['classe_id'])
+
         voeu = Voeu(
             eleve_id=donnees['eleve_id'],
             classe_id=donnees['classe_id'],
@@ -254,6 +274,8 @@ class ClasseVoeuFacade:
         voeu = self.voeu_repo.obtenir(voeu_id)
         if not voeu:
             return None
+        self._valider_creneaux(donnees_voeu['creneaux_souhaites'], donnees_voeu['classe_id'])
+
         self.voeu_repo.mis_a_jour(voeu_id, donnees_voeu)
         return self.voeu_repo.obtenir(voeu_id).to_dict()
 
