@@ -19,4 +19,8 @@ class PlanifProFacade(AuthFacade, ClasseVoeuFacade, PlanningCreneauFacade, Objec
     aux repositories. Fait le lien entre les routes API
     et la couche de persistance.
     """
-    pass
+    def __init__(self):
+        AuthFacade.__init__(self)
+        ClasseVoeuFacade.__init__(self)
+        PlanningCreneauFacade.__init__(self)
+        ObjectifEvenementNotificationFacade.__init__(self)

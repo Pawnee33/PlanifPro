@@ -20,6 +20,7 @@ creneau_model = api.model('Creneau', {
     'classe_id': fields.String(required=True, description='ID de la classe'),
     'type': fields.String(required=True, description='Type de créneau'),
     'jour': fields.String(required=True, description='Jour du créneau'),
+    'semaine_alternance': fields.String(description='Semaine alternance (paire/impaire)'),
     'heure_debut': fields.String(required=True, description='Heure de début du créneau'),
     'heure_fin': fields.String(required=True, description='Heure de fin du créneau'),
     'duree_minutes': fields.Integer(required=True, description='Durée du créneau'),

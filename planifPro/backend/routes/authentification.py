@@ -36,7 +36,10 @@ class Inscription(Resource):
             return {'error': 'Adresse e-mail déjà utilisé'}, 409
 
         try:
-            nouveau_utilisateur = facade.creer_utilisateur(donnees)
+            if donnees['role'] == 'professeur':
+                nouveau_utilisateur = facade.creer_professeur(donnees)
+            elif donnees['role'] == 'eleve':
+                nouveau_utilisateur = facade.creer_eleve(donnees)
         except ValueError as e:
             return {'error': str(e)}, 400
         except Exception as e:

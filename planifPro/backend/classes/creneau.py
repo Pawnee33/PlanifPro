@@ -43,6 +43,7 @@ class Creneau(EntiteBase):
 
     type = db.Column(db.String(50), nullable=False)
     jour = db.Column(db.String(50), nullable=False)
+    semaine_alternance = db.Column(db.String(10), nullable=True)
     date_debut = db.Column(db.Date, nullable=True)
     date_fin = db.Column(db.Date, nullable=True)
     heure_debut = db.Column(db.Time, nullable=False)
@@ -156,6 +157,7 @@ class Creneau(EntiteBase):
             'classe_id': self.classe_id,
             'type': self.type,
             'jour': self.jour,
+            'semaine_alternance': self.semaine_alternance,
             'date_debut': self.date_debut.isoformat() if self.date_debut else None,
             'date_fin': self.date_fin.isoformat() if self.date_fin else None,
             'heure_debut': self.heure_debut.isoformat() if self.heure_debut else None,

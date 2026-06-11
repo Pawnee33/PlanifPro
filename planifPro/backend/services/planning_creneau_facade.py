@@ -197,6 +197,7 @@ class PlanningCreneauFacade:
                 heure_debut=creneau['debut'],
                 heure_fin=creneau['fin'],
                 duree_minutes=duree,
+                semaine_alternance=None,
                 date_debut=classe.date_debut,
                 date_fin=classe.date_fin,
                 statut='en_attente'
@@ -324,6 +325,7 @@ class PlanningCreneauFacade:
             classe_id=donnees['classe_id'],
             type=donnees['type'],
             jour=donnees['jour'],
+            semaine_alternance=donnees.get('semaine_alternance'),
             heure_debut=donnees['heure_debut'],
             heure_fin=donnees['heure_fin'],
             duree_minutes=donnees['duree_minutes'],
@@ -487,7 +489,9 @@ class PlanningCreneauFacade:
                 planning_id=creneau.planning_id, eleve_id=creneau.eleve_id,
                 classe_id=creneau.classe_id, type=creneau.type, jour=creneau.jour,
                 heure_debut=creneau.heure_debut, heure_fin=creneau.heure_fin,
-                duree_minutes=creneau.duree_minutes, statut=creneau.statut,
+                duree_minutes=creneau.duree_minutes,
+                semaine_alternance=creneau.semaine_alternance,
+                statut=creneau.statut,
                 date_debut=fin_jour + timedelta(days=1), date_fin=date_fin)
             self.creneau_repo.ajouter(partie_apres)
 
@@ -536,6 +540,7 @@ class PlanningCreneauFacade:
             heure_debut=donnees_creneau.get('heure_debut', creneau.heure_debut),
             heure_fin=donnees_creneau.get('heure_fin', creneau.heure_fin),
             duree_minutes=donnees_creneau.get('duree_minutes', creneau.duree_minutes),
+            semaine_alternance=donnees_creneau.get('semaine_alternance', creneau.semaine_alternance),
             statut=donnees_creneau.get('statut', creneau.statut),
             # La ligne d'exception couvre exactement le jour ciblé
             date_debut=debut, date_fin=fin)

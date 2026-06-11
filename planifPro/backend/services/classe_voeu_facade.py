@@ -14,6 +14,7 @@ from planifPro.backend.classes.voeu import Voeu
 from planifPro.backend.classes.eleve import Eleve
 from planifPro.backend.classes.professeur import Professeur
 from planifPro.backend.services.fcm_service import envoyer_notification
+from datetime import datetime
 import uuid
 
 
@@ -46,11 +47,13 @@ class ClasseVoeuFacade:
             dict : Dictionnaire contenant les informations
             de la classe créée.
         """
+        date_debut = datetime.strptime(donnees['date_debut'], '%Y-%m-%d').date()
+        date_fin = datetime.strptime(donnees['date_fin'], '%Y-%m-%d').date()
         classe = Classe(
             professeur_id=donnees['professeur_id'],
             nom=donnees['nom'],
-            date_debut=donnees['date_debut'],
-            date_fin=donnees['date_fin'],
+            date_debut=date_debut,
+            date_fin=date_fin,
             jours_horaires=donnees['jours_horaires'],
             nombre_propositions=donnees['nombre_propositions'],
             nombre_voeux_requis=donnees['nombre_voeux_requis'],
