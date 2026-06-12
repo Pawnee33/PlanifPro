@@ -82,6 +82,37 @@ class TestVoeuxAPI(BaseTestCase):
         )
         self.assertEqual(reponse.status_code, 404)
 
+    # ----- Modification d'un vœu (PUT /voeux/<id>) -----
+    def test_modifier_voeu(self):
+        _, classe, _, token_eleve = self.preparer_classe_pour_voeux()
+        voeu_id = self.soumettre_voeux(token_eleve, classe["id"]).get_json()["id"]
+        reponse = self.client.put(
+            f"/api/v1/voeux/{voeu_id}",
+            headers=self.entetes_auth(token_eleve),
+            json={"classe_id": classe["id"], "creneaux_souhaites": self.payload_voeux()},
+        )
+        self.assertEqual(reponse.status_code, 200)
+
+    def test_modifier_voeu_introuvable(self):
+        token_eleve, _ = self.creer_et_connecter("eleve")
+        reponse = self.client.put(
+            f"/api/v1/voeux/{self.FAKE_UUID}",
+            headers=self.entetes_auth(token_eleve),
+            json={"classe_id": self.FAKE_UUID, "creneaux_souhaites": self.payload_voeux()},
+        )
+        self.assertEqual(reponse.status_code, 404)
+
+    def test_modifier_voeu_planning_valide(self):
+        token_prof, classe, _, token_eleve = self.preparer_classe_pour_voeux()
+        voeu_id = self.soumettre_voeux(token_eleve, classe["id"]).get_json()["id"]
+        self.generer_et_valider(token_prof, classe["id"])
+        reponse = self.client.put(
+            f"/api/v1/voeux/{voeu_id}",
+            headers=self.entetes_auth(token_eleve),
+            json={"classe_id": classe["id"], "creneaux_souhaites": self.payload_voeux()},
+        )
+        self.assertEqual(reponse.status_code, 409)
+
 
 if __name__ == "__main__":
     unittest.main()
