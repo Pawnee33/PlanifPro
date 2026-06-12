@@ -302,7 +302,7 @@ class Inviter(Resource):
     @api.response(400, 'Format email invalide')
     @api.response(403, 'Accès réservé aux professeurs')
     @api.response(404, 'Classe introuvable')
-    @api.response(500, 'Erreur SendGrid')
+    @api.response(500, 'Erreur Brevo')
     @jwt_required()
     def post(self, classe_id):
         """Inviter un élève par email dans une classe"""
