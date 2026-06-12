@@ -44,6 +44,19 @@ class PlanningCreneauFacade:
             return datetime.strptime(valeur, '%Y-%m-%d').date()
         return valeur
 
+    def _parser_heure(self, valeur):
+        """Convertit 'HH:MM' ou 'HH:MM:SS' en objet time. Tolère None et time déjà parsé."""
+        if valeur is None:
+            return None
+        if isinstance(valeur, str):
+            for fmt in ('%H:%M:%S', '%H:%M'):
+                try:
+                    return datetime.strptime(valeur, fmt).time()
+                except ValueError:
+                    continue
+            raise ValueError("Heure invalide (format attendu HH:MM)")
+        return valeur
+
     # Planning
     def creer_planning(self, donnees):
         """
@@ -308,6 +321,11 @@ class PlanningCreneauFacade:
         planning.statut = 'valide'
         planning.valide_le = datetime.now(timezone.utc)
         self.planning_repo.mis_a_jour(planning_id, {'statut': 'valide', 'valide_le': datetime.now(timezone.utc)})
+        # On supprime les autres propositions de la classe (et leurs créneaux, en cascade)
+        autres = self.planning_repo.obtenir_plannings_par_classe(planning.classe_id)
+        for autre in autres:
+            if autre.id != planning_id:
+                self.planning_repo.supprime(autre.id)
         # Envoyer une notification FCM à tous les élèves de la classe
         classe = self.classe_repo.obtenir(planning.classe_id)
         for eleve in classe.eleves:
@@ -337,10 +355,12 @@ class PlanningCreneauFacade:
             dict : Dictionnaire contenant les informations
             du créneau créé.
         """
+        heure_debut = self._parser_heure(donnees['heure_debut'])
+        heure_fin = self._parser_heure(donnees['heure_fin'])
         creneaux_existants = self.creneau_repo.obtenir_creneaux_par_eleve(donnees['eleve_id'])
         for creneau in creneaux_existants:
             if creneau.jour == donnees['jour']:
-                if donnees['heure_debut'] < creneau.heure_fin and donnees['heure_fin'] > creneau.heure_debut:
+                if heure_debut < creneau.heure_fin and heure_fin > creneau.heure_debut:
                     raise ValueError("chevauchement avec un créneau existant")
 
         creneau = Creneau(
@@ -350,12 +370,12 @@ class PlanningCreneauFacade:
             type=donnees['type'],
             jour=donnees['jour'],
             semaine_alternance=donnees.get('semaine_alternance'),
-            heure_debut=donnees['heure_debut'],
-            heure_fin=donnees['heure_fin'],
+            heure_debut=heure_debut,
+            heure_fin=heure_fin,
             duree_minutes=donnees['duree_minutes'],
             date_debut=self._parser_date(donnees.get('date_debut')),
             date_fin=self._parser_date(donnees.get('date_fin')),
-            statut='en_attente'
+            statut=donnees.get('statut', 'en_attente')
         )
         self.creneau_repo.ajouter(creneau)
         return creneau.to_dict()
@@ -410,6 +430,10 @@ class PlanningCreneauFacade:
         creneaux = self.creneau_repo.obtenir_creneaux_par_eleve(eleve_id)
         if not creneaux:
             return None
+        creneaux = [
+            creneau for creneau in creneaux
+            if creneau.planning and creneau.planning.statut == 'valide'
+        ]
         return [creneau.to_dict() for creneau in creneaux]
 
     def obtenir_creneaux_par_professeur(self, professeur_id):
@@ -421,7 +445,10 @@ class PlanningCreneauFacade:
         for classe in classes:
             creneaux_classe = self.creneau_repo.obtenir_creneaux_par_classe(classe.id)
             if creneaux_classe:
-                creneaux.extend([creneau.to_dict() for creneau in creneaux_classe])
+                creneaux.extend([
+                    creneau.to_dict() for creneau in creneaux_classe
+                    if creneau.planning and creneau.planning.statut == 'valide'
+                ])
         return creneaux if creneaux else None
 
     def obtenir_creneaux_par_planning(self, planning_id):
@@ -544,6 +571,10 @@ class PlanningCreneauFacade:
         if not creneau:
             return None
 
+        # Convertir les heures éventuelles (chaîne -> time) avant toute écriture
+        for champ in ('heure_debut', 'heure_fin'):
+            if champ in donnees_creneau:
+                donnees_creneau[champ] = self._parser_heure(donnees_creneau[champ])
         # Si scope = toute_la_periode → modification simple de tous les lundis
         if scope == 'toute_la_periode':
             self.creneau_repo.mis_a_jour(creneau_id, donnees_creneau)

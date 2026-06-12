@@ -106,7 +106,7 @@ class Creneau(EntiteBase):
             return value
         if not isinstance(value, date):
             raise ValueError("La date de fin doit être une date valide")
-        if self.date_debut and value <= self.date_debut:
+        if self.date_debut and value < self.date_debut:
             raise ValueError("La date de fin doit être après la date de début")
         return value
 
