@@ -94,6 +94,7 @@ class CreneauList(Resource):
             return {'error': 'Élève introuvable'}, 404
 
         try:
+            donnees['statut'] = planning['statut']
             creneau = facade.creer_creneau(donnees)
         except ValueError as e:
             if 'chevauchement' in str(e).lower():
