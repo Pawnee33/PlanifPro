@@ -54,7 +54,7 @@ class SQLAlchemyRepository(Repository):
 
     def obtenir(self, obj_id):
         """Récupère un objet par son identifiant."""
-        return self.model.query.get(obj_id)
+        return db.session.get(self.model, obj_id)
 
     def tout_obtenir(self):
         """Récupère tous les objets du modèle."""

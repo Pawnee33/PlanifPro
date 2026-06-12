@@ -1,5 +1,7 @@
 import os
 from dotenv import load_dotenv
+from sqlalchemy.pool import StaticPool
+
 
 load_dotenv()
 
@@ -18,6 +20,16 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     pass
+
+
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'connect_args': {'check_same_thread': False},
+        'poolclass': StaticPool,
+    }
+    JWT_SECRET_KEY = 'cle-jwt-de-test-pour-les-tests-unitaires-planifpro'
 
 
 config = {
