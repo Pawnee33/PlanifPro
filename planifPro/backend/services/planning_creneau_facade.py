@@ -609,13 +609,20 @@ class PlanningCreneauFacade:
     # Créneaux personnels
     def creer_creneau_perso(self, donnees):
         """Crée un nouveau créneau personnel."""
+        heure_debut = donnees['heure_debut']
+        heure_fin = donnees['heure_fin']
+        if isinstance(heure_debut, str):
+            heure_debut = time.fromisoformat(heure_debut)
+        if isinstance(heure_fin, str):
+            heure_fin = time.fromisoformat(heure_fin)
+
         creneau_perso = CreneauPerso(
             utilisateur_id=donnees['utilisateur_id'],
             titre=donnees['titre'],
             description=donnees.get('description'),
             jour=donnees['jour'],
-            heure_debut=donnees['heure_debut'],
-            heure_fin=donnees['heure_fin']
+            heure_debut=heure_debut,
+            heure_fin=heure_fin
         )
         self.creneau_perso_repo.ajouter(creneau_perso)
         return creneau_perso.to_dict()
@@ -639,6 +646,9 @@ class PlanningCreneauFacade:
         creneau_perso = self.creneau_perso_repo.obtenir(creneau_perso_id)
         if not creneau_perso:
             return None
+        for cle in ('heure_debut', 'heure_fin'):
+            if isinstance(donnees.get(cle), str):
+                donnees[cle] = time.fromisoformat(donnees[cle])
         self.creneau_perso_repo.mis_a_jour(creneau_perso_id, donnees)
         return self.creneau_perso_repo.obtenir(creneau_perso_id).to_dict()
 
