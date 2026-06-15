@@ -2,9 +2,10 @@
 """
 Tests d'intégration des endpoints de notifications.
 
-Aucune notification n'étant écrite en BDD dans les flux actuels, les GET
-renvoient 404. On teste aussi l'enregistrement du token FCM (200 / 400)
-et les chemins introuvables.
+Couvre le cas vide (404 quand l'utilisateur n'a aucune notification),
+l'écriture effective en BDD via les flux câblés (collecte des vœux →
+notif élève, soumission de vœux → notif prof), l'enregistrement du
+token FCM (200 / 400) et les chemins introuvables.
 """
 import unittest
 
@@ -72,6 +73,24 @@ class TestNotificationsAPI(BaseTestCase):
             f"{self.URL}{self.FAKE_UUID}", headers=self.entetes_auth(token)
         )
         self.assertEqual(reponse.status_code, 404)
+
+    # ----- Écriture effective en BDD via les flux câblés -----
+    def test_collecte_cree_notification_eleve(self):
+        # Lancer la collecte doit déposer une notif 'collecte_voeux' à l'élève
+        _, _, _, token_eleve = self.preparer_classe_pour_voeux()
+        reponse = self.client.get(self.URL, headers=self.entetes_auth(token_eleve))
+        self.assertEqual(reponse.status_code, 200)
+        notifs = reponse.get_json()
+        self.assertTrue(any(n["type"] == "collecte_voeux" for n in notifs))
+
+    def test_soumission_voeux_cree_notification_prof(self):
+        # Soumettre des vœux doit déposer une notif 'voeux_soumis' au prof
+        token_prof, classe, _, token_eleve = self.preparer_classe_pour_voeux()
+        self.soumettre_voeux(token_eleve, classe["id"])
+        reponse = self.client.get(self.URL, headers=self.entetes_auth(token_prof))
+        self.assertEqual(reponse.status_code, 200)
+        notifs = reponse.get_json()
+        self.assertTrue(any(n["type"] == "voeux_soumis" for n in notifs))
 
 
 if __name__ == "__main__":
