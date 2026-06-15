@@ -20,6 +20,7 @@ creneau_model = api.model('Creneau', {
     'classe_id': fields.String(required=True, description='ID de la classe'),
     'type': fields.String(required=True, description='Type de créneau'),
     'jour': fields.String(required=True, description='Jour du créneau'),
+    'semaine_alternance': fields.String(description='Semaine alternance (paire/impaire)'),
     'heure_debut': fields.String(required=True, description='Heure de début du créneau'),
     'heure_fin': fields.String(required=True, description='Heure de fin du créneau'),
     'duree_minutes': fields.Integer(required=True, description='Durée du créneau'),
@@ -93,6 +94,7 @@ class CreneauList(Resource):
             return {'error': 'Élève introuvable'}, 404
 
         try:
+            donnees['statut'] = planning['statut']
             creneau = facade.creer_creneau(donnees)
         except ValueError as e:
             if 'chevauchement' in str(e).lower():
@@ -281,6 +283,15 @@ class CreneauConfirmation(Resource):
             )
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
+        # Notifie le professeur que l'élève a confirmé son créneau
+        classe = facade.obtenir_classe(creneau['classe_id'])
+        if classe:
+            facade.creer_notification({
+                'utilisateur_id': classe['professeur_id'],
+                'type': 'creneau_confirme',
+                'titre': 'Créneau confirmé',
+                'message': f"Un élève a confirmé son créneau ({creneau['jour']})",
+            })
         return maj_creneau, 200
 
 

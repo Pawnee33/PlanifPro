@@ -1,32 +1,90 @@
 # PlanifPro
 
-## Description:
+## Description :
 
-PlanifPro est une application web et mobile (PWA : Application web progressive) de gestion de planning pédagogique.
-Le publique visé sont les professeurs et coachs de toute catégories (ex : professeur de musique, sport etc) qui travail dans diférentes structures publiques, privés ou à leurs compte.
-L'application permettra la gestion des cours et la génération de planning en fonction des différentes classes du formateur.
+PlanifPro est une application web et mobile (PWA : Progressive Web App) de gestion de planning pédagogique.
+Le public visé : les professeurs et coachs de toutes catégories (ex : professeur de musique, de sport, etc.) qui travaillent dans différentes structures publiques, privées, ou à leur compte.
+L'application permet la gestion des cours et la génération de planning en fonction des différentes classes du formateur.
 
-## Structure du projet : 
+## Structure du projet :
 
 ```
 PlanifPro/
-├── backend/
-│   ├── classes/
-│   ├── persistance/
-│   ├── routes/
-│   └── services/
-│ 
-├── documentations/
-│   ├── Projet_Portfolio_MVP.pdf
-│   └── Projet-Porfolio_Technical_Documentation.pdf
-│ 
-├── frontend/
-│   ├── images/
-│   └── pages/
-│ 
-├── unittests/
-│ 
-└── README.md
+├── .env.example                       # modèle de variables d'environnement
+├── README.md
+├── config.py                          # configurations Dev / Prod
+├── requirements.txt
+├── migrations/                        # Flask-Migrate / Alembic
+│   ├── alembic.ini
+│   ├── env.py
+│   ├── script.py.mako
+│   └── versions/                      # fichiers de migration
+├── planifPro/
+│   ├── __init__.py                    # create_app()
+│   ├── run.py                         # point d'entrée (app = create_app())
+│   ├── backend/
+│   │   ├── classes/                   # modèles SQLAlchemy
+│   │   │   ├── entitebase.py
+│   │   │   ├── utilisateur.py
+│   │   │   ├── professeur.py
+│   │   │   ├── eleve.py
+│   │   │   ├── classe.py
+│   │   │   ├── voeu.py
+│   │   │   ├── planning.py
+│   │   │   ├── creneau.py
+│   │   │   ├── creneau_perso.py
+│   │   │   ├── objectif.py
+│   │   │   ├── evenement.py
+│   │   │   ├── notification.py
+│   │   │   └── tables_relations.py
+│   │   ├── persistence/               # repositories
+│   │   │   ├── repository.py
+│   │   │   ├── utilisateur_repository.py
+│   │   │   ├── professeur_repository.py
+│   │   │   ├── eleve_repository.py
+│   │   │   ├── classe_repository.py
+│   │   │   ├── voeu_repository.py
+│   │   │   ├── planning_repository.py
+│   │   │   ├── creneau_repository.py
+│   │   │   ├── creneau_perso_repository.py
+│   │   │   ├── objectif_repository.py
+│   │   │   ├── evenement_repository.py
+│   │   │   └── notification_repository.py
+│   │   ├── routes/                    # endpoints Flask-RESTX
+│   │   │   ├── authentification.py
+│   │   │   ├── utilisateurs.py
+│   │   │   ├── professeurs.py
+│   │   │   ├── eleves.py
+│   │   │   ├── classes.py
+│   │   │   ├── voeux.py
+│   │   │   ├── plannings.py
+│   │   │   ├── creneaux.py
+│   │   │   ├── creneaux_perso.py
+│   │   │   ├── objectifs.py
+│   │   │   ├── evenements.py
+│   │   │   ├── notifications.py
+│   │   │   └── calendrier.py
+│   │   └── services/                  # façades + services
+│   │       ├── facade.py
+│   │       ├── auth_facade.py
+│   │       ├── classe_voeu_facade.py
+│   │       ├── planning_creneau_facade.py
+│   │       ├── objectif_evenement_notification_facade.py
+│   │       ├── email_service.py       # Brevo
+│   │       └── fcm_service.py         # Firebase Cloud Messaging
+│   ├── documentations/
+│   │   ├── Projet_Portfolio_MVP.pdf
+│   │   └── Projet-Porfolio_Technical_Documentation.pdf
+│   ├── frontend/
+│   │   ├── images/
+│   │   └── pages/
+│   └── unittests/                     # tests unitaires (pytest)
+└── tests/                             # scripts de test API (curl)
+    ├── test_auth.sh
+    ├── test_setup.sh
+    ├── test_classes.sh
+    ├── test_voeux.sh
+    └── test_planning.sh
 ```
 
 # Installation : PlanifPro Backend
@@ -62,8 +120,8 @@ psql --version
 ## 1. Cloner le projet
 
 ```bash
-git clone https://github.com/ton-repo/planifpro.git
-cd planifpro
+git clone https://github.com/Pawnee33/PlanifPro.git
+cd PlanifPro
 ```
 
 ---
@@ -89,7 +147,7 @@ pip install -r requirements.txt
 Ou manuellement :
 
 ```bash
-pip install flask flask-restx flask-sqlalchemy flask-migrate flask-jwt-extended flask-bcrypt flask-cors psycopg2-binary sendgrid firebase-admin google-api-python-client google-auth-oauthlib python-dotenv pytest pytest-flask
+pip install flask flask-restx flask-sqlalchemy flask-migrate flask-jwt-extended flask-bcrypt flask-cors psycopg2-binary sib-api-v3-sdk firebase-admin google-api-python-client google-auth-oauthlib python-dotenv gunicorn pytest pytest-flask
 ```
 
 ---
@@ -107,11 +165,17 @@ Contenu du `.env` :
 ```
 DATABASE_URL=postgresql://user:motdepasse@localhost/planifpro
 JWT_SECRET_KEY=
-SENDGRID_API_KEY=
+BREVO_API_KEY=
+BREVO_FROM_EMAIL=
 FIREBASE_CREDENTIALS=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:5000/api/v1/calendrier/callback
+GOOGLE_CLIENT_SECRETS=
 ```
+
+> ⚠️ Le `.env` (vraies clés) ne doit **jamais** être versionné. Seul `.env.example`
+> (avec des valeurs bidon) est suivi par Git.
 
 ---
 
@@ -128,28 +192,50 @@ CREATE DATABASE planifpro;
 ## 6. Appliquer les migrations
 
 ```bash
-flask db init
+export FLASK_APP=planifPro.run        # une fois par terminal
+
+flask db init        # une seule fois au tout début (si le dossier migrations/ n'existe pas)
 flask db migrate -m "initial migration"
 flask db upgrade
 ```
+
+> Après un simple clone, le dossier `migrations/` existe déjà : un `flask db upgrade` suffit.
 
 ---
 
 ## 7. Lancer le serveur
 
+### Mode développement (debug, local)
+
 ```bash
-flask run
+flask --app planifPro.run run --debug
+# ou directement :
+python -m planifPro.run
 ```
 
-Le serveur tourne sur `http://localhost:5000`
+Le serveur tourne sur `http://localhost:5000` (base de l'API : `/api/v1`).
+
+### Mode production
+
+```bash
+gunicorn "planifPro.run:app"
+```
+
+C'est la commande utilisée par Render. Le mode (debug ou non) est piloté par les
+classes de `config.py` (`DevelopmentConfig` / `ProductionConfig`), sélectionnées
+dans `create_app()`.
 
 ---
 
 ## 8. Lancer les tests
 
+Tests unitaires :
+
 ```bash
 pytest -v
 ```
+
+Tests d'API (curl) : voir la section **Tests** plus bas.
 
 ---
 
@@ -165,16 +251,17 @@ pytest -v
 | `flask-bcrypt` | Hachage des mots de passe |
 | `flask-cors` | Gestion des CORS |
 | `psycopg2-binary` | Connecteur PostgreSQL |
-| `sendgrid` | Envoi d'emails |
+| `sib-api-v3-sdk` | Envoi d'emails (Brevo) |
 | `firebase-admin` | Notifications push FCM |
 | `google-api-python-client` | Google Calendar API |
 | `google-auth-oauthlib` | OAuth 2.0 Google |
 | `python-dotenv` | Variables d'environnement |
+| `gunicorn` | Serveur WSGI de production |
 | `pytest` | Tests unitaires |
 | `pytest-flask` | Tests Flask |
 
 
-## Génération de clé JWT 
+## Génération de clé JWT
 
 ```
 python3 -c "import secrets; print(secrets.token_hex(32))"
@@ -389,3 +476,41 @@ Modifier un modèle → flask db migrate -m "description" → flask db upgrade
 | `flask db downgrade` | Annuler la dernière migration |
 | `flask db history` | Voir l'historique des migrations |
 | `flask db current` | Voir la migration actuelle |
+
+## Tests
+
+Les tests d'API sont réalisés avec `curl` (scripts bash dans `tests/`). À lancer avec le **serveur Flask démarré** et sur une **base de données propre**, dans l'ordre ci-dessous.
+
+### Prérequis
+
+```bash
+# Rendre les scripts exécutables (une seule fois)
+chmod +x tests/*.sh
+```
+
+### Ordre d'exécution
+
+```bash
+# 1. Authentification : inscription / connexion (indépendant)
+./tests/test_auth.sh
+
+# 2. Données de base : 1 professeur + 20 élèves
+./tests/test_setup.sh
+
+# 3. Création des classes (Conservatoire, Cours Privé) + rattachement des élèves
+./tests/test_classes.sh
+
+# 4. Soumission des vœux + tests des endpoints vœux
+./tests/test_voeux.sh
+
+# 5. Flux planning complet : génération, vérification du placement,
+#    sélection → modification → validation, et planning global (dashboard)
+./tests/test_planning.sh
+
+# 6. Commande pour tout suprimer
+sudo -u postgres psql -d planifpro -c "TRUNCATE utilisateurs CASCADE;"
+```
+
+> Les scripts 2 à 5 s'enchaînent et réutilisent les données créées par les précédents.
+> Relance la chaîne sur une base propre : les plannings sont générés une seule fois par classe
+> (une 2ᵉ génération renvoie une erreur `409`).

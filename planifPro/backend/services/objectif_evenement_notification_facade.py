@@ -19,6 +19,7 @@ from planifPro.backend.classes.eleve import Eleve
 from planifPro.backend.classes.classe import Classe
 from planifPro.backend.classes.creneau import Creneau
 from planifPro.backend.services.fcm_service import envoyer_notification
+from datetime import datetime
 
 
 class ObjectifEvenementNotificationFacade:
@@ -60,6 +61,13 @@ class ObjectifEvenementNotificationFacade:
             conseils=donnees.get('conseils')
         )
         self.objectif_repo.ajouter(objectif)
+        # Notification in-app à l'élève
+        self.creer_notification({
+            'utilisateur_id': objectif.eleve_id,
+            'type': 'objectif',
+            'titre': 'Nouvel objectif',
+            'message': "Votre professeur vous a laissé un objectif",
+        })
         eleve = self.eleve_repo.obtenir(objectif.eleve_id)
         if eleve and eleve.token_fcm:
                 envoyer_notification(
@@ -136,14 +144,21 @@ class ObjectifEvenementNotificationFacade:
             dict : Dictionnaire contenant les informations
             de l'événement créé.
         """
+        # Conversion de la chaîne ISO 8601 en datetime attendu par le modèle
+        date_heure = donnees['date_heure']
+        if isinstance(date_heure, str):
+            try:
+                date_heure = datetime.fromisoformat(date_heure)
+            except ValueError:
+                raise ValueError("La date et l'heure doivent être au format ISO 8601")
+
         evenement = Evenement(
             professeur_id=donnees['professeur_id'],
             titre=donnees['titre'],
             description=donnees['description'],
-            date_heure=donnees['date_heure'],
+            date_heure=date_heure,
             destinataires=donnees['destinataires']
         )
-        self.evenement_repo.ajouter(evenement)
 
         # Résolution des destinataires
         type_destinataires = donnees['destinataires']['type']
@@ -180,8 +195,17 @@ class ObjectifEvenementNotificationFacade:
                 if eleve:
                     eleves.append(eleve)
 
-        # Peuplement de la table eleve_evenement
+        # Peuplement de la table eleve_evenement AVANT le commit
         evenement.eleves = list(set(eleves))
+        self.evenement_repo.ajouter(evenement)
+        # Notification in-app à chaque élève destinataire
+        for eleve in evenement.eleves:
+            self.creer_notification({
+                'utilisateur_id': eleve.utilisateur_id,
+                'type': 'evenement',
+                'titre': 'Nouvel événement',
+                'message': f"Nouvel événement : {evenement.titre}",
+            })
         return evenement.to_dict()
 
     def obtenir_evenement(self, evenement_id):
@@ -221,6 +245,13 @@ class ObjectifEvenementNotificationFacade:
         evenement = self.evenement_repo.obtenir(evenement_id)
         if not evenement:
             return None
+
+        if 'date_heure' in donnees_evenement and isinstance(donnees_evenement['date_heure'], str):
+            try:
+                donnees_evenement['date_heure'] = datetime.fromisoformat(donnees_evenement['date_heure'])
+            except ValueError:
+                raise ValueError("La date et l'heure doivent être au format ISO 8601")
+    
         self.evenement_repo.mis_a_jour(evenement_id, donnees_evenement)
         return self.evenement_repo.obtenir(evenement_id).to_dict()
 

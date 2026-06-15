@@ -8,6 +8,7 @@ et d'ajouter un élève à une classe via un code unique.
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from planifPro.backend.services.facade import PlanifProFacade
+from planifPro.backend.services.email_service import envoyer_email
 
 facade = PlanifProFacade()
 
@@ -301,7 +302,7 @@ class Inviter(Resource):
     @api.response(400, 'Format email invalide')
     @api.response(403, 'Accès réservé aux professeurs')
     @api.response(404, 'Classe introuvable')
-    @api.response(500, 'Erreur SendGrid')
+    @api.response(500, 'Erreur Brevo')
     @jwt_required()
     def post(self, classe_id):
         """Inviter un élève par email dans une classe"""
@@ -313,5 +314,35 @@ class Inviter(Resource):
         if not classe:
             return {'error': 'Classe introuvable'}, 404
 
-        # TODO: implémenter l'envoi d'email via SendGrid
-        pass
+        donnees = api.payload
+        email = donnees.get('email')
+
+        if not email or '@' not in email:
+            return {'error': 'Format email invalide'}, 400
+
+        try:
+            envoyer_email(
+                destinataire_email=email,
+                destinataire_nom='Nouvel élève',
+                sujet='Invitation à rejoindre une classe PlanifPro',
+                contenu=f'''
+                    <h2>Vous avez été invité à rejoindre une classe sur PlanifPro</h2>
+                    <p>Votre professeur vous invite à rejoindre la classe 
+                    <strong>{classe['nom']}</strong>.</p>
+                    <p>Votre code d'accès : <strong>{classe['code_classe']}</strong></p>
+                    <p>Téléchargez l'application PlanifPro et utilisez ce code 
+                    pour rejoindre la classe.</p>
+                '''
+            )
+        except Exception as e:
+            return {'error': 'Erreur envoi email'}, 500
+        # Si l'élève a déjà un compte, notification in-app en plus de l'email
+        eleve = facade.obtenir_eleve_par_email(email)
+        if eleve:
+            facade.creer_notification({
+                'utilisateur_id': eleve['utilisateur_id'],
+                'type': 'code_classe',
+                'titre': 'Invitation à une classe',
+                'message': f"Vous êtes invité à rejoindre la classe « {classe['nom']} » avec le code {classe['code_classe']}",
+            })
+        return {'message': 'Invitation envoyée'}, 200

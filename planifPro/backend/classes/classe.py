@@ -12,6 +12,7 @@ contraintes de vœux.
 
 from planifPro import db
 from planifPro.backend.classes.entitebase import EntiteBase
+from planifPro.backend.classes.tables_relations import eleve_classe
 from datetime import date, datetime, timezone
 from sqlalchemy.orm import validates
 
@@ -34,6 +35,7 @@ class Classe(EntiteBase):
     )
     
     nom = db.Column(db.String(50), nullable=False)
+    couleur = db.Column(db.String(7), nullable=True)
     date_debut = db.Column(db.Date, nullable=False)
     date_fin = db.Column(db.Date, nullable=False)
     jours_horaires = db.Column(db.JSON, nullable=False)
@@ -42,6 +44,11 @@ class Classe(EntiteBase):
     nombre_jours_min = db.Column(db.Integer, nullable=False)
     code_classe = db.Column(db.String(8), nullable=False, unique=True)
     statut = db.Column(db.String(50), nullable=False)
+
+    eleves = db.relationship(
+        'Eleve', secondary=eleve_classe,
+        lazy=True, overlaps="classes"
+    )
 
     voeux = db.relationship(
         'Voeu', backref='classe',
@@ -164,6 +171,7 @@ class Classe(EntiteBase):
         donnees.update({
             'professeur_id': self.professeur_id,
             'nom': self.nom,
+            'couleur': self.couleur,
             'date_debut': self.date_debut.isoformat() if self.date_debut else None,
             'date_fin': self.date_fin.isoformat() if self.date_fin else None,
             'jours_horaires': self.jours_horaires,

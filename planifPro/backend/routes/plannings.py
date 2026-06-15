@@ -66,6 +66,7 @@ class PlanningGenerer(Resource):
     @api.response(400, 'Voeux insuffisants')
     @api.response(403, 'Accès réservé aux professeurs')
     @api.response(404, 'Classe introuvable')
+    @api.response(409, 'Planning déjà généré')
     @api.response(500, 'Erreur interne du serveur')
     @jwt_required()
     def post(self):
@@ -84,6 +85,8 @@ class PlanningGenerer(Resource):
         try:
             genere_planning = facade.generer_planning(classe_id)
         except ValueError as e:
+            if 'déjà été généré' in str(e):
+                return {'error': str(e)}, 409
             return {'error': str(e)}, 400
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
@@ -164,6 +167,62 @@ class PlanningCreneaux(Resource):
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
         return creneaux, 200
+
+
+@api.route('/<planning_id>/selectionner')
+class PlanningSelectionner(Resource):
+    """Resource pour sélectionner une proposition de planning."""
+    @api.response(200, 'Planning sélectionné')
+    @api.response(403, 'Accès réservé aux professeurs')
+    @api.response(404, 'Planning introuvable')
+    @api.response(409, 'Le planning doit être au statut généré')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def put(self, planning_id):
+        """Sélectionner une proposition de planning"""
+        claims = get_jwt()
+        if claims.get('role') != 'professeur':
+            return {'error': 'Accès réservé aux professeurs'}, 403
+
+        planning = facade.obtenir_planning(planning_id)
+        if not planning:
+            return {'error': 'Planning introuvable'}, 404
+
+        try:
+            planning_selectionne = facade.selectionner_planning(planning_id)
+        except ValueError as e:
+            return {'error': str(e)}, 409
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return planning_selectionne, 200
+
+
+@api.route('/<planning_id>/modifier')
+class PlanningModifier(Resource):
+    """Resource pour marquer un planning comme modifié."""
+    @api.response(200, 'Planning marqué comme modifié')
+    @api.response(403, 'Accès réservé aux professeurs')
+    @api.response(404, 'Planning introuvable')
+    @api.response(409, 'Le planning doit être généré ou sélectionné')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def put(self, planning_id):
+        """Marquer un planning comme modifié"""
+        claims = get_jwt()
+        if claims.get('role') != 'professeur':
+            return {'error': 'Accès réservé aux professeurs'}, 403
+
+        planning = facade.obtenir_planning(planning_id)
+        if not planning:
+            return {'error': 'Planning introuvable'}, 404
+
+        try:
+            planning_modifie = facade.modifier_planning(planning_id)
+        except ValueError as e:
+            return {'error': str(e)}, 409
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return planning_modifie, 200
 
 
 @api.route('/<planning_id>/confirmation')

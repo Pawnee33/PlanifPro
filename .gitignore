@@ -8,3 +8,5 @@ __pycache__/
 instance/
 .pytest_cache/
 cle_firebase/
+cle_google/
+flask.log

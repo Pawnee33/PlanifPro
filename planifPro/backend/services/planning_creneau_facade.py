@@ -4,16 +4,21 @@ Facade de gestion des classes et des vœux de PlanifPro.
 Ce module définit la classe PlanningCreneauFacade qui gère la logique
 métier liée aux plannings et aux créneaux des élèves.
 """
+from planifPro import db
 from planifPro.backend.persistence.repository import SQLAlchemyRepository
 from planifPro.backend.persistence.planning_repository import PlanningRepository
 from planifPro.backend.persistence.creneau_repository import CreneauRepository
 from planifPro.backend.persistence.classe_repository import ClasseRepository
 from planifPro.backend.persistence.creneau_perso_repository import CreneauPersoRepository
+from planifPro.backend.persistence.voeu_repository import VoeuRepository
 from planifPro.backend.classes.planning import Planning
 from planifPro.backend.classes.creneau import Creneau
 from planifPro.backend.classes.creneau_perso import CreneauPerso
+from planifPro.backend.classes.voeu import Voeu
+from planifPro.backend.classes.tables_relations import eleve_classe
 from planifPro.backend.services.fcm_service import envoyer_notification
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, time
+import random
 
 
 class PlanningCreneauFacade:
@@ -29,6 +34,7 @@ class PlanningCreneauFacade:
         self.creneau_repo = CreneauRepository()
         self.classe_repo = ClasseRepository()
         self.creneau_perso_repo = CreneauPersoRepository()
+        self.voeu_repo = VoeuRepository()
 
     def _parser_date(self, valeur):
         """Convertit une chaîne 'AAAA-MM-JJ' en objet date. Tolère None et date déjà parsée."""
@@ -36,6 +42,19 @@ class PlanningCreneauFacade:
             return None
         if isinstance(valeur, str):
             return datetime.strptime(valeur, '%Y-%m-%d').date()
+        return valeur
+
+    def _parser_heure(self, valeur):
+        """Convertit 'HH:MM' ou 'HH:MM:SS' en objet time. Tolère None et time déjà parsé."""
+        if valeur is None:
+            return None
+        if isinstance(valeur, str):
+            for fmt in ('%H:%M:%S', '%H:%M'):
+                try:
+                    return datetime.strptime(valeur, fmt).time()
+                except ValueError:
+                    continue
+            raise ValueError("Heure invalide (format attendu HH:MM)")
         return valeur
 
     # Planning
@@ -101,12 +120,126 @@ class PlanningCreneauFacade:
             return None
         return planning.to_dict()
 
+    def _heure_en_minutes(self, heure):
+        """Convertit 'HH:MM' en minutes depuis minuit."""
+        heure, minutes = heure.split(':')
+        return int(heure) * 60 + int(minutes)
+
+    def _minutes_en_heure(self, minutes):
+        """Convertit des minutes depuis minuit en objet time."""
+        return time(hour=minutes // 60, minute=minutes % 60)
+
+    def _duree_eleve(self, eleve_id, classe_id):
+        """Récupère la durée de cours d'un élève dans une classe (60 par défaut)."""
+        resultat = db.session.execute(
+            eleve_classe.select().where(
+                eleve_classe.c.eleve_id == eleve_id,
+                eleve_classe.c.classe_id == classe_id
+            )
+        ).fetchone()
+        return resultat.duree_minutes if resultat and resultat.duree_minutes else 60
+
+    def _creneau_libre(self, jour, debut_min, duree, jours_horaires, occupe):
+        """Vérifie qu'un créneau tient dans la plage du jour et ne chevauche rien."""
+        fin_min = debut_min + duree
+        horaires = jours_horaires[jour]
+        if debut_min < self._heure_en_minutes(horaires['debut']):
+            return False
+        if fin_min > self._heure_en_minutes(horaires['fin']):
+            return False
+        for occupe_debut, occupe_fin in occupe[jour]:
+            # chevauchement
+            if debut_min < occupe_fin and fin_min > occupe_debut:
+                return False
+        return True
+
+    def _placer_eleve(self, voeu, duree, jours_horaires, occupe):
+        """
+        Trouve un emplacement pour un élève : d'abord ses vœux (par
+        priorité), sinon le premier créneau libre de la dispo.
+
+        Retourne (jour, debut_min) ou None si la dispo est pleine.
+        """
+        # Les vœux de l'élève, dans l'ordre voeu1, voeu2, voeu3
+        for souhait in voeu.creneaux_souhaites.values():
+            jour = souhait['jour']
+            if jour not in jours_horaires:
+                continue
+            debut_min = self._heure_en_minutes(souhait['heure'])
+            if self._creneau_libre(jour, debut_min, duree, jours_horaires, occupe):
+                return (jour, debut_min)
+
+        # Fallback : premier créneau libre de la disponibilité
+        for jour, horaires in jours_horaires.items():
+            temps = self._heure_en_minutes(horaires['debut'])
+            fin_jour = self._heure_en_minutes(horaires['fin'])
+            while temps + duree <= fin_jour:
+                if self._creneau_libre(jour, temps, duree, jours_horaires, occupe):
+                    return (jour, temps)
+                temps += duree
+        return None
+
     def generer_planning(self, classe_id):
-        """
-        Génère les propositions de planning pour une classe.
-        """
-        # TODO: implémenter l'algorithme de génération
-        pass
+        """Génère les 3 propositions de planning pour une classe."""
+        plannings_existants = self.planning_repo.obtenir_plannings_par_classe(classe_id)
+        if plannings_existants:
+            raise ValueError("Un planning a déjà été généré pour cette classe")
+
+        classe = self.classe_repo.obtenir(classe_id)
+        jours_horaires = classe.jours_horaires
+        voeux = self.voeu_repo.obtenir_voeux_par_classe(classe_id) or []
+
+        # Proposition 1 : ordre de soumission (premier arrivé)
+        voeux_1 = sorted(voeux, key=lambda v: v.soumis_le)
+        self._helper_proposition(jours_horaires, voeux_1, classe, 1)
+
+        # Proposition 2 : ordre aléatoire
+        voeux_2 = voeux.copy()
+        random.shuffle(voeux_2)
+        self._helper_proposition(jours_horaires, voeux_2, classe, 2)
+
+        # Proposition 3 : ordre de soumission inversé
+        voeux_3 = sorted(voeux, key=lambda v: v.soumis_le, reverse=True)
+        self._helper_proposition(jours_horaires, voeux_3, classe, 3)
+
+        return self.obtenir_plannings_par_classe(classe_id)
+
+    def _helper_proposition(self, jours_horaires, voeux, classe, numero_proposition):
+        """Génère une proposition : place chaque élève et crée un Creneau par placement."""
+        # occupe[jour] = intervalles déjà pris (debut_min, fin_min)
+        occupe = {jour: [] for jour in jours_horaires}
+
+        planning = Planning(
+            classe_id=classe.id,
+            numero_proposition=numero_proposition,
+            statut='genere'
+        )
+        self.planning_repo.ajouter(planning)
+
+        for voeu in voeux:
+            duree = self._duree_eleve(voeu.eleve_id, classe.id)
+            place = self._placer_eleve(voeu, duree, jours_horaires, occupe)
+            if not place:
+                # dispo pleine (cas extrême)
+                continue  
+            jour, debut_min = place
+            occupe[jour].append((debut_min, debut_min + duree))
+
+            creneau = Creneau(
+                planning_id=planning.id,
+                eleve_id=voeu.eleve_id,
+                classe_id=classe.id,
+                type=classe.nom,
+                jour=jour,
+                heure_debut=self._minutes_en_heure(debut_min),
+                heure_fin=self._minutes_en_heure(debut_min + duree),
+                duree_minutes=duree,
+                semaine_alternance=None,
+                date_debut=classe.date_debut,
+                date_fin=classe.date_fin,
+                statut='en_attente'
+            )
+            self.creneau_repo.ajouter(creneau)
 
     def selectionner_planning(self, planning_id):
         """
@@ -188,9 +321,20 @@ class PlanningCreneauFacade:
         planning.statut = 'valide'
         planning.valide_le = datetime.now(timezone.utc)
         self.planning_repo.mis_a_jour(planning_id, {'statut': 'valide', 'valide_le': datetime.now(timezone.utc)})
+        # On supprime les autres propositions de la classe (et leurs créneaux, en cascade)
+        autres = self.planning_repo.obtenir_plannings_par_classe(planning.classe_id)
+        for autre in autres:
+            if autre.id != planning_id:
+                self.planning_repo.supprime(autre.id)
         # Envoyer une notification FCM à tous les élèves de la classe
         classe = self.classe_repo.obtenir(planning.classe_id)
         for eleve in classe.eleves:
+            self.creer_notification({
+                'utilisateur_id': eleve.utilisateur_id,
+                'type': 'creneau_attribue',
+                'titre': 'Planning validé',
+                'message': f"Votre planning pour la classe {classe.nom} a été validé",
+            })
             if eleve.token_fcm:
                 envoyer_notification(
                     eleve.token_fcm,
@@ -217,10 +361,12 @@ class PlanningCreneauFacade:
             dict : Dictionnaire contenant les informations
             du créneau créé.
         """
+        heure_debut = self._parser_heure(donnees['heure_debut'])
+        heure_fin = self._parser_heure(donnees['heure_fin'])
         creneaux_existants = self.creneau_repo.obtenir_creneaux_par_eleve(donnees['eleve_id'])
         for creneau in creneaux_existants:
             if creneau.jour == donnees['jour']:
-                if donnees['heure_debut'] < creneau.heure_fin and donnees['heure_fin'] > creneau.heure_debut:
+                if heure_debut < creneau.heure_fin and heure_fin > creneau.heure_debut:
                     raise ValueError("chevauchement avec un créneau existant")
 
         creneau = Creneau(
@@ -229,12 +375,13 @@ class PlanningCreneauFacade:
             classe_id=donnees['classe_id'],
             type=donnees['type'],
             jour=donnees['jour'],
-            heure_debut=donnees['heure_debut'],
-            heure_fin=donnees['heure_fin'],
+            semaine_alternance=donnees.get('semaine_alternance'),
+            heure_debut=heure_debut,
+            heure_fin=heure_fin,
             duree_minutes=donnees['duree_minutes'],
             date_debut=self._parser_date(donnees.get('date_debut')),
             date_fin=self._parser_date(donnees.get('date_fin')),
-            statut='en_attente'
+            statut=donnees.get('statut', 'en_attente')
         )
         self.creneau_repo.ajouter(creneau)
         return creneau.to_dict()
@@ -289,6 +436,10 @@ class PlanningCreneauFacade:
         creneaux = self.creneau_repo.obtenir_creneaux_par_eleve(eleve_id)
         if not creneaux:
             return None
+        creneaux = [
+            creneau for creneau in creneaux
+            if creneau.planning and creneau.planning.statut == 'valide'
+        ]
         return [creneau.to_dict() for creneau in creneaux]
 
     def obtenir_creneaux_par_professeur(self, professeur_id):
@@ -300,7 +451,10 @@ class PlanningCreneauFacade:
         for classe in classes:
             creneaux_classe = self.creneau_repo.obtenir_creneaux_par_classe(classe.id)
             if creneaux_classe:
-                creneaux.extend([creneau.to_dict() for creneau in creneaux_classe])
+                creneaux.extend([
+                    creneau.to_dict() for creneau in creneaux_classe
+                    if creneau.planning and creneau.planning.statut == 'valide'
+                ])
         return creneaux if creneaux else None
 
     def obtenir_creneaux_par_planning(self, planning_id):
@@ -392,7 +546,9 @@ class PlanningCreneauFacade:
                 planning_id=creneau.planning_id, eleve_id=creneau.eleve_id,
                 classe_id=creneau.classe_id, type=creneau.type, jour=creneau.jour,
                 heure_debut=creneau.heure_debut, heure_fin=creneau.heure_fin,
-                duree_minutes=creneau.duree_minutes, statut=creneau.statut,
+                duree_minutes=creneau.duree_minutes,
+                semaine_alternance=creneau.semaine_alternance,
+                statut=creneau.statut,
                 date_debut=fin_jour + timedelta(days=1), date_fin=date_fin)
             self.creneau_repo.ajouter(partie_apres)
 
@@ -421,6 +577,10 @@ class PlanningCreneauFacade:
         if not creneau:
             return None
 
+        # Convertir les heures éventuelles (chaîne -> time) avant toute écriture
+        for champ in ('heure_debut', 'heure_fin'):
+            if champ in donnees_creneau:
+                donnees_creneau[champ] = self._parser_heure(donnees_creneau[champ])
         # Si scope = toute_la_periode → modification simple de tous les lundis
         if scope == 'toute_la_periode':
             self.creneau_repo.mis_a_jour(creneau_id, donnees_creneau)
@@ -441,6 +601,7 @@ class PlanningCreneauFacade:
             heure_debut=donnees_creneau.get('heure_debut', creneau.heure_debut),
             heure_fin=donnees_creneau.get('heure_fin', creneau.heure_fin),
             duree_minutes=donnees_creneau.get('duree_minutes', creneau.duree_minutes),
+            semaine_alternance=donnees_creneau.get('semaine_alternance', creneau.semaine_alternance),
             statut=donnees_creneau.get('statut', creneau.statut),
             # La ligne d'exception couvre exactement le jour ciblé
             date_debut=debut, date_fin=fin)
@@ -454,13 +615,20 @@ class PlanningCreneauFacade:
     # Créneaux personnels
     def creer_creneau_perso(self, donnees):
         """Crée un nouveau créneau personnel."""
+        heure_debut = donnees['heure_debut']
+        heure_fin = donnees['heure_fin']
+        if isinstance(heure_debut, str):
+            heure_debut = time.fromisoformat(heure_debut)
+        if isinstance(heure_fin, str):
+            heure_fin = time.fromisoformat(heure_fin)
+
         creneau_perso = CreneauPerso(
             utilisateur_id=donnees['utilisateur_id'],
             titre=donnees['titre'],
             description=donnees.get('description'),
             jour=donnees['jour'],
-            heure_debut=donnees['heure_debut'],
-            heure_fin=donnees['heure_fin']
+            heure_debut=heure_debut,
+            heure_fin=heure_fin
         )
         self.creneau_perso_repo.ajouter(creneau_perso)
         return creneau_perso.to_dict()
@@ -484,6 +652,9 @@ class PlanningCreneauFacade:
         creneau_perso = self.creneau_perso_repo.obtenir(creneau_perso_id)
         if not creneau_perso:
             return None
+        for cle in ('heure_debut', 'heure_fin'):
+            if isinstance(donnees.get(cle), str):
+                donnees[cle] = time.fromisoformat(donnees[cle])
         self.creneau_perso_repo.mis_a_jour(creneau_perso_id, donnees)
         return self.creneau_perso_repo.obtenir(creneau_perso_id).to_dict()
 

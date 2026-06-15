@@ -14,6 +14,7 @@ from planifPro.backend.classes.voeu import Voeu
 from planifPro.backend.classes.eleve import Eleve
 from planifPro.backend.classes.professeur import Professeur
 from planifPro.backend.services.fcm_service import envoyer_notification
+from datetime import datetime
 import uuid
 
 
@@ -46,11 +47,13 @@ class ClasseVoeuFacade:
             dict : Dictionnaire contenant les informations
             de la classe créée.
         """
+        date_debut = datetime.strptime(donnees['date_debut'], '%Y-%m-%d').date()
+        date_fin = datetime.strptime(donnees['date_fin'], '%Y-%m-%d').date()
         classe = Classe(
             professeur_id=donnees['professeur_id'],
             nom=donnees['nom'],
-            date_debut=donnees['date_debut'],
-            date_fin=donnees['date_fin'],
+            date_debut=date_debut,
+            date_fin=date_fin,
             jours_horaires=donnees['jours_horaires'],
             nombre_propositions=donnees['nombre_propositions'],
             nombre_voeux_requis=donnees['nombre_voeux_requis'],
@@ -170,6 +173,12 @@ class ClasseVoeuFacade:
         self.classe_repo.mis_a_jour(classe_id, {'statut': 'collecte_active'})
         # Envoyer une notification FCM à tous les élèves de la classe
         for eleve in classe.eleves:
+            self.creer_notification({
+                'utilisateur_id': eleve.utilisateur_id,
+                'type': 'collecte_voeux',
+                'titre': 'Collecte des vœux ouverte',
+                'message': f"La collecte des vœux est ouverte pour la classe {classe.nom}",
+            })
             if eleve.token_fcm:
                 envoyer_notification(
                     eleve.token_fcm,
@@ -192,11 +201,43 @@ class ClasseVoeuFacade:
             self.classe_repo.mis_a_jour(classe.id, {})
             return True
 
+    def mettre_a_jour_duree_eleve_classe(self, eleve_id, classe_id, duree_minutes):
+        """Met à jour la durée de cours d'un élève dans une classe."""
+        from planifPro import db
+        from planifPro.backend.classes.tables_relations import eleve_classe
+
+        db.session.execute(
+            eleve_classe.update().where(
+                eleve_classe.c.eleve_id == eleve_id,
+                eleve_classe.c.classe_id == classe_id
+            ).values(duree_minutes=duree_minutes)
+        )
+        db.session.commit()
+        return {'eleve_id': eleve_id, 'classe_id': classe_id, 'duree_minutes': duree_minutes}
+
     def supprimer_classe(self, classe_id):
         """Supprimer un classe existant et toutes les données associées (cascade)."""
         self.classe_repo.supprime(classe_id)
 
     # Voeu
+    def _valider_creneaux(self, creneaux, classe_id):
+        """Valide que les créneaux respectent les seuils de la classe."""
+        if not isinstance(creneaux, dict):
+            raise ValueError("Les créneaux souhaités doivent être un dictionnaire")
+
+        classe = self.classe_repo.obtenir(classe_id)
+        if not classe:
+            raise ValueError("Classe introuvable")
+
+        total = len(creneaux)
+        jours = len({souhait['jour'] for souhait in creneaux.values()})
+
+        if total < classe.nombre_voeux_requis or jours < classe.nombre_jours_min:
+            raise ValueError(
+                f"Vous devez soumettre au moins {classe.nombre_voeux_requis} "
+                f"créneaux répartis sur au moins {classe.nombre_jours_min} jours"
+            )
+
     def creer_voeu(self, donnees):
         """
         Crée un nouveau vœu dans le système.
@@ -209,6 +250,8 @@ class ClasseVoeuFacade:
             dict : Dictionnaire contenant les informations
             du vœu créé.
         """
+        self._valider_creneaux(donnees['creneaux_souhaites'], donnees['classe_id'])
+
         voeu = Voeu(
             eleve_id=donnees['eleve_id'],
             classe_id=donnees['classe_id'],
@@ -216,6 +259,14 @@ class ClasseVoeuFacade:
             statut='en_attente'
         )
         self.voeu_repo.ajouter(voeu)
+        # Notifie le professeur qu'un élève a soumis ses vœux
+        classe = self.classe_repo.obtenir(donnees['classe_id'])
+        self.creer_notification({
+            'utilisateur_id': classe.professeur_id,
+            'type': 'voeux_soumis',
+            'titre': 'Vœux soumis',
+            'message': f"Un élève a soumis ses vœux pour la classe {classe.nom}",
+        })
         return voeu.to_dict()
 
     def obtenir_voeu(self, voeu_id):
@@ -237,6 +288,8 @@ class ClasseVoeuFacade:
         voeu = self.voeu_repo.obtenir(voeu_id)
         if not voeu:
             return None
+        self._valider_creneaux(donnees_voeu['creneaux_souhaites'], donnees_voeu['classe_id'])
+
         self.voeu_repo.mis_a_jour(voeu_id, donnees_voeu)
         return self.voeu_repo.obtenir(voeu_id).to_dict()
 
