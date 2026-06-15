@@ -61,6 +61,13 @@ class ObjectifEvenementNotificationFacade:
             conseils=donnees.get('conseils')
         )
         self.objectif_repo.ajouter(objectif)
+        # Notification in-app à l'élève
+        self.creer_notification({
+            'utilisateur_id': objectif.eleve_id,
+            'type': 'objectif',
+            'titre': 'Nouvel objectif',
+            'message': "Votre professeur vous a laissé un objectif",
+        })
         eleve = self.eleve_repo.obtenir(objectif.eleve_id)
         if eleve and eleve.token_fcm:
                 envoyer_notification(
@@ -190,9 +197,15 @@ class ObjectifEvenementNotificationFacade:
 
         # Peuplement de la table eleve_evenement AVANT le commit
         evenement.eleves = list(set(eleves))
-
-        # Un seul commit qui persiste l'événement ET les liens destinataires
         self.evenement_repo.ajouter(evenement)
+        # Notification in-app à chaque élève destinataire
+        for eleve in evenement.eleves:
+            self.creer_notification({
+                'utilisateur_id': eleve.utilisateur_id,
+                'type': 'evenement',
+                'titre': 'Nouvel événement',
+                'message': f"Nouvel événement : {evenement.titre}",
+            })
         return evenement.to_dict()
 
     def obtenir_evenement(self, evenement_id):

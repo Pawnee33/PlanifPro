@@ -74,11 +74,11 @@ class TestVoeuxAPI(BaseTestCase):
         self.assertEqual(reponse.status_code, 200)
 
     def test_relancer_classe_introuvable(self):
-        token_prof, _, eleve_id, _ = self.preparer_classe_pour_voeux()
+        token_prof, _ = self.creer_et_connecter("professeur")
         reponse = self.client.post(
             "/api/v1/voeux/relancer",
             headers=self.entetes_auth(token_prof),
-            json={"classe_id": self.FAKE_UUID, "eleve_ids": [eleve_id]},
+            json={"classe_id": self.FAKE_UUID, "eleve_ids": [self.FAKE_UUID]},
         )
         self.assertEqual(reponse.status_code, 404)
 

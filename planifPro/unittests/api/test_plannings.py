@@ -47,7 +47,7 @@ class TestPlanningsAPI(BaseTestCase):
         self.assertEqual(reponse.status_code, 200)
 
     def test_valider_planning_introuvable(self):
-        token_prof, _, _, _ = self.preparer_classe_avec_voeux()
+        token_prof, _ = self.creer_et_connecter("professeur")
         reponse = self.client.put(
             "/api/v1/plannings/valider",
             headers=self.entetes_auth(token_prof),

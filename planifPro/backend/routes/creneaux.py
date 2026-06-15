@@ -283,6 +283,15 @@ class CreneauConfirmation(Resource):
             )
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
+        # Notifie le professeur que l'élève a confirmé son créneau
+        classe = facade.obtenir_classe(creneau['classe_id'])
+        if classe:
+            facade.creer_notification({
+                'utilisateur_id': classe['professeur_id'],
+                'type': 'creneau_confirme',
+                'titre': 'Créneau confirmé',
+                'message': f"Un élève a confirmé son créneau ({creneau['jour']})",
+            })
         return maj_creneau, 200
 
 

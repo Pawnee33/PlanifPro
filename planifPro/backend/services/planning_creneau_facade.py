@@ -329,6 +329,12 @@ class PlanningCreneauFacade:
         # Envoyer une notification FCM à tous les élèves de la classe
         classe = self.classe_repo.obtenir(planning.classe_id)
         for eleve in classe.eleves:
+            self.creer_notification({
+                'utilisateur_id': eleve.utilisateur_id,
+                'type': 'creneau_attribue',
+                'titre': 'Planning validé',
+                'message': f"Votre planning pour la classe {classe.nom} a été validé",
+            })
             if eleve.token_fcm:
                 envoyer_notification(
                     eleve.token_fcm,
