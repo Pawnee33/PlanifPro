@@ -1,9 +1,7 @@
+import Connexion from './pages/Connexion'
+
 function App() {
-  return (
-    <div className="text-2xl font-bold text-blue-700">
-      PlanifPro
-    </div>
-  )
+  return <Connexion />
 }
 
 export default App
