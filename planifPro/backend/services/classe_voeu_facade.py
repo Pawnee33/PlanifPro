@@ -173,6 +173,12 @@ class ClasseVoeuFacade:
         self.classe_repo.mis_a_jour(classe_id, {'statut': 'collecte_active'})
         # Envoyer une notification FCM à tous les élèves de la classe
         for eleve in classe.eleves:
+            self.creer_notification({
+                'utilisateur_id': eleve.utilisateur_id,
+                'type': 'collecte_voeux',
+                'titre': 'Collecte des vœux ouverte',
+                'message': f"La collecte des vœux est ouverte pour la classe {classe.nom}",
+            })
             if eleve.token_fcm:
                 envoyer_notification(
                     eleve.token_fcm,
@@ -253,6 +259,14 @@ class ClasseVoeuFacade:
             statut='en_attente'
         )
         self.voeu_repo.ajouter(voeu)
+        # Notifie le professeur qu'un élève a soumis ses vœux
+        classe = self.classe_repo.obtenir(donnees['classe_id'])
+        self.creer_notification({
+            'utilisateur_id': classe.professeur_id,
+            'type': 'voeux_soumis',
+            'titre': 'Vœux soumis',
+            'message': f"Un élève a soumis ses vœux pour la classe {classe.nom}",
+        })
         return voeu.to_dict()
 
     def obtenir_voeu(self, voeu_id):

@@ -336,4 +336,13 @@ class Inviter(Resource):
             )
         except Exception as e:
             return {'error': 'Erreur envoi email'}, 500
+        # Si l'élève a déjà un compte, notification in-app en plus de l'email
+        eleve = facade.obtenir_eleve_par_email(email)
+        if eleve:
+            facade.creer_notification({
+                'utilisateur_id': eleve['utilisateur_id'],
+                'type': 'code_classe',
+                'titre': 'Invitation à une classe',
+                'message': f"Vous êtes invité à rejoindre la classe « {classe['nom']} » avec le code {classe['code_classe']}",
+            })
         return {'message': 'Invitation envoyée'}, 200
