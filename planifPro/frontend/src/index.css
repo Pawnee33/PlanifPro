@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+@theme {
+  --color-bleu-nuit: #0C2863;
+  --color-bleu-marine: #181F72;
+  --color-bleu-shadow: #323CAD;
+  --color-tracer-violet: #9095F5;
+  --color-bleu-roi: #223397;
+  --color-bleu-moyen: #4065B6;
+  --color-bleu-ciel: #4975BF;
+  --color-bleu-clair: #4C7AC3;
+  --color-bleu-clair-ciel: #6EB4E6;
+  --color-or: #D59813;
+  --color-or-clair: #D5AE13;
+  --font-logo: "Konkhmer Sleokchher", sans-serif;
+  --font-titre: "Libertinus Sans", serif;
+  --font-base: "Kotta One", sans-serif;
+}
+
+@font-face {
+  font-family: "Libertinus Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/libertinus-sans@latest/latin-400-normal.woff2) format("woff2");
+}
