@@ -9,7 +9,7 @@ function Connexion() {
       {/* Logo */}
       <div className="flex items-center gap-3">
         <img src={logo} alt="Logo PlanifPro" className="h-14 w-auto mb-3" />
-        <span className="text-3xl text-black font-logo text-5xl">PlanifPro</span>
+        <span className="text-black font-logo text-5xl">PlanifPro</span>
       </div>
 
       {/* Carte de connexion */}
@@ -20,13 +20,13 @@ function Connexion() {
         <input
           type="email"
           placeholder="Adresse e-mail"
-          className="rounded-full bg-bleu-nuit border border-tracer-violet text-center text-white font-base placeholder-white/70 py-3 px-6 outline-none"
+          className="rounded-[20px] bg-bleu-nuit border border-tracer-violet text-center text-white font-base placeholder-white/70 py-3 px-6 outline-none"
         />
 
         <input
           type="password"
           placeholder="Mot de passe"
-          className="rounded-full bg-bleu-nuit border border-tracer-violet text-center text-white font-base placeholder-white/70 py-3 px-6 outline-none"
+          className="rounded-[20px] bg-bleu-nuit border border-tracer-violet text-center text-white font-base placeholder-white/70 py-3 px-6 outline-none"
         />
 
         {/* Ligne options */}
@@ -38,7 +38,7 @@ function Connexion() {
           <a href="#" className="hover:underline">Mot de passe oublié ?</a>
         </div>
 
-        <button className="rounded-full bg-or py-3 text-white font-base text-lg hover:brightness-110 transition backdrop-blur-sm shadow-[00px_10px_10px_-08px_#0C2863]">
+        <button className="rounded-full bg-or py-3 text-white font-base text-lg hover:brightness-110 transition backdrop-blur-sm shadow-[0px_10px_10px_-08px_#0C2863]">
           Se connecter
         </button>
 

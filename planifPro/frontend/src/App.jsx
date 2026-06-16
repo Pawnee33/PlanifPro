@@ -1,7 +1,7 @@
-import Connexion from './pages/Connexion'
+import Inscription from './pages/Inscription'
 
 function App() {
-  return <Connexion />
+  return <Inscription />
 }
 
 export default App
