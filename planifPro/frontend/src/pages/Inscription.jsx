@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import logo from '../assets/logo.png'
+import { Link } from 'react-router-dom'
 // Page d'inscription — version statique pour l'instant (pas encore d'interactivité).
 
 function Inscription() {
@@ -77,7 +78,7 @@ function Inscription() {
         {/* Lien connexion */}
         <div className="text-center">
           <span className="inline-block rounded-full bg-bleu-nuit px-5 py-3 mt-3 text-sm text-white font-base ">
-            Déjà un compte ? <a href="#" className="text-or hover:underline">Se connecter</a>
+            Déjà un compte ? <Link to="/connexion" className="text-or hover:underline">Se connecter</Link>
           </span>
         </div>
 
