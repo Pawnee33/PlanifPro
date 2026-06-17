@@ -1,33 +1,50 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { api } from '../services/helper'
 import logo from '../assets/logo.png'
 // Page de connexion — version d'interactivité.
 
 function Connexion() {
+    // --- LE STATE : la mémoire du composant ---
+
+  // L'e-mail saisi par l'utilisateur (vide au départ)
   const [email, setEmail] = useState('')
+
+  // Le mot de passe saisi (vide au départ)
   const [motDePasse, setMotDePasse] = useState('')
+
+  // Le message d'erreur à afficher (vide = pas d'erreur)
   const [erreur, setErreur] = useState('')
+
+  // La fonction qui permet de rediriger vers une autre page en JS
   const navigate = useNavigate()
 
+  // --- LA FONCTION DE CONNEXION : la liaison avec le backend ---
+
+  // async : la fonction va attendre une réponse réseau
   const seConnecter = async () => {
+
+    // On efface une éventuelle erreur précédente avant de réessayer
     setErreur('')
+
+    // try : on tente l'appel ; si le réseau plante, on ira dans le "catch"
     try {
-      const reponse = await fetch(`${import.meta.env.VITE_API_URL}/authentification/connexion`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, mot_de_passe: motDePasse }),
-      })
-      const donnees = await reponse.json()
+      // On envoie les identifiants au backend
+      // api.post s'occupe de tout (URL complète, en-tête JSON, token, lecture de la réponse)
+      const donnees = await api.post('/authentification/connexion', {
+          email,
+          mot_de_passe: motDePasse,                       // clé attendue par ton backend
+        })
 
-      if (!reponse.ok) {
-        setErreur(donnees.error || 'Erreur de connexion')
-        return
-      }
+      // Succès : on range le jeton JWT dans le navigateur
+      localStorage.setItem('token', donnees.access_token)
 
-      localStorage.setItem('token', donnees.access_token) // on stocke le jeton
-      navigate('/') // redirection provisoire (on ira vers le dashboard plus tard)
+      // Redirection (provisoire vers "/", ce sera le dashboard plus tard)
+      navigate('/')
+
     } catch (e) {
-      setErreur('Impossible de joindre le serveur')
+      // Le helper a levé une erreur et e.message contient le texte d'erreur
+      setErreur(e.message)
     }
   }
 
