@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  --color-blanc-base: #ffffff;
   --color-bleu-nuit: #0C2863;
   --color-bleu-marine: #181F72;
   --color-bleu-shadow: #323CAD;
