@@ -4,7 +4,7 @@ import SectionBarre from './ui/SectionBarre'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import logo from '../assets/logo.png'
 
-const BarreLaterale = () => {
+const BarreLaterale = ({ classes, onCreerClasse }) => {
     const [classesOuvert, setClassesOuvert] = useState(false)
     const [elevesOuvert, setElevesOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
@@ -24,10 +24,13 @@ const BarreLaterale = () => {
                 {/* Bouton Mes classes */}
                 <div>
                     <SectionBarre
-                    icone={<Users fill="currentColor" />}
-                    titre="Mes classes"
-                    messageVide="Aucune classe pour le moment"
-                    libelleBouton="+ Créer une classe"
+                        icone={<Users fill="currentColor" />}
+                        titre="Mes classes"
+                        elements={classes}
+                        getLabel={(classe) => classe.nom}
+                        messageVide="Aucune classe pour le moment"
+                        libelleBouton="+ Créer une classe"
+                        onAction={onCreerClasse}
                     />
                 </div>
 

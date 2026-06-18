@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ChevronUp, ChevronDown } from 'lucide-react'
 
-function SectionBarre({ icone, titre, messageVide, libelleBouton }) {
+function SectionBarre({ icone, titre, messageVide, libelleBouton, elements = [], getLabel, onAction  }) {
   const [ouvert, setOuvert] = useState(false)   // chaque section gère SON propre état
 
   return (
@@ -19,8 +19,20 @@ function SectionBarre({ icone, titre, messageVide, libelleBouton }) {
 
       {ouvert && (
         <div className="flex flex-col gap-2 bg-bleu-shadow rounded-[16px] p-3 mt-2">
-          <p className="text-white/70 text-sm text-center">{messageVide}</p>
-          <button className="rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet hover:scale-105 text-white">
+          {elements.length === 0 ? (
+            <p className="text-white/70 text-sm text-center">{messageVide}</p>
+          ) : (
+            elements.map((element, index) => (
+              <p
+                key={element.id}
+                style={{ backgroundColor: element.couleur || (index % 2 === 0 ? '#D59813' : '#22976e') }}
+                className="rounded-[16px] px-4 py-2 hover:scale-105 text-white text-sm" 
+              >
+                {getLabel(element)}
+              </p>
+            ))
+          )}
+          <button onClick={onAction} className="rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet hover:scale-105 text-white">
             {libelleBouton}
           </button>
         </div>
