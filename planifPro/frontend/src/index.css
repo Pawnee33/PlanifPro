@@ -25,3 +25,24 @@
   font-display: swap;
   src: url(https://cdn.jsdelivr.net/fontsource/fonts/libertinus-sans@latest/latin-400-normal.woff2) format("woff2");
 }
+
+/* === Barre de défilement === */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(213, 151, 19, 0.037);
+  border-radius: 100px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(222, 194, 34);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  min-height: 10px;
+}
+
