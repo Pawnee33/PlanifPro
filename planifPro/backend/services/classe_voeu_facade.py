@@ -52,6 +52,7 @@ class ClasseVoeuFacade:
         classe = Classe(
             professeur_id=donnees['professeur_id'],
             nom=donnees['nom'],
+            couleur=donnees.get('couleur'),
             date_debut=date_debut,
             date_fin=date_fin,
             jours_horaires=donnees['jours_horaires'],
