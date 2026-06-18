@@ -16,6 +16,7 @@ api = Namespace('classes', description='Opération de Classe')
 
 classe_model = api.model('Classe', {
     'nom': fields.String(required=True, description='Nom de la classe'),
+    'couleur': fields.String(description='Couleur de la classe (hex)'),
     'date_debut': fields.String(required=True, description='Date de début'),
     'date_fin': fields.String(required=True, description='Date de fin'),
     'jours_horaires': fields.Raw(description='Jours et horaires'),
