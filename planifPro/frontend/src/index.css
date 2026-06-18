@@ -63,38 +63,70 @@
   padding: 8px 0;
 }
 
-/* === Calendrier (FullCalendar) === */
+/* ===================== Calendrier (FullCalendar) ===================== */
 
-/* Conteneur : fond blanc arrondi */
+/* Conteneur : carte blanche arrondie */
 .fc {
   background: #ffffff;
   border-radius: 20px;
   padding: 16px;
-  --fc-border-color: #e5e7eb;                      /* grille douce */
-  --fc-today-bg-color: rgba(213, 152, 19, 0.08);   /* jour courant : doré léger */
+  overflow: hidden;
+  box-shadow: 0 10px 30px -10px rgba(12, 40, 99, 0.25);
+  --fc-border-color: #eef0f4;                     /* lignes de grille très douces */
+  --fc-today-bg-color: rgba(213, 152, 19, 0.07);  /* jour courant : doré léger */
+  font-family: inherit;
 }
 
-/* Boutons de la barre (prev/next, Semaine/Mois) */
-.fc .fc-button {
-  background: #0C2863;          /* bleu nuit */
-  border: none;
-  border-radius: 9999px;
-  padding: 6px 14px;
-  text-transform: capitalize;
-  box-shadow: none;
+/* Barre du haut */
+.fc .fc-toolbar.fc-header-toolbar { margin-bottom: 1.2rem; }
+.fc .fc-toolbar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0C2863;
 }
-.fc .fc-button:hover { filter: brightness(1.1); }
+
+/* Boutons (prev/next, Semaine/Mois) en pastilles */
+.fc .fc-button {
+  background: #0C2863 !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  padding: 6px 16px !important;
+  font-weight: 500 !important;
+  text-transform: capitalize !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+.fc .fc-button:hover { filter: brightness(1.15); }
+.fc .fc-button:focus { box-shadow: none !important; }
 .fc .fc-button-active { background: #D59813 !important; }   /* doré quand actif */
 
 /* En-têtes de jours */
-.fc-col-header-cell {
-  padding: 10px 0;
+.fc .fc-col-header-cell {
+  padding: 12px 0;
+  background: #f7f8fb;
+  border: none;
+}
+.fc .fc-col-header-cell-cushion {
+  color: #0C2863;
   font-weight: 600;
+  text-decoration: none;
+  text-transform: capitalize;
 }
 
-/* Événements : blocs arrondis, sans bordure dure */
-.fc-event {
-  border-radius: 10px;
-  border: none;
-  padding: 2px 6px;
+/* Colonne des heures */
+.fc .fc-timegrid-slot-label-cushion,
+.fc .fc-timegrid-axis-cushion {
+  color: #9aa0ab;
+  font-size: 0.8rem;
 }
+.fc .fc-timegrid-slot { height: 2.5em; }
+
+/* Événements : blocs arrondis */
+.fc .fc-event {
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 2px 6px !important;
+  font-size: 0.8rem !important;
+  background: #4065B6 !important;   /* bleu moyen de ta charte */
+}
+.fc .fc-event:hover { filter: brightness(1.08); }
