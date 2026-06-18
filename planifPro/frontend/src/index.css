@@ -142,3 +142,9 @@
   background: #4065B6 !important;   /* bleu moyen de ta charte */
 }
 .fc .fc-event:hover { filter: brightness(1.08); }
+/* PopupCreerClasse : icones horloge, planning */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
