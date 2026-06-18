@@ -19,6 +19,11 @@ function Calendrier() {
         slotLabelInterval="00:30:00"
         slotMinTime="08:00:00"
         slotMaxTime="22:00:00"
+        slotLabelFormat={{
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+        }}
     />
   )
 }
