@@ -7,7 +7,7 @@ const EnTete = () => {
         <header className='flex items-center justify-between bg-bleu-roi border-b-[4px] border-tracer-violet px-6 py-3'>
             <div className="flex items-center gap-3">
                 <img src={logo} alt="Logo PlanifPro" className="h-12 w-auto mb-3 hover:scale-105" />
-                <span className="text-black font-logo text-2xl md:text-4xl">PlanifPro</span>
+                <span className="text-white font-logo text-2xl md:text-4xl">PlanifPro</span>
             </div>
 
             <div className="flex items-center gap-7">

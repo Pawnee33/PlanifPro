@@ -5,6 +5,7 @@ import logo from '../assets/logo.png'
 import EnTete from '../components/EnTete'
 import BarreLaterale from '../components/BarreLaterale'
 import PiedDePage from '../components/PiedDePage'
+import Calendrier from '../components/Calendrier'
 import CarteStat from '../components/ui/CarteStat'
 // Page de connexion — version d'interactivité.
 
@@ -21,6 +22,9 @@ function DashboardProfesseur() {
           <CarteStat titre="Classes actives" valeur={0} />
           <CarteStat titre="Voeux reçu" valeur={0} />
           <CarteStat titre="Voeux en attente" valeur={0} />
+        </div>
+        <div className="mt-8">
+          <Calendrier />
         </div>
       </main>
       </div>

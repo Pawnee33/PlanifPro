@@ -46,3 +46,55 @@
   min-height: 10px;
 }
 
+/* Grille douce */
+.fc {
+  --fc-border-color: #e5e7eb;        /* lignes de grille claires */
+}
+
+/* Événements arrondis, sans bordure dure */
+.fc-event {
+  border-radius: 10px;
+  border: none;
+  padding: 2px 6px;
+}
+
+/* En-têtes de jours plus aérés */
+.fc-col-header-cell {
+  padding: 8px 0;
+}
+
+/* === Calendrier (FullCalendar) === */
+
+/* Conteneur : fond blanc arrondi */
+.fc {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 16px;
+  --fc-border-color: #e5e7eb;                      /* grille douce */
+  --fc-today-bg-color: rgba(213, 152, 19, 0.08);   /* jour courant : doré léger */
+}
+
+/* Boutons de la barre (prev/next, Semaine/Mois) */
+.fc .fc-button {
+  background: #0C2863;          /* bleu nuit */
+  border: none;
+  border-radius: 9999px;
+  padding: 6px 14px;
+  text-transform: capitalize;
+  box-shadow: none;
+}
+.fc .fc-button:hover { filter: brightness(1.1); }
+.fc .fc-button-active { background: #D59813 !important; }   /* doré quand actif */
+
+/* En-têtes de jours */
+.fc-col-header-cell {
+  padding: 10px 0;
+  font-weight: 600;
+}
+
+/* Événements : blocs arrondis, sans bordure dure */
+.fc-event {
+  border-radius: 10px;
+  border: none;
+  padding: 2px 6px;
+}
