@@ -1,6 +1,8 @@
 function SectionHoraires({ jour, info, index, onChange }) {
   // Alterne la couleur de fond un sur deux selon la position
   const couleurFond = index % 2 === 0 ? 'bg-or' : 'bg-bleu-roi'
+  // Le bouton prend la couleur inverse du fond
+  const couleurBouton = index % 2 === 0 ? 'bg-bleu-roi' : 'bg-or'
 
   return (
     <div
@@ -13,7 +15,7 @@ function SectionHoraires({ jour, info, index, onChange }) {
         <button
           type="button"
           onClick={() => onChange('actif', !info.actif)}
-          className={`w-10 h-6 rounded-full flex items-center px-1 transition ${
+          className={`w-10 h-6 rounded-full flex items-center px-1 transition  cursor-pointer shadow-[0_4px_10px_-2x_rgba(0,0,0,0.4)] hover:scale-125 ${couleurBouton} ${
             info.actif ? 'bg-bleu-roi justify-end' : 'bg-gray-400 justify-start'
           }`}
         >

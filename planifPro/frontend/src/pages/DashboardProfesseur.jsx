@@ -14,10 +14,13 @@ function DashboardProfesseur() {
   const [classes, setClasses] = useState([])
   const [popupOuvert, setPopupOuvert] = useState(false)
 
-  useEffect(() => {
+  const chargerClasses = () => {
     api.get('/classes/')
-    .then(setClasses)
-    .catch(() => setClasses([]))
+      .then(setClasses)
+      .catch(() => setClasses([])) // 404 si aucune classe, liste vide
+  }
+  useEffect(() => {
+    chargerClasses()
   }, [])
   return (
     <div>
@@ -40,7 +43,7 @@ function DashboardProfesseur() {
         <div className="flex flex-col min-b-screen">
           <PiedDePage />
         </div>
-        <PopupCreerClasse ouvert={popupOuvert} onFermer={() => setPopupOuvert(false)} />
+        <PopupCreerClasse ouvert={popupOuvert} onFermer={() => setPopupOuvert(false)} onClasseCree={chargerClasses}/>
       </div>
     </div>
   )

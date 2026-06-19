@@ -142,9 +142,28 @@
   background: #4065B6 !important;   /* bleu moyen de ta charte */
 }
 .fc .fc-event:hover { filter: brightness(1.08); }
-/* PopupCreerClasse : icones horloge, planning */
+c
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
   cursor: pointer;
+}
+
+/* Bouton pour choisir la couleur de la classe */
+input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 0;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 9999px;
+}
+input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 9999px;
 }

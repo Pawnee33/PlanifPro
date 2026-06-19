@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import { api } from '../services/helper' // ⚠️ adapte l'import à ton helper (comme dans Connexion.jsx)
+import { api } from '../services/helper' // adapte l'import à ton helper (comme dans Connexion.jsx)
 import SectionHoraires from './ui/SectionHoraires'
 
 function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
@@ -47,7 +47,7 @@ function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
       date_debut: dateDebut,
       date_fin: dateFin,
       jours_horaires,
-      nombre_propositions: 3, // pas dans le mockup → valeur par défaut
+      nombre_propositions: 3, // pas dans le mockup : valeur par défaut
       nombre_voeux_requis: nombreVoeux,
       nombre_jours_min: joursMin,
     }
@@ -94,12 +94,13 @@ function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
         />
 
         {/* Couleur */}
-        <label className="block text-white mb-1">Choisir la couleur de la classe</label>
+        <label className="block text-white mb-1">Choisir la couleur de la classe :</label>
+        <label className="block text-white text-[13px] mb-1">Cliquer sur la couleur pour choisir.</label>
         <input
           type="color"
           value={couleur}
           onChange={(e) => setCouleur(e.target.value)}
-          className="w-16 h-10 rounded-lg border border-tracer-violet bg-bleu-nuit mb-4 hover:scale-105 cursor-pointer"
+          className="w-10 h-10 rounded-full border-2 border-tracer-violet bg-bleu-nuit mb-4 hover:scale-105 cursor-pointer"
         />
 
         <hr className="border-white/30 my-4" />
@@ -108,6 +109,7 @@ function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
         <h3 className="text-white/90 uppercase text-sm tracking-wide mb-2">
           Période des cours :
         </h3>
+        <label className="block text-white text-[13px] mb-1">Configurez la période de vos cours (ex : année scolaire du 01/09/2026 au 30/06/2027). </label>
         <div className="flex gap-3 mb-4">
           <div className="flex-1">
             <label className="block text-white mb-1">Date de début</label>
@@ -135,6 +137,7 @@ function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
         <h3 className="text-white/90 uppercase text-sm tracking-wide mb-2">
           Jours et horaires des cours :
         </h3>
+        <label className="block text-white text-[14px] mb-1">Cliquez sur le bouton pour sélectionner les jours des cours et afficher les paramètres d'horaires :</label>
         {ordreJours.map((jour, index) => (
           <SectionHoraires
             key={jour}
@@ -151,9 +154,10 @@ function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
         <h3 className="text-white/90 uppercase text-sm tracking-wide mb-2">
           Contraintes des vœux :
         </h3>
+        <label className="block text-white text-[13px] mb-1">Définissez le nombre minimum de vœux que l'élève doit soumettre, ainsi que le nombre minimum de jours différents sur lesquels les répartir (ex : 3 vœux sur au moins 2 jours différents).</label>
         <div className="flex gap-3 mb-4">
           <div className="flex-1">
-            <label className="block text-white mb-1">Nombre de vœux minimum</label>
+            <label className="block text-white text-[15px] mb-1">Nombre de vœux minimum</label>
             <input
               type="number"
               min="1"
@@ -163,7 +167,7 @@ function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
             />
           </div>
           <div className="flex-1">
-            <label className="block text-white mb-1">Jours différents minimum</label>
+            <label className="block text-white text-[15px] mb-1">Jours différents minimum</label>
             <input
               type="number"
               min="1"
@@ -178,13 +182,13 @@ function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
         <div className="flex justify-end gap-3 mt-4">
           <button
             onClick={onFermer}
-            className="rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white"
+            className="rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white hover:scale-105"
           >
             Annuler
           </button>
           <button
             onClick={creerClasse}
-            className="rounded-[16px] bg-or px-4 py-2 border border-tracer-violet text-white"
+            className="rounded-[16px] bg-or px-4 py-2 border border-tracer-violet text-white hover:scale-105"
           >
             Créer la classe
           </button>
