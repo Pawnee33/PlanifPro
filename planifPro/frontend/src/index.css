@@ -167,3 +167,11 @@ input[type="color"]::-moz-color-swatch {
   border: none;
   border-radius: 9999px;
 }
+
+/* Barre swipable */
+.barre-onglets::-webkit-scrollbar {
+  display: none;        /* cache la barre (Chrome, Edge, Safari) */
+}
+.barre-onglets {
+  scrollbar-width: none; /* Firefox */
+}

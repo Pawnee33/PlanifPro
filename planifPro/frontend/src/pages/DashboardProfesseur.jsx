@@ -7,6 +7,7 @@ import BarreLaterale from '../components/BarreLaterale'
 import PiedDePage from '../components/PiedDePage'
 import Calendrier from '../components/Calendrier'
 import PopupCreerClasse from '../components/PopupCreerClasse'
+import EspaceClasse from '../components/EspaceClasse'
 import CarteStat from '../components/ui/CarteStat'
 // Page de connexion — version d'interactivité.
 
@@ -38,7 +39,7 @@ function DashboardProfesseur() {
           vueActive={vueActive}
           onChangerVue={setVueActive}
         />
-      <main className="flex-1 min-w-0 p-10 pl-16 bg-bleu/50">
+      <main className="flex-1 min-w-0 p-10 pl-16 bg-bleu-moyen">
         {/* Carte notifications classes et voeux */}
         {vueActive === 'planning' && (
           <>
@@ -53,12 +54,7 @@ function DashboardProfesseur() {
           </>
         )}
 
-        {classeSelectionnee && (
-          <div>
-            <h2 className="text-2xl text-white font-titre mb-4">{classeSelectionnee.nom}</h2>
-            {/* contenu de la classe à venir */}
-          </div>
-        )}
+        {classeSelectionnee && <EspaceClasse classe={classeSelectionnee} />}
       </main>
       </div>
         <div className="flex flex-col min-b-screen">
