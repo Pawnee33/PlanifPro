@@ -4,7 +4,7 @@ import SectionBarre from './ui/SectionBarre'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import logo from '../assets/logo.png'
 
-const BarreLaterale = ({ classes, onCreerClasse }) => {
+const BarreLaterale = ({ classes, onCreerClasse, vueActive, onChangerVue }) => {
     const [classesOuvert, setClassesOuvert] = useState(false)
     const [elevesOuvert, setElevesOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
@@ -15,7 +15,14 @@ const BarreLaterale = ({ classes, onCreerClasse }) => {
 
             {/* Bouton Planning */}
             <div>
-                <button className='flex items-center gap-6 rounded-[16px] bg-or w-full px-4 py-3 text-white hover:brightness-110 transition backdrop-blur-sm shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]'>
+                <button
+                    onClick={() => onChangerVue('planning')}
+                    className={
+                        `flex items-center gap-6 rounded-[16px] w-full px-4 py-3 text-white hover:brightness-110
+                        transition backdrop-blur-sm shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]
+                        ${vueActive === 'planning' ? 'bg-or' : 'bg-bleu-nuit'
+                    }`}
+                >
                     <CalendarDays />
                     Planning
                 </button>
@@ -31,6 +38,8 @@ const BarreLaterale = ({ classes, onCreerClasse }) => {
                         messageVide="Aucune classe pour le moment"
                         libelleBouton="+ Créer une classe"
                         onAction={onCreerClasse}
+                        vueActive={vueActive}
+                        onChangerVue={onChangerVue}
                     />
                 </div>
 
