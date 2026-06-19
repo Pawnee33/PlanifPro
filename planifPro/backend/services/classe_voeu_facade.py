@@ -4,6 +4,7 @@ Facade de gestion des classes et des vœux de PlanifPro.
 Ce module définit la classe ClasseVoeuFacade qui gère la logique
 métier liée aux classes et aux vœux des élèves.
 """
+from planifPro import db
 from planifPro.backend.persistence.repository import SQLAlchemyRepository
 from planifPro.backend.persistence.classe_repository import ClasseRepository
 from planifPro.backend.persistence.voeu_repository import VoeuRepository
@@ -13,6 +14,7 @@ from planifPro.backend.classes.classe import Classe
 from planifPro.backend.classes.voeu import Voeu
 from planifPro.backend.classes.eleve import Eleve
 from planifPro.backend.classes.professeur import Professeur
+from planifPro.backend.classes.tables_relations import eleve_classe
 from planifPro.backend.services.fcm_service import envoyer_notification
 from datetime import datetime
 import uuid
@@ -325,11 +327,22 @@ class ClasseVoeuFacade:
         return [voeu.to_dict() for voeu in voeux]
 
     def obtenir_eleves_par_classe(self, classe_id):
-        """Retourne la liste des élèves d'une classe."""
+        """Retourne la liste des élèves d'une classe avec la durée de cours."""
         classe = self.classe_repo.obtenir(classe_id)
         if not classe:
             return None
-        return [eleve.to_dict() for eleve in classe.eleves]
+        resultat = []
+        for eleve in classe.eleves:
+            donnees = eleve.to_dict()
+            ligne = db.session.execute(
+                eleve_classe.select().where(
+                    eleve_classe.c.eleve_id == eleve.utilisateur_id,
+                    eleve_classe.c.classe_id == classe_id,
+                )
+            ).first()
+            donnees['duree_minutes'] = ligne.duree_minutes if ligne else None
+            resultat.append(donnees)
+        return resultat
 
     def obtenir_voeux_par_professeur(self, professeur_id):
         """Retourne tous les vœux des classes d'un professeur."""

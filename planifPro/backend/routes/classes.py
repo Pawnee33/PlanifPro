@@ -37,6 +37,10 @@ ajouter_eleve_model = api.model('AjouterEleve', {
     'eleve_id': fields.String(required=True, description='ID de l\'élève')
 })
 
+duree_model = api.model('Duree', {
+    'duree_minutes': fields.Integer(required=True, description='Durée du cours en minutes')
+})
+
 
 @api.route('/')
 class ClassesList(Resource):
@@ -264,7 +268,39 @@ class ClasseEleves(Resource):
             return {'error': 'Erreur interne du serveur'}, 500
         return {'message': 'Élève ajouté avec succès'}, 201
 
+@api.route('/<classe_id>/eleves/<eleve_id>')
+class EleveDuree(Resource):
+    """Resource pour modifier la durée du cours d'un élève"""
+    @api.expect(duree_model)
+    @api.response(200, 'Durée mise à jour')
+    @api.response(400, 'Données invalides')
+    @api.response(403, 'Accès réservé aux professeurs')
+    @api.response(404, 'Élève introuvable dans cette classe')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def put(self, classe_id, eleve_id):
+        """Modification de la durée du cours d'un élève"""
+        donnees_eleve = api.payload
 
+        claims = get_jwt()
+        if claims.get('role') != 'professeur':
+            return {'error': 'Accès réservé aux professeurs'}, 403
+
+        if 'duree_minutes' not in donnees_eleve or donnees_eleve['duree_minutes'] <= 0:
+            return {'error': 'Durée invalide'}, 400
+
+        eleve_classe = facade.obtenir_eleves_par_classe(classe_id)
+        if not eleve_classe or not any(eleve['id'] == eleve_id for eleve in eleve_classe):
+            return {'error': 'Élève introuvable dans cette classe'}, 404
+
+        try:
+            maj_eleve = facade.mettre_a_jour_duree_eleve_classe(
+                eleve_id, classe_id, donnees_eleve['duree_minutes']
+            )
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return maj_eleve, 200
+    
 @api.route('/<classe_id>/collecte')
 class ClasseCollecte(Resource):
     """
