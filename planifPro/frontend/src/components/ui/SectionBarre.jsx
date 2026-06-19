@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import { ChevronUp, ChevronDown } from 'lucide-react'
 
-function SectionBarre({ icone, titre, messageVide, libelleBouton, elements = [], getLabel, onAction  }) {
+function SectionBarre({
+  icone, titre,
+  messageVide, libelleBouton,
+  elements = [], getLabel,
+  onAction, vueActive, onChangerVue  }) {
   const [ouvert, setOuvert] = useState(false)   // chaque section gère SON propre état
 
   return (
@@ -22,14 +26,17 @@ function SectionBarre({ icone, titre, messageVide, libelleBouton, elements = [],
           {elements.length === 0 ? (
             <p className="text-white/70 text-sm text-center">{messageVide}</p>
           ) : (
-            elements.map((element, index) => (
-              <p
+            elements.map((element) => (
+              <button
                 key={element.id}
-                style={{ backgroundColor: element.couleur || (index % 2 === 0 ? '#D59813' : '#22976e') }}
-                className="rounded-[16px] px-4 py-2 hover:scale-105 text-white text-sm" 
+                onClick={() => onChangerVue?.(element.id)}
+                style={vueActive === element.id ? undefined : { backgroundColor: element.couleur || '#D59813'}}
+                className={`w-full text-left rounded-[16px] px-4 py-2 hover:scale-105 text-white text-sm ${
+                  vueActive === element.id ? 'bg-or' : ''
+                }`}
               >
                 {getLabel(element)}
-              </p>
+              </button>
             ))
           )}
           <button onClick={onAction} className="rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet hover:scale-105 text-white">
