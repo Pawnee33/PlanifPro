@@ -47,7 +47,7 @@ function PanneauVoeux({ eleves, classe }) {
       await api.post('/plannings/generer', { classe_id: classe.id })
       alert('Plannings générés !')
     } catch (err) {
-      console.error(err)
+      alert(err.message)
     }
   }
 
