@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '../services/helper'
 import CarteStat from './ui/CarteStat'
-import { Bell, SquareCheckBig } from 'lucide-react'
+import { Bell, SquareCheckBig, TriangleAlert } from 'lucide-react'
 
 function PanneauVoeux({ eleves, classe }) {
   const [voeux, setVoeux] = useState([])
@@ -40,6 +40,15 @@ function PanneauVoeux({ eleves, classe }) {
       .filter((eleve) => !voeuDeleve(eleve.id))   // garde ceux SANS vœu
       .map((eleve) => eleve.id)                    // ne garde que leurs ids
     api.post('/voeux/relancer', { classe_id: classe.id, eleve_ids: enAttente })
+  }
+
+    const generePlanning = async () => {
+    try {
+      await api.post('/plannings/generer', { classe_id: classe.id })
+      alert('Plannings générés !')
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   // --- Statistiques ---
@@ -121,6 +130,63 @@ function PanneauVoeux({ eleves, classe }) {
           )
         })}
       </div>
+      {tousSoumis ? (
+        //Encadré doré : génération avec tous les voeux soumis
+        <div className="bg-linear-to-br from-green-300/70 to-green-800/50 border-2 border-dashed border-green-400 rounded-3xl p-6 text-center mt-2">
+          <p className="text-green-400 text-lg mb-1">Tous les voeux sont collecté !</p>
+          <p className="text-white/70 text-sm mb-3">Prêt à générer les 3 propositions de planning</p>
+          <button
+            onClick={generePlanning}
+            className="bg-linear-to-br from-green-300/90 to-green-800/70 border-3 border-green-300 rounded-full py-2 text-white hover:scale-105 transition px-13"
+          >
+            Générer les plannings
+          </button>
+        </div>
+      ) : (
+        <div className="bg-linear-to-br bg-bleu-nuit border-2 border-tracer-violet rounded-3xl p-6 mt-2">
+          {/* ligne : bloc gauche (titre + chips) | bouton à droite */}
+          <div className="flex items-center justify-between gap-4">
+
+            {/* colonne gauche : titre au-dessus, chips en dessous */}
+            <div className="flex flex-col gap-3">
+              <h3 className="text-white text-xl">Générer les propositions de planning</h3>
+              {/* chips : une pastille par élève */}
+              <div className="flex flex-wrap gap-2">
+                {eleves.map((eleve) => {
+                  const voeu = voeuDeleve(eleve.id)
+                  return (
+                    <span
+                      key={eleve.id}
+                      className={`flex items-center gap-1 rounded-full px-3 py-1 text-sm border ${
+                        voeu
+                          ? 'bg-green-500/20 text-green-400 border-green-300'
+                          : 'bg-gray-500/20 text-gray-400 border-gray-400 line-through'
+                      }`}
+                    >
+                      {voeu && <SquareCheckBig size={14} className="text-green-400" />}
+                      {eleve.prenom} {eleve.nom?.[0]}.
+                    </span>
+                  )
+                })}
+              </div>
+                {/* avertissement : liste des élèves sans vœu */}
+                <p className="flex items-center gap-2 text-yellow-400 text-sm mt-4">
+                  <TriangleAlert size={16} className="fill-yellow-400 text-black shrink-0" />
+                  {eleves.filter((eleve) => !voeuDeleve(eleve.id)).length} élève(s) n'ont pas soumis leurs vœux, ils seront exclus si vous générez maintenant.
+                </p>
+            </div>
+
+            {/* bouton à droite */}
+            <button
+              onClick={generePlanning}
+              className="bg-linear-to-b from-or-clair to-or border-2 border-or-clear rounded-full px-10 py-2 text-white hover:scale-105 transition"
+            >
+              Générer ({nombreSoumis}/{eleves.length})
+            </button>
+
+          </div>
+        </div>
+      )}
     </div>
   )
 }
