@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import CarteInfo from './ui/CarteInfo'
+import PanneauEleves from './PanneauEleves'
+import PanneauVoeux from './PanneauVoeux'
 import { api } from '../services/helper' // adapte l'import à ton helper
 import { CalendarDays, Users, Clock, Pencil, UserPlus } from 'lucide-react'
 
@@ -41,14 +43,7 @@ function EspaceClasse({ classe }) {
     return `${minutes} min`
   }
 
-  const lancerCollecte = async () => {
-    try {
-      await api.post(`/classes/${classe.id}/collecte`)
-      alert('Collecte des vœux lancée !') // feedback temporaire, à améliorer
-    } catch (err) {
-      console.error(err)
-    }
-  }
+  const conteneurRef = useRef(null)
 
   const onglets = [
     { id: 'eleves', label: `Élèves (${eleves.length})` },
@@ -68,9 +63,6 @@ function EspaceClasse({ classe }) {
     const index = Math.round(conteneur.scrollLeft / conteneur.offsetWidth)
     setOngletActif(onglets[index].id)
   }
-
-  const conteneurRef = useRef(null)
-
 
   return (
     <div className="flex flex-col gap-4 max-w-4xl mx-auto">
@@ -169,50 +161,12 @@ function EspaceClasse({ classe }) {
       >
         {/* Panneau Élèves */}
         <div className="w-full shrink-0 snap-center">
-          <div className="flex flex-col gap-3">
-            {eleves.length === 0 ? (
-              <p className="text-white/70">Aucun élève n'a encore rejoint cette classe.</p>
-            ) : (
-              eleves.map((eleve) => (
-                <div
-                  key={eleve.id}
-                  className="bg-bleu-nuit rounded-2xl border-2 border-or p-4 flex items-center justify-between gap-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-full bg-or w-10 h-10 flex items-center justify-center text-white font-bold">
-                      {eleve.prenom?.[0]}{eleve.nom?.[0]}
-                    </div>
-                    <div>
-                      <p className="text-or text-lg">{eleve.prenom} {eleve.nom}</p>
-                      <p className="text-white/70 text-sm">
-                        Durée : {eleve.duree_minutes ? formatDuree(eleve.duree_minutes) : 'non configurée'}
-                      </p>
-                    </div>
-                  </div>
-                  <button className="flex items-center gap-2 rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white hover:scale-105 transition">
-                    <Pencil size={16} /> {eleve.duree_minutes ? 'Modifier' : 'Configurer'}
-                  </button>
-                </div>
-              ))
-            )}
-
-            {/* Lancer la collecte */}
-            <div className="bg-linear-to-br from-gray-500/70 to-gray-400/50 border-2 border-dashed border-or rounded-3xl p-6 text-center mt-2">
-              <p className="text-or text-lg mb-1">Prêt à lancer la collecte des vœux ?</p>
-              <p className="text-white/70 text-sm mb-3">{eleves.length} élève(s) dans la classe</p>
-              <button
-                onClick={lancerCollecte}
-                className="bg-linear-to-b from-or-clair to-or border-3 border-or-clear rounded-full px-6 py-2 text-white hover:scale-105 transition"
-              >
-                Lancer la collecte des vœux
-              </button>
-            </div>
-          </div>
+          <PanneauEleves eleves={eleves} classe={classe} />
         </div>
 
         {/* Panneau Vœux */}
         <div className="w-full shrink-0 snap-center">
-          <p className="text-white">Onglet Vœux à venir</p>
+          <PanneauVoeux eleves={eleves} classe={classe} />
         </div>
 
         {/* Panneau Planning */}

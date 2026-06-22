@@ -509,6 +509,9 @@ chmod +x tests/*.sh
 
 # 6. Commande pour tout suprimer
 sudo -u postgres psql -d planifpro -c "TRUNCATE utilisateurs CASCADE;"
+
+# 7. Commande pour lancer le serveur backend
+python -m planifPro.run
 ```
 
 > Les scripts 2 à 5 s'enchaînent et réutilisent les données créées par les précédents.
