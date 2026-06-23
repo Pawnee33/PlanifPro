@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import CarteInfo from './ui/CarteInfo'
 import PanneauEleves from './PanneauEleves'
 import PanneauVoeux from './PanneauVoeux'
+import PanneauPlanning from './PanneauPlanning'
 import { api } from '../services/helper' // adapte l'import à ton helper
 import { CalendarDays, Users, Clock, Pencil, UserPlus } from 'lucide-react'
 
@@ -171,7 +172,7 @@ function EspaceClasse({ classe }) {
 
         {/* Panneau Planning */}
         <div className="w-full shrink-0 snap-center">
-          <p className="text-white">Onglet Planning à venir</p>
+          <PanneauPlanning classe={classe} eleves={eleves} />
         </div>
       </div>
     </div>

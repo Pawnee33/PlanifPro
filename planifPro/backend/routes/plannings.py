@@ -129,6 +129,31 @@ class PlanningValider(Resource):
         return valide_planning, 200
 
 
+@api.route('/classe/<classe_id>')
+class PlanningsClasseResource(Resource):
+    """Resource pour récupérer les 3 propositions de planning"""
+    @api.response(200, 'Liste des propositions de la classe')
+    @api.response(403, 'Accès réservé aux professeurs')
+    @api.response(404, 'Classe introuvable')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def get(self, classe_id):
+        """Récupère les 3 propositions de planning"""
+        claims = get_jwt()
+        if claims.get('role') != 'professeur':
+            return {'error': 'Accès réservé aux professeurs'}, 403
+
+        classe = facade.obtenir_classe(classe_id)
+        if not classe:
+            return {'error': 'Classe introuvable'}, 404
+
+        try:
+            plannings = facade.obtenir_plannings_par_classe(classe_id) or []
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return plannings, 200
+
+
 @api.route('/<planning_id>')
 class PlanningResource(Resource):
     """
