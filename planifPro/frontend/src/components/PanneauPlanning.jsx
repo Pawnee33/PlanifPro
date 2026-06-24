@@ -50,6 +50,7 @@ function PanneauPlanning({classe, eleves}) {
 
     // Convertit un créneau (back) en event (FullCalendar)
     const creneauVersEvent = (creneau) => {
+      const couleur = classe.couleur || '#D59813'
       const eleve = eleves.find((e) => e.id === creneau.eleve_id)
       const titre = eleve ? `${eleve.prenom} ${eleve.nom}` : 'Élève inconnu'
 
@@ -61,23 +62,34 @@ function PanneauPlanning({classe, eleves}) {
       // On extrait la date au format "AAAA-MM-JJ"
       const partieDate = date.toISOString().split('T')[0]
 
-      const couleur = classe.couleur || '#D59813'
       // On colle l'heure de créneau
       const start = `${partieDate}T${creneau.heure_debut}`
       const end   = `${partieDate}T${creneau.heure_fin}`
-      return { title: titre, start, end, backgroundColor: classe.couleur, borderColor: couleur }
+      return { title: titre, start, end, backgroundColor: couleur, borderColor: couleur }
     }
   
     return (
-      <div>
+      <div className="flex flex-col gap-6">
+
+        {/* 1. EN-TÊTE DE SECTION — une seule fois, hors du map */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-white text-3xl font-titre">Proposition générées</h2>
+          <p className="text-white/70">Cliquez sur une proposition pour la sélectionner</p>
+        </div>
+        {/* 2. LES 3 PROPOSITIONS — le map */}
         {plannings.map((planning) => {
           const events = (creneauxParPlanning[planning.id] || []).map(creneauVersEvent)
           return (
-            <div key={planning.id}>
+            <div key={planning.id} className="bg-bleu-roi rounded-3xl border-3 border-or overflow-hidden">
               {/* en-tête : Proposition X */}
-              <h3 className="text-white text-xl mb-2">Proposition {planning.numero_proposition}</h3>
+              <div className="p-4 flex items-center gap-3">
+                <div className=" bg-bleu-nuit h-8 w-8 rounded-full border-2 border-or shrink-0"></div>
+                <h3 className="text-white text-xl">Proposition {planning.numero_proposition} :</h3>
+              </div>
               {/* le calendrier de CETTE proposition */}
-              <CalendrierProposition events={events} />
+              <div className="calendrier-proposition">
+                <CalendrierProposition events={events} />
+              </div>
             </div>
           )
         })}
