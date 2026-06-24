@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { api } from '../services/helper'
 import CalendrierProposition from './CalendrierProposition'
 
-function PanneauPlanning({classe, eleves}) {
+function PanneauPlanning({ classe, eleves, signal }) {
     const [plannings, setPlannings] = useState([])
     const [creneauxParPlanning, setCreneauxParPlanning] = useState({})
 
@@ -12,7 +12,7 @@ function PanneauPlanning({classe, eleves}) {
       .get(`/plannings/classe/${classe.id}`)
       .then(setPlannings)
       .catch(() => setPlannings([]))
-  }, [classe.id])
+  }, [classe.id, signal])
 
   // affiche les créneaux par planning
   useEffect(() => {
@@ -67,32 +67,55 @@ function PanneauPlanning({classe, eleves}) {
       const end   = `${partieDate}T${creneau.heure_fin}`
       return { title: titre, start, end, backgroundColor: couleur, borderColor: couleur }
     }
+
+    const supprimerPlanning = (planningId) => {
+      api.delete(`/plannings/${planningId}`)
+        .then(() => {
+          return api.get(`/plannings/classe/${classe.id}`)
+        })
+        .then(setPlannings)
+        .catch(() => setPlannings([]))
+    }
   
     return (
       <div className="flex flex-col gap-6">
-
         {/* 1. EN-TÊTE DE SECTION — une seule fois, hors du map */}
         <div className="flex items-center justify-between">
           <h2 className="text-white text-3xl font-titre">Proposition générées</h2>
           <p className="text-white/70">Cliquez sur une proposition pour la sélectionner</p>
         </div>
-        {/* 2. LES 3 PROPOSITIONS — le map */}
-        {plannings.map((planning) => {
-          const events = (creneauxParPlanning[planning.id] || []).map(creneauVersEvent)
-          return (
-            <div key={planning.id} className="bg-bleu-roi rounded-3xl border-3 border-or overflow-hidden">
-              {/* en-tête : Proposition X */}
-              <div className="p-4 flex items-center gap-3">
-                <div className=" bg-bleu-nuit h-8 w-8 rounded-full border-2 border-or shrink-0"></div>
-                <h3 className="text-white text-xl">Proposition {planning.numero_proposition} :</h3>
+        {plannings.length === 0 ? (
+          // 1. Aucune proposition encore généré pour le moment
+          <p className="text-white/70 text-center py-8">
+            Aucune proposition généré pour l'instant. Générer un planning depuis l'onglet Voeux.
+          </p>
+        ) : (
+          // 2. LES 3 PROPOSITIONS — le map 
+          plannings.map((planning) => {
+            const events = (creneauxParPlanning[planning.id] || []).map(creneauVersEvent)
+            return (
+              <div key={planning.id} className="bg-bleu-roi rounded-3xl border-3 border-or overflow-hidden">
+                {/* en-tête : Proposition X */}
+                <div className="p-4 flex items-center gap-3">
+                  <div className=" bg-bleu-nuit h-8 w-8 rounded-full border-2 border-or shrink-0"></div>
+                  <h3 className="text-white text-xl">Proposition {planning.numero_proposition} :</h3>
+                  {planning.statut === 'valide' && (
+                    <button
+                      onClick={() => supprimerPlanning(planning.id)}
+                      className="rounded-full bg-red-600 px-4 py-2 text-white text-sm hover:scale-105 transition"
+                    >
+                      Supprimer le planning
+                    </button>
+                  )}
+                </div>
+                {/* le calendrier de CETTE proposition */}
+                <div className="calendrier-proposition">
+                  <CalendrierProposition events={events} />
+                </div>
               </div>
-              {/* le calendrier de CETTE proposition */}
-              <div className="calendrier-proposition">
-                <CalendrierProposition events={events} />
-              </div>
-            </div>
-          )
-        })}
+            )
+          })
+        )}
       </div>
     )
 }

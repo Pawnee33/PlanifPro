@@ -9,7 +9,8 @@ import { CalendarDays, Users, Clock, Pencil, UserPlus } from 'lucide-react'
 function EspaceClasse({ classe }) {
   const [ongletActif, setOngletActif] = useState('eleves')
   const [eleves, setEleves] = useState([])
-  
+  const [signalPlanning, setSignalPlanning] = useState(0)
+  const onPlanningGenere = () => setSignalPlanning((n) => n + 1)
 
   // Recharge les élèves quand on change de classe
   useEffect(() => {
@@ -167,12 +168,12 @@ function EspaceClasse({ classe }) {
 
         {/* Panneau Vœux */}
         <div className="w-full shrink-0 snap-center">
-          <PanneauVoeux eleves={eleves} classe={classe} />
+          <PanneauVoeux eleves={eleves} classe={classe} onPlanningGenere={onPlanningGenere} />
         </div>
 
         {/* Panneau Planning */}
         <div className="w-full shrink-0 snap-center">
-          <PanneauPlanning classe={classe} eleves={eleves} />
+          <PanneauPlanning classe={classe} eleves={eleves} signal={signalPlanning} />
         </div>
       </div>
     </div>

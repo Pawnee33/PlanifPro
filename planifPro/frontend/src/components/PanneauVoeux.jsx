@@ -3,7 +3,7 @@ import { api } from '../services/helper'
 import CarteStat from './ui/CarteStat'
 import { Bell, SquareCheckBig, TriangleAlert } from 'lucide-react'
 
-function PanneauVoeux({ eleves, classe }) {
+function PanneauVoeux({ eleves, classe, onPlanningGenere }) {
   const [voeux, setVoeux] = useState([])
 
   // Recharge les voeux quand on change de classe
@@ -46,6 +46,7 @@ function PanneauVoeux({ eleves, classe }) {
     try {
       await api.post('/plannings/generer', { classe_id: classe.id })
       alert('Plannings générés !')
+      onPlanningGenere()
     } catch (err) {
       alert(err.message)
     }

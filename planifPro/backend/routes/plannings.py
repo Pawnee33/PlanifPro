@@ -173,6 +173,27 @@ class PlanningResource(Resource):
             return {'error': 'Erreur interne du serveur'}, 500
         return planning, 200
 
+    @api.response(200, 'Planning supprimé')
+    @api.response(403, 'Accès réservé aux professeurs')
+    @api.response(404, 'Planning introuvable')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def delete(self, planning_id):
+        """Supprimer un planning et ses créneaux (cascade)"""
+        claims = get_jwt()
+        if claims.get('role') != 'professeur':
+            return {'error': 'Accès réservé aux professeurs'}, 403
+
+        planning = facade.obtenir_planning(planning_id)
+        if not planning:
+            return {'error': 'Planning introuvable'}, 404
+
+        try:
+            facade.supprimer_planning(planning_id)
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return {'message': 'Planning supprimé'}, 200
+
 
 @api.route('/<planning_id>/creneaux')
 class PlanningCreneaux(Resource):
