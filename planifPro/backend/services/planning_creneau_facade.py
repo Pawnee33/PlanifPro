@@ -261,8 +261,15 @@ class PlanningCreneauFacade:
         planning = self.planning_repo.obtenir(planning_id)
         if not planning:
             return None
-        if planning.statut != 'genere':
+
+        if planning.statut not in ['genere', 'selectionne']:
             raise ValueError("Le planning ne peut être selectionné que s'il est généré")
+
+        autres = self.planning_repo.obtenir_plannings_par_classe(planning.classe_id)
+        for autre in autres:
+            if autre.id != planning_id and autre.statut == 'selectionne':
+                self.planning_repo.mis_a_jour(autre.id, {'statut': 'genere'})
+
         planning.statut = 'selectionne'
         self.planning_repo.mis_a_jour(planning_id, {'statut': 'selectionne'})
         return planning.to_dict()
