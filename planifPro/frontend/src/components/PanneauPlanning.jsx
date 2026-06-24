@@ -4,6 +4,7 @@ import CalendrierProposition from './CalendrierProposition'
 import PopupSupprimerCreneau from './PopupSupprimerCreneau'
 import PopupDeplacerCreneau from './PopupDeplacerCreneau'
 import PopupEchangerCreneaux from './PopupEchangerCreneaux'
+import { creneauVersEvent } from './utils/creneaux'
 
 function PanneauPlanning({ classe, eleves, signal }) {
     const [plannings, setPlannings] = useState([])
@@ -40,42 +41,9 @@ function PanneauPlanning({ classe, eleves, signal }) {
     })
   }, [plannings])
 
-  // Table : à quel décalage (en jours) correspond chaque jour, à partir du lundi
-  const decalageJour = {
-    lundi: 0, mardi: 1, mercredi: 2, jeudi: 3,
-    vendredi: 4, samedi: 5, dimanche: 6,
-  }
-
-  // Renvoie l'objet Date du lundi de la semaine en cours
-  const lundiDeLaSemaine = () => {
-    const aujourdhui = new Date()
-    const recul = (aujourdhui.getDay() + 6) % 7  // nb de jours depuis lundi
-    aujourdhui.setDate(aujourdhui.getDate() - recul)
-    return aujourdhui
-  }
 
   const trierParNumero = (liste) =>
   [...liste].sort((a, b) => a.numero_proposition - b.numero_proposition)
-
-    // Convertit un créneau (back) en event (FullCalendar)
-    const creneauVersEvent = (creneau) => {
-      const couleur = classe.couleur || '#D59813'
-      const eleve = eleves.find((e) => e.id === creneau.eleve_id)
-      const titre = eleve ? `${eleve.prenom} ${eleve.nom}` : 'Élève inconnu'
-
-      // On part du Lundi, on avance jusqu'au bon jour
-      const date = lundiDeLaSemaine()
-      date.setDate(date.getDate() + decalageJour[creneau.jour])
-      date.setHours(12, 0, 0, 0) // midi : évite le décalage de date en UTC
-
-      // On extrait la date au format "AAAA-MM-JJ"
-      const partieDate = date.toISOString().split('T')[0]
-
-      // On colle l'heure de créneau
-      const start = `${partieDate}T${creneau.heure_debut}`
-      const end   = `${partieDate}T${creneau.heure_fin}`
-      return { title: titre, start, end, backgroundColor: couleur, borderColor: couleur }
-    }
 
     const supprimerPlanning = (planningId) => {
       api.delete(`/plannings/${planningId}`)
@@ -160,7 +128,9 @@ function PanneauPlanning({ classe, eleves, signal }) {
         ) : (
           // 2. LES 3 PROPOSITIONS — le map 
           plannings.map((planning) => {
-            const events = (creneauxParPlanning[planning.id] || []).map(creneauVersEvent)
+            const couleur = classe.couleur || '#D59813'
+            const events = (creneauxParPlanning[planning.id] || [])
+              .map((creneau) => creneauVersEvent(creneau, eleves, couleur))
             const estSelectionne = planning.statut !== 'genere'
             return (
               <div key={planning.id}
