@@ -50,7 +50,7 @@ function PanneauEleves({ eleves, classe }) {
         <p className="text-white/70 text-sm mb-3">{eleves.length} élève(s) dans la classe</p>
         <button
           onClick={lancerCollecte}
-          className="bg-linear-to-b from-or-clair to-or border-3 border-or-clear rounded-full px-6 py-2 text-white hover:scale-105 transition"
+          className="bg-linear-to-b from-or-clair to-or border-3 border-or-tres-clair rounded-full px-6 py-2 text-white hover:scale-105 transition"
         >
           Lancer la collecte des vœux
         </button>

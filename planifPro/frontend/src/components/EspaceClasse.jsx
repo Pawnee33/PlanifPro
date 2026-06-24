@@ -129,10 +129,10 @@ function EspaceClasse({ classe }) {
         </div>
 
         <div className="flex gap-2">
-          <button className="rounded-full bg-or border-3 border-or-clear px-4 py-2 text-white text-sm hover:scale-105 transition">
+          <button className="rounded-full bg-or border-3 border-or-tres-clair px-4 py-2 text-white text-sm hover:scale-105 transition">
             Copier le code
           </button>
-          <button className="rounded-full bg-or border-3 border-or-clear px-4 py-2 text-white text-sm hover:scale-105 transition">
+          <button className="rounded-full bg-or border-3 border-or-tres-clair px-4 py-2 text-white text-sm hover:scale-105 transition">
             Inviter par email
           </button>
         </div>

@@ -180,7 +180,7 @@ function PanneauVoeux({ eleves, classe, onPlanningGenere }) {
             {/* bouton à droite */}
             <button
               onClick={generePlanning}
-              className="bg-linear-to-b from-or-clair to-or border-2 border-or-clear rounded-full px-10 py-2 text-white hover:scale-105 transition"
+              className="bg-linear-to-b from-or-clair to-or border-2 border-or-tres-clair rounded-full px-10 py-2 text-white hover:scale-105 transition"
             >
               Générer ({nombreSoumis}/{eleves.length})
             </button>
