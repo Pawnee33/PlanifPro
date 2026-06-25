@@ -1,11 +1,24 @@
+import { useState } from 'react'
 import { api } from '../services/helper'
+import PopupConfigurerDuree from './PopupConfigurerDuree'
 import { Pencil } from 'lucide-react'
 
-function PanneauEleves({ eleves, classe }) {
+function PanneauEleves({ eleves, classe, onElevesModifies }) {
+  const [eleveAModifier, setEleveAModifier] = useState(null)
+
   const formatDuree = (minutes) => {
     if (minutes === 60) return '1 heure'
     if (minutes % 60 === 0) return `${minutes / 60} heures`
     return `${minutes} min`
+  }
+
+  const configurerDuree = (eleveId, duree) => {
+    api.put(`/eleves/${eleveId}`, {
+      classe_id: classe.id,
+      duree_minutes: duree,
+    })
+      .then(() => onElevesModifies())
+      .catch(() => alert('Erreur lors de la modification de la durée'))
   }
 
   const lancerCollecte = async () => {
@@ -38,7 +51,10 @@ function PanneauEleves({ eleves, classe }) {
                 </p>
               </div>
             </div>
-            <button className="flex items-center gap-2 rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white hover:scale-105 transition">
+            <button
+              onClick={() => setEleveAModifier(eleve)}
+              className="flex items-center gap-2 rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white hover:scale-105 transition"
+            >
               <Pencil size={16} /> {eleve.duree_minutes ? 'Modifier' : 'Configurer'}
             </button>
           </div>
@@ -55,6 +71,17 @@ function PanneauEleves({ eleves, classe }) {
           Lancer la collecte des vœux
         </button>
       </div>
+      {eleveAModifier && (
+        <PopupConfigurerDuree
+          ouvert={true}
+          onFermer={() => setEleveAModifier(null)}
+          eleve={eleveAModifier}
+          onConfigurer={(eleveId, duree) => {
+            configurerDuree(eleveId, duree)
+            setEleveAModifier(null)
+          }}
+        />
+      )}
     </div>
   )
 }
