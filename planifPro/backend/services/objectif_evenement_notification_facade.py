@@ -53,12 +53,18 @@ class ObjectifEvenementNotificationFacade:
             dict : Dictionnaire contenant les informations
             de l'objectif créé.
         """
+
+        date_cours = donnees.get('date_cours')
+        if isinstance(date_cours, str):
+            date_cours = datetime.strptime(date_cours, '%Y-%m-%d').date()
+
         objectif = Objectif(
             professeur_id=donnees['professeur_id'],
             eleve_id=donnees['eleve_id'],
             creneau_id=donnees['creneau_id'],
             contenu=donnees['contenu'],
-            conseils=donnees.get('conseils')
+            conseils=donnees.get('conseils'),
+            date_cours=date_cours
         )
         self.objectif_repo.ajouter(objectif)
         # Notification in-app à l'élève

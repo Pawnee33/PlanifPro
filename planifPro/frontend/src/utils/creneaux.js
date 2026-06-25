@@ -52,5 +52,9 @@ export const creneauVersEventRecurrent = (creneau, eleves, couleur) => {
     endRecur: creneau.date_fin,                    // fin de la période
     backgroundColor: couleur,
     borderColor: couleur,
+    extendedProps: {
+      creneauId: creneau.id,
+      eleveId: creneau.eleve_id,
+    },
   }
 }
