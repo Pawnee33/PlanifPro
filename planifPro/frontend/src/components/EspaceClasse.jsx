@@ -15,11 +15,15 @@ function EspaceClasse({ classe, onClasseModifiee }) {
   const onPlanningGenere = () => setSignalPlanning((n) => n + 1)
 
   // Recharge les élèves quand on change de classe
-  useEffect(() => {
+  const chargerEleves = () => {
     api
       .get(`/classes/${classe.id}/eleves`)
       .then(setEleves)
       .catch(() => setEleves([]))
+  }
+
+  useEffect(() => {
+    chargerEleves()
   }, [classe.id])
 
   // --- Helpers d'affichage ---
@@ -47,6 +51,11 @@ function EspaceClasse({ classe, onClasseModifiee }) {
     return `${minutes} min`
   }
 
+  const copierCode = () => {
+    navigator.clipboard.writeText(classe.code_classe)
+      .then(() => alert('Code copié !'))
+      .catch(() => alert('Impossible de copier le code'))
+  }
   const conteneurRef = useRef(null)
 
   const onglets = [
@@ -133,7 +142,10 @@ function EspaceClasse({ classe, onClasseModifiee }) {
         </div>
 
         <div className="flex gap-2">
-          <button className="rounded-full bg-or border-3 border-or-tres-clair px-4 py-2 text-white text-sm hover:scale-105 transition">
+          <button
+            onClick={copierCode}
+            className="rounded-full bg-or border-3 border-or-tres-clair px-4 py-2 text-white text-sm hover:scale-105 transition"
+          >
             Copier le code
           </button>
           <button className="rounded-full bg-or border-3 border-or-tres-clair px-4 py-2 text-white text-sm hover:scale-105 transition">
@@ -167,7 +179,7 @@ function EspaceClasse({ classe, onClasseModifiee }) {
       >
         {/* Panneau Élèves */}
         <div className="w-full shrink-0 snap-center">
-          <PanneauEleves eleves={eleves} classe={classe} />
+          <PanneauEleves eleves={eleves} classe={classe} onElevesModifies={chargerEleves} />
         </div>
 
         {/* Panneau Vœux */}
