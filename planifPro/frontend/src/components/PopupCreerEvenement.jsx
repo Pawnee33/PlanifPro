@@ -1,34 +1,20 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 
-function PopupCreerEvenement({ ouvert, onFermer, onCreer }) {
+function PopupCreerEvenement({ ouvert, onFermer, onCreer, classes, eleves }) {
   const [titre, setTitre] = useState('')
   const [date, setDate] = useState('')
   const [heure, setHeure] = useState('12:00')
   const [description, setDescription] = useState('')
   const [mode, setMode] = useState('toutes_classes')
+  const [selection, setSelection] = useState([])
 
   if (!ouvert) return null
-
-  const valider = () => {
-    if (!titre.trim() || !date) {
-      alert('Veuillez saisir un titre et une date')
-      return
-    }
-    // date + heure combinées en ISO 8601 : "2026-09-18T14:00"
-    const dateHeure = `${date}T${heure}`
-    onCreer({
-      titre,
-      description,
-      date_heure: dateHeure,
-      destinataires: { type: mode },
-    })
-  }
 
   // styles des boutons de mode
   const boutonMode = (valeur, label) => (
     <button
-      onClick={() => setMode(valeur)}
+      onClick={() => { setMode(valeur); setSelection([]) }}
       className={`rounded-full px-4 py-2 text-sm border border-tracer-violet transition ${
         mode === valeur ? 'bg-or text-white' : 'bg-bleu-roi text-white'
       }`}
@@ -37,6 +23,36 @@ function PopupCreerEvenement({ ouvert, onFermer, onCreer }) {
     </button>
   )
 
+  // Une fonction pour cocher/décocher 
+  const basculer = (id) => {
+    setSelection((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    )
+  }
+
+  //Adapter valider pour construire destinataires selon le mode
+  const valider = () => {
+    if (!titre.trim() || !date) {
+      alert('Veuillez saisir un titre et une date')
+      return
+    }
+    if ((mode === 'classes' || mode === 'eleves') && selection.length === 0) {
+      alert('Veuillez sélectionner au moins un destinataire')
+      return
+    }
+    const destinataires =
+      mode === 'toutes_classes'
+        ? { type: 'toutes_classes' }
+        : { type: mode, ids: selection }
+
+    onCreer({
+      titre,
+      description,
+      date_heure: `${date}T${heure}`,
+      destinataires,
+    })
+  }
+
   return (
     <div
       onClick={onFermer}
@@ -44,7 +60,7 @@ function PopupCreerEvenement({ ouvert, onFermer, onCreer }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative bg-bleu-clair border-2 border-tracer-violet rounded-2xl p-6 w-full max-w-md"
+        className="relative bg-bleu-clair border-2 border-tracer-violet rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
       >
         <button
           onClick={onFermer}
@@ -102,6 +118,44 @@ function PopupCreerEvenement({ ouvert, onFermer, onCreer }) {
         </div>
         {mode === 'toutes_classes' && (
           <p className="text-white/70 text-sm mb-4">Tous les élèves de toutes vos classes seront notifiés.</p>
+        )}
+
+        {mode === 'classes' && (
+          <div className="flex flex-col gap-2 mb-4 mt-2">
+            {classes.map((classe) => (
+              <label key={classe.id} className="flex items-center gap-2 text-white">
+                <input
+                  type="checkbox"
+                  checked={selection.includes(classe.id)}
+                  onChange={() => basculer(classe.id)}
+                />
+                <span
+                  className="w-3 h-3 rounded-full inline-block"
+                  style={{ backgroundColor: classe.couleur || '#D59813' }}
+                />
+                {classe.nom}
+              </label>
+            ))}
+          </div>
+        )}
+
+        {mode === 'eleves' && (
+          <div className="flex flex-col gap-2 mb-4 mt-2">
+            {eleves.map((eleve) => (
+              <label key={eleve.id} className="flex items-center gap-2 text-white">
+                <input
+                  type="checkbox"
+                  checked={selection.includes(eleve.utilisateur_id)}
+                  onChange={() => basculer(eleve.utilisateur_id)}
+                />
+                <span
+                  className="w-3 h-3 rounded-full inline-block"
+                  style={{ backgroundColor: eleve.classe_couleur || '#D59813' }}
+                />
+                {eleve.prenom} {eleve.nom}
+              </label>
+            ))}
+          </div>
         )}
 
         <div className="flex justify-end gap-3 mt-4">

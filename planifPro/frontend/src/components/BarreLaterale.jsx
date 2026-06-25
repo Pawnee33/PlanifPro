@@ -128,6 +128,8 @@ const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, 
               ouvert={popupEvenementOuverte}
               onFermer={() => setPopupEvenementOuverte(false)}
               onCreer={creerEvenement}
+              classes={classes}
+              eleves={eleves}
             />
         </aside>
     )
