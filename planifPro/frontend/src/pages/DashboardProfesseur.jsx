@@ -54,7 +54,9 @@ function DashboardProfesseur() {
           </>
         )}
 
-        {classeSelectionnee && <EspaceClasse classe={classeSelectionnee} />}
+        {classeSelectionnee && (
+          <EspaceClasse classe={classeSelectionnee} onClasseModifiee={chargerClasses} />
+        )}
       </main>
       </div>
         <div className="flex flex-col min-b-screen">

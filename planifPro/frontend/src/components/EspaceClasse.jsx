@@ -3,13 +3,15 @@ import CarteInfo from './ui/CarteInfo'
 import PanneauEleves from './PanneauEleves'
 import PanneauVoeux from './PanneauVoeux'
 import PanneauPlanning from './PanneauPlanning'
+import PopupModifierClasse from './PopupModifierClasse'
 import { api } from '../services/helper' // adapte l'import à ton helper
 import { CalendarDays, Users, Clock, Pencil, UserPlus } from 'lucide-react'
 
-function EspaceClasse({ classe }) {
+function EspaceClasse({ classe, onClasseModifiee }) {
   const [ongletActif, setOngletActif] = useState('eleves')
   const [eleves, setEleves] = useState([])
   const [signalPlanning, setSignalPlanning] = useState(0)
+  const [popupModifierOuverte, setPopupModifierOuverte] = useState(false)
   const onPlanningGenere = () => setSignalPlanning((n) => n + 1)
 
   // Recharge les élèves quand on change de classe
@@ -93,7 +95,9 @@ function EspaceClasse({ classe }) {
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          <button className="flex items-center gap-2 rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white hover:scale-105 transition">
+          <button
+            onClick={() => setPopupModifierOuverte(true)}
+            className="flex items-center gap-2 rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white hover:scale-105 transition">
             <Pencil size={16} /> Modifier
           </button>
           <button className="flex items-center gap-2 rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white hover:scale-105 transition">
@@ -176,6 +180,15 @@ function EspaceClasse({ classe }) {
           <PanneauPlanning classe={classe} eleves={eleves} signal={signalPlanning} />
         </div>
       </div>
+      <PopupModifierClasse
+        ouvert={popupModifierOuverte}
+        onFermer={() => setPopupModifierOuverte(false)}
+        classe={classe}
+        onClasseModifiee={() => {
+          onClasseModifiee()              // recharge la liste du dashboard
+          setPopupModifierOuverte(false)  // ferme la popup
+        }}
+      />
     </div>
   )
 } 
