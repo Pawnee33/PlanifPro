@@ -10,6 +10,7 @@ import PopupCreerClasse from '../components/PopupCreerClasse'
 import EspaceClasse from '../components/EspaceClasse'
 import CarteStat from '../components/ui/CarteStat'
 import FicheEleve from '../components/FicheEleve'
+import FicheEvenement from '../components/FicheEvenement'
 // Page de connexion — version d'interactivité.
 
 function DashboardProfesseur() {
@@ -19,6 +20,7 @@ function DashboardProfesseur() {
   const [evenements, setEvenements] = useState([])
   const [eleveSelectionne, setEleveSelectionne] = useState(null)
   const [popupOuvert, setPopupOuvert] = useState(false)
+  const [evenementSelectionne, setEvenementSelectionne] = useState(null)
 
   const chargerClasses = () => {
     api.get('/classes/')
@@ -61,9 +63,16 @@ useEffect(() => {
           onChangerVue={(vue) => {
             setVueActive(vue)
             setEleveSelectionne(null)
+            setEvenementSelectionne(null)
           }}
           onChoisirEleve={(eleve) => {
             setEleveSelectionne(eleve)
+            setEvenementSelectionne(null)
+            setVueActive(null)
+          }}
+          onChoisirEvenement={(evenement) => {
+            setEvenementSelectionne(evenement)
+            setEleveSelectionne(null)
             setVueActive(null)
           }}
         />
@@ -90,6 +99,11 @@ useEffect(() => {
         {/* Main Mes Élèves */}
         {eleveSelectionne && (
           <FicheEleve eleve={eleveSelectionne} />
+        )}
+
+        {/* Main Mes Événements */}
+        {evenementSelectionne && (
+          <FicheEvenement evenement={evenementSelectionne} />
         )}
       </main>
       </div>
