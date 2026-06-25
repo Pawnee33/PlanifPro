@@ -14,6 +14,7 @@ import CarteStat from '../components/ui/CarteStat'
 function DashboardProfesseur() {
   const [vueActive, setVueActive] = useState('planning')
   const [classes, setClasses] = useState([])
+  const [eleves, setEleves] = useState([])
   const [popupOuvert, setPopupOuvert] = useState(false)
 
   const chargerClasses = () => {
@@ -21,9 +22,17 @@ function DashboardProfesseur() {
       .then(setClasses)
       .catch(() => setClasses([])) // 404 si aucune classe, liste vide
   }
-  useEffect(() => {
-    chargerClasses()
-  }, [])
+
+  const chargerEleves = () => {
+  api.get('/eleves/')
+    .then(setEleves)
+    .catch(() => setEleves([]))
+}
+
+useEffect(() => {
+  chargerClasses()
+  chargerEleves()
+}, [])
 
   // On retrouve la classe dont l'id correspond à la vue active (undefined si aucune)
   const classeSelectionnee = classes.find((c) => c.id === vueActive)
@@ -35,6 +44,7 @@ function DashboardProfesseur() {
       <div className="flex flex-1">
         <BarreLaterale
           classes={classes}
+          eleves={eleves}
           onCreerClasse={() => setPopupOuvert(true)}
           vueActive={vueActive}
           onChangerVue={setVueActive}

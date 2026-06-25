@@ -4,7 +4,7 @@ import SectionBarre from './ui/SectionBarre'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import logo from '../assets/logo.png'
 
-const BarreLaterale = ({ classes, onCreerClasse, vueActive, onChangerVue }) => {
+const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue }) => {
     const [classesOuvert, setClassesOuvert] = useState(false)
     const [elevesOuvert, setElevesOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
@@ -48,6 +48,8 @@ const BarreLaterale = ({ classes, onCreerClasse, vueActive, onChangerVue }) => {
                     <SectionBarre
                     icone={<GraduationCap />}
                     titre="Mes élèves"
+                    elements={eleves.map((e) => ({ ...e, couleur: e.classe_couleur }))}
+                    getLabel={(eleve) => `${eleve.prenom} ${eleve.nom}`}
                     messageVide="Aucun élève pour le moment"
                     libelleBouton="+ Inviter un élève"
                     />

@@ -144,7 +144,10 @@ class ClasseVoeuFacade:
                 for eleve in classe.eleves:
                     if eleve.id not in eleve_ids:
                         eleve_ids.add(eleve.id)
-                        eleves.append(eleve.to_dict())
+                        donnees_eleve = eleve.to_dict()
+                        donnees_eleve['classe_nom'] = classe.nom
+                        donnees_eleve['classe_couleur'] = classe.couleur
+                        eleves.append(donnees_eleve)
             return eleves
 
     def obtenir_classe_par_code(self, code_classe):
