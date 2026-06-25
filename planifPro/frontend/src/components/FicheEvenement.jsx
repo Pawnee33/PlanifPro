@@ -1,4 +1,6 @@
-function FicheEvenement({ evenement }) {
+import { api } from '../services/helper'
+
+function FicheEvenement({ evenement, onSupprime }) {
   const formatDateHeure = (iso) => {
     if (!iso) return ''
     const [datePart, heurePart] = iso.split('T')
@@ -15,6 +17,13 @@ function FicheEvenement({ evenement }) {
     return ''
   }
 
+  const supprimer = () => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return
+    api.delete(`/evenements/${evenement.id}`)
+      .then(() => onSupprime())
+      .catch(() => alert('Erreur lors de la suppression'))
+  }
+
   return (
     <div className="flex flex-col gap-4 max-w-4xl mx-auto">
       <div className="bg-bleu-nuit border-3 border-or rounded-2xl p-5">
@@ -26,6 +35,12 @@ function FicheEvenement({ evenement }) {
             {evenement.description}
           </div>
         )}
+      <button
+          onClick={supprimer}
+          className="mt-4 rounded-full bg-[#5C1A1A] px-4 py-2 border-2 border-or-tres-clair text-or text-sm hover:scale-105 transition"
+        >
+          Supprimer
+        </button>
       </div>
     </div>
   )

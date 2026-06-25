@@ -103,7 +103,13 @@ useEffect(() => {
 
         {/* Main Mes Événements */}
         {evenementSelectionne && (
-          <FicheEvenement evenement={evenementSelectionne} />
+          <FicheEvenement
+            evenement={evenementSelectionne}
+            onSupprime={() => {
+              setEvenementSelectionne(null)
+              chargerEvenements()
+            }}
+          />
         )}
       </main>
       </div>
