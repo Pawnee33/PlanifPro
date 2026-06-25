@@ -1,5 +1,7 @@
 import React from 'react'
 import { useState } from 'react'
+import { api } from '../services/helper'
+import PopupInviterEleveClasse from './PopupInviterEleveClasse'
 import SectionBarre from './ui/SectionBarre'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import logo from '../assets/logo.png'
@@ -8,6 +10,17 @@ const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue
     const [classesOuvert, setClassesOuvert] = useState(false)
     const [elevesOuvert, setElevesOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
+    const [popupInviterOuverte, setPopupInviterOuverte] = useState(false)
+
+    const inviterEleve = (classeId, email) => {
+        api.post(`/classes/${classeId}/inviter`, { email })
+            .then(() => {
+            alert('Invitation envoyée !')
+            setPopupInviterOuverte(false)
+            })
+            .catch(() => alert("Erreur lors de l'envoi de l'invitation"))
+        }
+
     return (
         <aside className='w-64 flex flex-col gap-3 bg-bleu-marine border-r-[4px] border-tracer-violet p-4'>
 
@@ -52,6 +65,7 @@ const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue
                     getLabel={(eleve) => `${eleve.prenom} ${eleve.nom}`}
                     messageVide="Aucun élève pour le moment"
                     libelleBouton="+ Inviter un élève"
+                    onAction={() => setPopupInviterOuverte(true)}
                     />
                 </div>
 
@@ -87,6 +101,12 @@ const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue
                     </button>
                 </div>
             </div>
+            <PopupInviterEleveClasse
+              ouvert={popupInviterOuverte}
+              onFermer={() => setPopupInviterOuverte(false)}
+              classes={classes}
+              onInviter={inviterEleve}
+            />
         </aside>
     )
 }
