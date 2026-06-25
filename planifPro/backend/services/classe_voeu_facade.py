@@ -86,6 +86,13 @@ class ClasseVoeuFacade:
         classe = self.classe_repo.obtenir(classe_id)
         if not classe:
             return None
+
+        # Convertir les dates (chaîne "AAAA-MM-JJ" -> objet date) avant validation
+        for champ in ('date_debut', 'date_fin'):
+            valeur = donnees_classe.get(champ)
+            if isinstance(valeur, str):
+                donnees_classe[champ] = datetime.strptime(valeur, '%Y-%m-%d').date()
+
         self.classe_repo.mis_a_jour(classe_id, donnees_classe)
         return self.classe_repo.obtenir(classe_id).to_dict()
 
