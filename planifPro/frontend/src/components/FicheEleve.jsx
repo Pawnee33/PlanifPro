@@ -34,6 +34,13 @@ function FicheEleve({ eleve }) {
       .catch(() => alert("Erreur lors de l'ajout de l'objectif"))
   }
 
+  const supprimerObjectif = (objectifId) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?')) return
+    api.delete(`/objectifs/${objectifId}`)
+      .then(() => chargerObjectifs())
+      .catch(() => alert("Erreur lors de la suppression"))
+  }
+
   const formatDate = (iso) => {
     const [annee, mois, jour] = iso.split('-')
     return `${jour}/${mois}/${annee}`
@@ -98,6 +105,12 @@ function FicheEleve({ eleve }) {
                 {objectif.conseils && (
                   <p className="text-white/70 text-sm mt-1">Conseils : {objectif.conseils}</p>
                 )}
+                <button
+                  onClick={() => supprimerObjectif(objectif.id)}
+                  className="mt-2 text-sm text-red-300 hover:text-red-400"
+                >
+                  Supprimer
+                </button>
               </div>
             ))}
           </div>
