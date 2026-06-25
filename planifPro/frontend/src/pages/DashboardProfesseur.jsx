@@ -109,6 +109,10 @@ useEffect(() => {
               setEvenementSelectionne(null)
               chargerEvenements()
             }}
+            onModifie={() => {
+              setEvenementSelectionne(null)
+              chargerEvenements()
+            }}
           />
         )}
       </main>
