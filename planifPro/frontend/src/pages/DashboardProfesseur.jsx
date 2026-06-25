@@ -9,12 +9,14 @@ import Calendrier from '../components/Calendrier'
 import PopupCreerClasse from '../components/PopupCreerClasse'
 import EspaceClasse from '../components/EspaceClasse'
 import CarteStat from '../components/ui/CarteStat'
+import FicheEleve from '../components/FicheEleve'
 // Page de connexion — version d'interactivité.
 
 function DashboardProfesseur() {
   const [vueActive, setVueActive] = useState('planning')
   const [classes, setClasses] = useState([])
   const [eleves, setEleves] = useState([])
+  const [eleveSelectionne, setEleveSelectionne] = useState(null)
   const [popupOuvert, setPopupOuvert] = useState(false)
 
   const chargerClasses = () => {
@@ -47,7 +49,14 @@ useEffect(() => {
           eleves={eleves}
           onCreerClasse={() => setPopupOuvert(true)}
           vueActive={vueActive}
-          onChangerVue={setVueActive}
+          onChangerVue={(vue) => {
+            setVueActive(vue)
+            setEleveSelectionne(null)
+          }}
+          onChoisirEleve={(eleve) => {
+            setEleveSelectionne(eleve)
+            setVueActive(null)
+          }}
         />
       <main className="flex-1 min-w-0 p-10 pl-16 bg-bleu-moyen">
         {/* Carte notifications classes et voeux */}
@@ -64,8 +73,14 @@ useEffect(() => {
           </>
         )}
 
+        {/* Main Mes Classes */}
         {classeSelectionnee && (
           <EspaceClasse classe={classeSelectionnee} onClasseModifiee={chargerClasses} />
+        )}
+
+        {/* Main Mes Élèves */}
+        {eleveSelectionne && (
+          <FicheEleve eleve={eleveSelectionne} />
         )}
       </main>
       </div>

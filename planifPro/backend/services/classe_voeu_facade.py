@@ -147,6 +147,13 @@ class ClasseVoeuFacade:
                         donnees_eleve = eleve.to_dict()
                         donnees_eleve['classe_nom'] = classe.nom
                         donnees_eleve['classe_couleur'] = classe.couleur
+                        ligne = db.session.execute(
+                            eleve_classe.select().where(
+                                eleve_classe.c.eleve_id == eleve.utilisateur_id,
+                                eleve_classe.c.classe_id == classe.id,
+                            )
+                        ).first()
+                        donnees_eleve['duree_minutes'] = ligne.duree_minutes if ligne else None
                         eleves.append(donnees_eleve)
             return eleves
 

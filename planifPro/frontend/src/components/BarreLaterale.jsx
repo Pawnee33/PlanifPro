@@ -6,7 +6,7 @@ import SectionBarre from './ui/SectionBarre'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import logo from '../assets/logo.png'
 
-const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue }) => {
+const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue, onChoisirEleve }) => {
     const [classesOuvert, setClassesOuvert] = useState(false)
     const [elevesOuvert, setElevesOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
@@ -66,6 +66,7 @@ const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue
                     messageVide="Aucun élève pour le moment"
                     libelleBouton="+ Inviter un élève"
                     onAction={() => setPopupInviterOuverte(true)}
+                    onChangerVue={(id) => onChoisirEleve(eleves.find((e) => e.id === id))}
                     />
                 </div>
 
