@@ -4,6 +4,7 @@ import PanneauEleves from './PanneauEleves'
 import PanneauVoeux from './PanneauVoeux'
 import PanneauPlanning from './PanneauPlanning'
 import PopupModifierClasse from './PopupModifierClasse'
+import PopupInviterEleve from './PopupInviterEleve'
 import { api } from '../services/helper' // adapte l'import à ton helper
 import { CalendarDays, Users, Clock, Pencil, UserPlus } from 'lucide-react'
 
@@ -12,6 +13,7 @@ function EspaceClasse({ classe, onClasseModifiee }) {
   const [eleves, setEleves] = useState([])
   const [signalPlanning, setSignalPlanning] = useState(0)
   const [popupModifierOuverte, setPopupModifierOuverte] = useState(false)
+  const [popupInviterOuverte, setPopupInviterOuverte] = useState(false)
   const onPlanningGenere = () => setSignalPlanning((n) => n + 1)
 
   // Recharge les élèves quand on change de classe
@@ -56,6 +58,16 @@ function EspaceClasse({ classe, onClasseModifiee }) {
       .then(() => alert('Code copié !'))
       .catch(() => alert('Impossible de copier le code'))
   }
+
+  const inviterEleve = (email) => {
+    api.post(`/classes/${classe.id}/inviter`, { email })
+      .then(() => {
+        alert('Invitation envoyée !')
+        setPopupInviterOuverte(false)
+      })
+      .catch(() => alert("Erreur lors de l'envoi de l'invitation"))
+  }
+
   const conteneurRef = useRef(null)
 
   const onglets = [
@@ -109,7 +121,12 @@ function EspaceClasse({ classe, onClasseModifiee }) {
             className="flex items-center gap-2 rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white hover:scale-105 transition">
             <Pencil size={16} /> Modifier
           </button>
-          <button className="flex items-center gap-2 rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white hover:scale-105 transition">
+
+          {/* Bouton Inviter un élève */}
+          <button
+            onClick={() => setPopupInviterOuverte(true)}
+            className="flex items-center gap-2 rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white hover:scale-105 transition"
+          >
             <UserPlus size={16} /> Inviter un élève
           </button>
         </div>
@@ -142,13 +159,19 @@ function EspaceClasse({ classe, onClasseModifiee }) {
         </div>
 
         <div className="flex gap-2">
+          {/* Bouton copier le code */}
           <button
             onClick={copierCode}
             className="rounded-full bg-or border-3 border-or-tres-clair px-4 py-2 text-white text-sm hover:scale-105 transition"
           >
             Copier le code
           </button>
-          <button className="rounded-full bg-or border-3 border-or-tres-clair px-4 py-2 text-white text-sm hover:scale-105 transition">
+
+          {/* Bouton Inviter par email */}
+          <button
+            onClick={() => setPopupInviterOuverte(true)}
+            className="rounded-full bg-or border-3 border-or-tres-clair px-4 py-2 text-white text-sm hover:scale-105 transition"
+          >
             Inviter par email
           </button>
         </div>
@@ -191,6 +214,8 @@ function EspaceClasse({ classe, onClasseModifiee }) {
         <div className="w-full shrink-0 snap-center">
           <PanneauPlanning classe={classe} eleves={eleves} signal={signalPlanning} />
         </div>
+
+      {/* Popup Modifier classe */}
       </div>
       <PopupModifierClasse
         ouvert={popupModifierOuverte}
@@ -200,6 +225,13 @@ function EspaceClasse({ classe, onClasseModifiee }) {
           onClasseModifiee()              // recharge la liste du dashboard
           setPopupModifierOuverte(false)  // ferme la popup
         }}
+      />
+
+      {/* Popup Inviter Élève */}
+      <PopupInviterEleve
+        ouvert={popupInviterOuverte}
+        onFermer={() => setPopupInviterOuverte(false)}
+        onInviter={inviterEleve}
       />
     </div>
   )
