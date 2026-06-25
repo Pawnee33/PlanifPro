@@ -14,10 +14,14 @@ function Calendrier() {
     Promise.all([
       api.get('/plannings/global').catch(() => []),
       api.get('/eleves/').catch(() => []),
-    ]).then(([creneaux, eleves]) => {
-      const evs = creneaux.map((creneau) =>
-        creneauVersEventRecurrent(creneau, eleves, '#D59813')
-      )
+      api.get('/classes/').catch(() => []),
+    ]).then(([creneaux, eleves, classes]) => {
+      const evs = creneaux.map((creneau) => {
+        // on cherche la classe du créneau pour récupérer sa couleur
+        const classe = classes.find((c) => c.id === creneau.classe_id)
+        const couleur = classe?.couleur || '#D59813'
+        return creneauVersEventRecurrent(creneau, eleves, couleur)
+      })
       setEvents(evs)
     })
   }, [])
