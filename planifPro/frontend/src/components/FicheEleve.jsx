@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { api } from '../services/helper'
 import PopupAjouterObjectif from './PopupAjouterObjectif'
+import PopupModifierObjectif from './PopupModifierObjectif'
 
 function FicheEleve({ eleve }) {
   const [creneaux, setCreneaux] = useState([])
   const [objectifs, setObjectifs] = useState([])
   const [creneauObjectif, setCreneauObjectif] = useState(null)
+  const [objectifAModifier, setObjectifAModifier] = useState(null)
 
   const chargerObjectifs = () => {
     api.get(`/objectifs/eleve/${eleve.utilisateur_id}`)
@@ -32,6 +34,15 @@ function FicheEleve({ eleve }) {
         setCreneauObjectif(null)
       })
       .catch(() => alert("Erreur lors de l'ajout de l'objectif"))
+  }
+
+  const modifierObjectif = (objectifId, contenu, conseils) => {
+    api.put(`/objectifs/${objectifId}`, { contenu, conseils })
+      .then(() => {
+        chargerObjectifs()
+        setObjectifAModifier(null)
+      })
+      .catch(() => alert("Erreur lors de la modification"))
   }
 
   const supprimerObjectif = (objectifId) => {
@@ -105,17 +116,34 @@ function FicheEleve({ eleve }) {
                 {objectif.conseils && (
                   <p className="text-white/70 text-sm mt-1">Conseils : {objectif.conseils}</p>
                 )}
-                <button
-                  onClick={() => supprimerObjectif(objectif.id)}
-                  className="mt-2 text-sm text-red-300 hover:text-red-400"
-                >
-                  Supprimer
-                </button>
+                <div className="flex gap-3 mt-3">
+                  <button
+                    onClick={() => setObjectifAModifier(objectif)}
+                    className="rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white text-sm hover:scale-105 transition"
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    onClick={() => supprimerObjectif(objectif.id)}
+                    className="rounded-full bg-[#5C1A1A] px-4 py-2 border-2 border-or-tres-clair text-or text-sm font-semibold hover:scale-105 transition"
+                  >
+                    Supprimer
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+      {objectifAModifier && (
+        <PopupModifierObjectif
+          ouvert={true}
+          onFermer={() => setObjectifAModifier(null)}
+          objectif={objectifAModifier}
+          onModifier={modifierObjectif}
+        />
+      )}
+
       {creneauObjectif && (
         <PopupAjouterObjectif
           ouvert={true}
