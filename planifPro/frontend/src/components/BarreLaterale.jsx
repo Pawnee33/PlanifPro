@@ -2,6 +2,7 @@ import React from 'react'
 import { useState } from 'react'
 import { api } from '../services/helper'
 import PopupInviterEleveClasse from './PopupInviterEleveClasse'
+import PopupCreerEvenement from './PopupCreerEvenement'
 import SectionBarre from './ui/SectionBarre'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import logo from '../assets/logo.png'
@@ -11,6 +12,7 @@ const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue
     const [elevesOuvert, setElevesOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
     const [popupInviterOuverte, setPopupInviterOuverte] = useState(false)
+    const [popupEvenementOuverte, setPopupEvenementOuverte] = useState(false)
 
     const inviterEleve = (classeId, email) => {
         api.post(`/classes/${classeId}/inviter`, { email })
@@ -19,6 +21,15 @@ const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue
             setPopupInviterOuverte(false)
             })
             .catch(() => alert("Erreur lors de l'envoi de l'invitation"))
+        }
+
+    const creerEvenement = (donnees) => {
+        api.post('/evenements/', donnees)
+            .then(() => {
+            alert('Événement créé et notifications envoyées !')
+            setPopupEvenementOuverte(false)
+            })
+            .catch(() => alert("Erreur lors de la création de l'événement"))
         }
 
     return (
@@ -77,6 +88,7 @@ const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue
                     titre="Événements"
                     messageVide="Aucun événement pour le moment"
                     libelleBouton="+ Ajouter un événement"
+                    onAction={() => setPopupEvenementOuverte(true)}
                     />
                 </div>
 
@@ -107,6 +119,12 @@ const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue
               onFermer={() => setPopupInviterOuverte(false)}
               classes={classes}
               onInviter={inviterEleve}
+            />
+
+            <PopupCreerEvenement
+              ouvert={popupEvenementOuverte}
+              onFermer={() => setPopupEvenementOuverte(false)}
+              onCreer={creerEvenement}
             />
         </aside>
     )
