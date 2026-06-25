@@ -16,6 +16,7 @@ function DashboardProfesseur() {
   const [vueActive, setVueActive] = useState('planning')
   const [classes, setClasses] = useState([])
   const [eleves, setEleves] = useState([])
+  const [evenements, setEvenements] = useState([])
   const [eleveSelectionne, setEleveSelectionne] = useState(null)
   const [popupOuvert, setPopupOuvert] = useState(false)
 
@@ -31,9 +32,16 @@ function DashboardProfesseur() {
     .catch(() => setEleves([]))
 }
 
+const chargerEvenements = () => {
+  api.get('/evenements/')
+    .then(setEvenements)
+    .catch(() => setEvenements([]))
+}
+
 useEffect(() => {
   chargerClasses()
   chargerEleves()
+  chargerEvenements()
 }, [])
 
   // On retrouve la classe dont l'id correspond à la vue active (undefined si aucune)
@@ -47,6 +55,7 @@ useEffect(() => {
         <BarreLaterale
           classes={classes}
           eleves={eleves}
+          evenements={evenements}
           onCreerClasse={() => setPopupOuvert(true)}
           vueActive={vueActive}
           onChangerVue={(vue) => {

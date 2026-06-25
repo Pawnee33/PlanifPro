@@ -7,7 +7,7 @@ import SectionBarre from './ui/SectionBarre'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import logo from '../assets/logo.png'
 
-const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue, onChoisirEleve }) => {
+const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, onChangerVue, onChoisirEleve }) => {
     const [classesOuvert, setClassesOuvert] = useState(false)
     const [elevesOuvert, setElevesOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
@@ -86,6 +86,8 @@ const BarreLaterale = ({ classes, eleves, onCreerClasse, vueActive, onChangerVue
                     <SectionBarre
                     icone={<Star />}
                     titre="Événements"
+                    elements={evenements}
+                    getLabel={(evenement) => evenement.titre}
                     messageVide="Aucun événement pour le moment"
                     libelleBouton="+ Ajouter un événement"
                     onAction={() => setPopupEvenementOuverte(true)}
