@@ -4,7 +4,7 @@ import CalendrierProposition from './CalendrierProposition'
 import PopupSupprimerCreneau from './PopupSupprimerCreneau'
 import PopupDeplacerCreneau from './PopupDeplacerCreneau'
 import PopupEchangerCreneaux from './PopupEchangerCreneaux'
-import { creneauVersEvent } from './utils/creneaux'
+import { creneauVersEvent } from '../utils/creneaux'
 
 function PanneauPlanning({ classe, eleves, signal }) {
     const [plannings, setPlannings] = useState([])
