@@ -34,6 +34,11 @@ function FicheEleve({ eleve }) {
       .catch(() => alert("Erreur lors de l'ajout de l'objectif"))
   }
 
+  const formatDate = (iso) => {
+    const [annee, mois, jour] = iso.split('-')
+    return `${jour}/${mois}/${annee}`
+  }
+
   return (
     <div className="flex flex-col gap-4 max-w-4xl mx-auto">
       {/* Carte identité */}
@@ -86,6 +91,9 @@ function FicheEleve({ eleve }) {
           <div className="flex flex-col gap-2">
             {objectifs.map((objectif) => (
               <div key={objectif.id} className="bg-bleu-marine border-2 border-tracer-violet rounded-xl px-4 py-3 text-white">
+                {objectif.date_cours && (
+                  <p className="text-or text-sm mb-1">Cours du {formatDate(objectif.date_cours)}</p>
+                )}
                 <p>{objectif.contenu}</p>
                 {objectif.conseils && (
                   <p className="text-white/70 text-sm mt-1">Conseils : {objectif.conseils}</p>
