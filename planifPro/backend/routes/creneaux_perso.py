@@ -17,7 +17,8 @@ api = Namespace('creneaux_perso', description='Opération de Creneau Personnel')
 creneau_perso_model = api.model('Creneau', {
     'titre': fields.String(required=True, description='Titre de la programmation'),
     'description': fields.String(description='Description de la programmation'),
-    'jour': fields.String(required=True, description='Jour de la programmation'),
+    'date_creneau': fields.String(required=True, description='Date du créneau (AAAA-MM-JJ)'),
+    'jour': fields.String(required=False, description='Jour de la programmation'),
     'heure_debut': fields.String(required=True, description='Heure de début de la programmation'),
     'heure_fin': fields.String(required=True, description='Heure de fin de la programmation')
 })

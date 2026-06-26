@@ -19,7 +19,8 @@ objectif_model = api.model('Objectif', {
     'eleve_id': fields.String(required=True, description='ID de l\'élève'),
     'creneau_id': fields.String(required=True, description='ID du créneau'),
     'contenu': fields.String(required=True, description='Contenu de l\'objectif'),
-    'conseils': fields.String(required=True, description='Conseils données à l\'élève')
+    'conseils': fields.String(required=True, description='Conseils données à l\'élève'),
+    'date_cours': fields.String(required=False, description='Date du cours (AAAA-MM-JJ)')
 })
 
 

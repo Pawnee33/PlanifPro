@@ -4,6 +4,7 @@ Facade de gestion des classes et des vœux de PlanifPro.
 Ce module définit la classe ClasseVoeuFacade qui gère la logique
 métier liée aux classes et aux vœux des élèves.
 """
+from planifPro import db
 from planifPro.backend.persistence.repository import SQLAlchemyRepository
 from planifPro.backend.persistence.classe_repository import ClasseRepository
 from planifPro.backend.persistence.voeu_repository import VoeuRepository
@@ -13,6 +14,7 @@ from planifPro.backend.classes.classe import Classe
 from planifPro.backend.classes.voeu import Voeu
 from planifPro.backend.classes.eleve import Eleve
 from planifPro.backend.classes.professeur import Professeur
+from planifPro.backend.classes.tables_relations import eleve_classe
 from planifPro.backend.services.fcm_service import envoyer_notification
 from datetime import datetime
 import uuid
@@ -52,6 +54,7 @@ class ClasseVoeuFacade:
         classe = Classe(
             professeur_id=donnees['professeur_id'],
             nom=donnees['nom'],
+            couleur=donnees.get('couleur'),
             date_debut=date_debut,
             date_fin=date_fin,
             jours_horaires=donnees['jours_horaires'],
@@ -83,6 +86,13 @@ class ClasseVoeuFacade:
         classe = self.classe_repo.obtenir(classe_id)
         if not classe:
             return None
+
+        # Convertir les dates (chaîne "AAAA-MM-JJ" -> objet date) avant validation
+        for champ in ('date_debut', 'date_fin'):
+            valeur = donnees_classe.get(champ)
+            if isinstance(valeur, str):
+                donnees_classe[champ] = datetime.strptime(valeur, '%Y-%m-%d').date()
+
         self.classe_repo.mis_a_jour(classe_id, donnees_classe)
         return self.classe_repo.obtenir(classe_id).to_dict()
 
@@ -134,7 +144,17 @@ class ClasseVoeuFacade:
                 for eleve in classe.eleves:
                     if eleve.id not in eleve_ids:
                         eleve_ids.add(eleve.id)
-                        eleves.append(eleve.to_dict())
+                        donnees_eleve = eleve.to_dict()
+                        donnees_eleve['classe_nom'] = classe.nom
+                        donnees_eleve['classe_couleur'] = classe.couleur
+                        ligne = db.session.execute(
+                            eleve_classe.select().where(
+                                eleve_classe.c.eleve_id == eleve.utilisateur_id,
+                                eleve_classe.c.classe_id == classe.id,
+                            )
+                        ).first()
+                        donnees_eleve['duree_minutes'] = ligne.duree_minutes if ligne else None
+                        eleves.append(donnees_eleve)
             return eleves
 
     def obtenir_classe_par_code(self, code_classe):
@@ -324,11 +344,22 @@ class ClasseVoeuFacade:
         return [voeu.to_dict() for voeu in voeux]
 
     def obtenir_eleves_par_classe(self, classe_id):
-        """Retourne la liste des élèves d'une classe."""
+        """Retourne la liste des élèves d'une classe avec la durée de cours."""
         classe = self.classe_repo.obtenir(classe_id)
         if not classe:
             return None
-        return [eleve.to_dict() for eleve in classe.eleves]
+        resultat = []
+        for eleve in classe.eleves:
+            donnees = eleve.to_dict()
+            ligne = db.session.execute(
+                eleve_classe.select().where(
+                    eleve_classe.c.eleve_id == eleve.utilisateur_id,
+                    eleve_classe.c.classe_id == classe_id,
+                )
+            ).first()
+            donnees['duree_minutes'] = ligne.duree_minutes if ligne else None
+            resultat.append(donnees)
+        return resultat
 
     def obtenir_voeux_par_professeur(self, professeur_id):
         """Retourne tous les vœux des classes d'un professeur."""

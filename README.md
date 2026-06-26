@@ -509,8 +509,229 @@ chmod +x tests/*.sh
 
 # 6. Commande pour tout suprimer
 sudo -u postgres psql -d planifpro -c "TRUNCATE utilisateurs CASCADE;"
+
+# 7. Commande pour lancer le serveur backend
+python -m planifPro.run
 ```
 
 > Les scripts 2 à 5 s'enchaînent et réutilisent les données créées par les précédents.
 > Relance la chaîne sur une base propre : les plannings sont générés une seule fois par classe
 > (une 2ᵉ génération renvoie une erreur `409`).
+
+# Installation : PlanifPro Frontend (React PWA)
+
+Le frontend est une PWA développée avec **React + Vite**, stylée avec **Tailwind CSS v4**,
+et installable grâce à **vite-plugin-pwa**. Il vit dans le dossier `planifPro/frontend/`.
+
+## Prérequis
+- Node.js 20+ (LTS recommandé)
+- npm 10+
+
+Vérifier l'installation :
+
+```bash
+node -v && npm -v
+```
+
+---
+
+## 1. Initialiser le projet React avec Vite
+
+Depuis la racine du projet, se placer dans le dossier frontend, puis scaffolder Vite **dans** ce dossier :
+
+```bash
+cd planifPro/frontend
+npm create vite@latest .
+```
+
+Répondre aux questions :
+- **Select a framework** → `React`
+- **Select a variant** → `JavaScript` (sans React Compiler)
+- **Install with npm and start now?** → `Yes`
+
+Cela génère le squelette du projet, installe les dépendances (`node_modules/`) et lance le serveur de développement sur `http://localhost:5173`.
+
+> Pour arrêter le serveur : `Ctrl + C`. Pour le relancer : `npm run dev`.
+
+---
+
+## 2. Nettoyer le boilerplate de démo
+
+Repartir d'une base propre :
+- `src/App.jsx` → composant minimal (voir ci-dessous)
+- `src/index.css` → ne garder que l'import Tailwind (étape 3)
+- Supprimer `src/App.css`
+
+Contenu minimal de `src/App.jsx` (aucun import nécessaire) :
+
+```jsx
+function App() {
+  return (
+    <div className="text-2xl font-bold text-blue-700">
+      PlanifPro
+    </div>
+  )
+}
+
+export default App
+```
+
+---
+
+## 3. Configurer Tailwind CSS v4
+
+Installer Tailwind et son plugin officiel pour Vite :
+
+```bash
+npm install -D tailwindcss @tailwindcss/vite
+```
+
+Brancher le plugin dans `vite.config.js` :
+
+```js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+})
+```
+
+Importer Tailwind dans `src/index.css` (obligatoirement en **première ligne**) :
+
+```css
+@import "tailwindcss";
+```
+
+> En Tailwind v4, plus besoin de `tailwind.config.js`. La configuration (couleurs, polices)
+> se fait directement dans le CSS via le bloc `@theme`.
+
+Charte graphique de PlanifPro (à ajouter juste après l'import dans `src/index.css`) :
+
+```css
+@theme {
+  --color-bleu-nuit: #0C2863;
+  --color-bleu-marine: #181F72;
+  --color-bleu-roi: #223397;
+  --color-bleu-moyen: #4065B6;
+  --color-bleu-ciel: #4975BF;
+  --color-bleu-clair: #4C7AC3;
+  --color-or: #D59813;
+  --color-or-clair: #D5AE13;
+  --color-violet: #9095F5;
+}
+```
+
+Ces couleurs deviennent alors des classes utilitaires : `bg-bleu-nuit`, `text-or`, `border-violet`, etc.
+
+---
+
+## 4. Configurer la PWA (manifest + service worker)
+
+Installer le plugin :
+
+```bash
+npm install -D vite-plugin-pwa
+```
+
+Ajouter `VitePWA` dans `vite.config.js` :
+
+```js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import { VitePWA } from 'vite-plugin-pwa'
+
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',     // le service worker se met à jour tout seul
+      devOptions: { enabled: true },  // permet de tester la PWA en mode dev
+      manifest: {
+        name: 'PlanifPro',
+        short_name: 'PlanifPro',
+        description: 'Gestion de planning pédagogique entre professeurs et élèves',
+        theme_color: '#0C2863',
+        background_color: '#ffffff',
+        display: 'standalone',
+        start_url: '/',
+        icons: [
+          { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512.png', sizes: '512x512', type: 'image/png' },
+        ],
+      },
+    }),
+  ],
+})
+```
+
+Placer deux icônes carrées au format PNG dans `public/` :
+- `pwa-192.png` (192×192 px)
+- `pwa-512.png` (512×512 px)
+
+> Vérifier le manifest : DevTools (`F12`) → onglet **Application** → **Manifest**.
+> Les icônes du manifest ne s'affichent pas dans la page : elles servent à l'installation de l'appli.
+
+---
+
+## 5. Configurer les variables d'environnement
+
+Dans Vite, une variable doit commencer par `VITE_` pour être accessible côté React
+(lecture via `import.meta.env.VITE_API_URL`).
+
+Créer `planifPro/frontend/.env` (ignoré par Git) :
+
+```
+VITE_API_URL=http://localhost:5000/api/v1
+```
+
+Créer `planifPro/frontend/.env.example` (modèle versionné) avec la même ligne.
+
+> Redémarrer le serveur après toute modification du `.env` :
+> Vite ne lit les variables qu'au démarrage.
+
+---
+
+## 6. Lancer le frontend
+
+```bash
+cd planifPro/frontend
+npm run dev
+```
+
+L'application est servie sur `http://localhost:5173`.
+
+---
+
+## Dépendances frontend principales
+
+| Paquet | Usage |
+|--------|-------|
+| `react` / `react-dom` | Bibliothèque d'interface |
+| `vite` | Outil de build et serveur de développement |
+| `tailwindcss` + `@tailwindcss/vite` | Styles utility-first (v4) |
+| `vite-plugin-pwa` | Manifest + service worker (PWA installable) |
+
+---
+
+## Structure du dossier frontend
+
+```
+planifPro/frontend/
+├── public/                 # fichiers statiques (icônes PWA, favicon)
+│   ├── pwa-192.png
+│   └── pwa-512.png
+├── src/
+│   ├── assets/             # images importées dans le code
+│   ├── App.jsx             # composant racine
+│   ├── main.jsx            # point d'entrée (monte React dans index.html)
+│   └── index.css           # import Tailwind + charte (@theme)
+├── .env                    # variables locales (ignoré par Git)
+├── .env.example            # modèle de variables (versionné)
+├── index.html              # page HTML unique (contient <div id="root">)
+├── vite.config.js          # config Vite (React, Tailwind, PWA)
+└── package.json            # dépendances + scripts (npm run dev / build)
+```

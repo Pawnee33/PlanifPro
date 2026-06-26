@@ -1,1 +1,182 @@
 @import "tailwindcss";
+
+@theme {
+  --color-bleu: oklch(48.8% 0.243 264.376);
+  --color-blanc-base: #ffffff;
+  --color-bleu-nuit: #0C2863;
+  --color-bleu-marine: #181F72;
+  --color-bleu-shadow: #323CAD;
+  --color-tracer-violet: #9095F5;
+  --color-bleu-roi: #223397;
+  --color-bleu-moyen: #4065B6;
+  --color-bleu-ciel: #4975BF;
+  --color-bleu-clair: #4C7AC3;
+  --color-bleu-clair-ciel: #6EB4E6;
+  --color-or: #D59813;
+  --color-or-clair: #D5AE13;
+  --color-or-tres-clair: #FCF4D6;
+  --font-logo: "Konkhmer Sleokchher", sans-serif;
+  --font-titre: "Libertinus Sans", serif;
+  --font-base: "Kotta One", sans-serif;
+}
+
+@font-face {
+  font-family: "Libertinus Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/libertinus-sans@latest/latin-400-normal.woff2) format("woff2");
+}
+
+/* Fond mesh multicolore */
+.fond-mesh {
+  background-color: hsl(48, 11%, 91%);
+  background-image:
+    radial-gradient(at 15% 20%, hsl(34, 24%, 89%) 0px, transparent 25%),
+    radial-gradient(at 85% 15%, hsl(43, 16%, 91%) 0px, transparent 25%),
+    radial-gradient(at 75% 85%, hsl(36, 8%, 88%) 0px, transparent 25%),
+    radial-gradient(at 20% 90%, hsl(48, 26%, 89%) 0px, transparent 25%);
+}
+
+
+/* === Barre de défilement === */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(213, 151, 19, 0.037);
+  border-radius: 100px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(222, 194, 34);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  min-height: 10px;
+}
+
+/* Grille douce */
+.fc {
+  --fc-border-color: #e5e7eb;        /* lignes de grille claires */
+}
+
+/* Événements arrondis, sans bordure dure */
+.fc-event {
+  border-radius: 10px;
+  border: none;
+  padding: 2px 6px;
+}
+
+/* En-têtes de jours plus aérés */
+.fc-col-header-cell {
+  padding: 8px 0;
+}
+
+/* ===================== Calendrier (FullCalendar) ===================== */
+
+/* Conteneur : carte blanche arrondie */
+.fc {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px -10px rgba(12, 40, 99, 0.25);
+  --fc-border-color: #eff4ee;                     /* lignes de grille très douces */
+  --fc-today-bg-color: rgba(213, 152, 19, 0.07);  /* jour courant : doré léger */
+  font-family: inherit;
+}
+
+/* Barre du haut */
+.fc .fc-toolbar.fc-header-toolbar { margin-bottom: 1.2rem; }
+.fc .fc-toolbar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0C2863;
+}
+
+/* Boutons (prev/next, Semaine/Mois) en pastilles */
+.fc .fc-button {
+  background: #0C2863 !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  padding: 6px 16px !important;
+  font-weight: 500 !important;
+  text-transform: capitalize !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+.fc .fc-button:hover { filter: brightness(1.15); }
+.fc .fc-button:focus { box-shadow: none !important; }
+.fc .fc-button-active { background: #D59813 !important; }   /* doré quand actif */
+
+/* En-têtes de jours */
+.fc .fc-col-header-cell {
+  padding: 12px 0;
+  background: #f7f8fb;
+  border: none;
+}
+.fc .fc-col-header-cell-cushion {
+  color: #0C2863;
+  font-weight: 600;
+  text-decoration: none;
+  text-transform: capitalize;
+}
+
+/* Colonne des heures */
+.fc .fc-timegrid-slot-label-cushion,
+.fc .fc-timegrid-axis-cushion {
+  color: #9aa0ab;
+  font-size: 0.8rem;
+}
+.fc .fc-timegrid-slot { height: 2.5em; }
+
+/* Événements : blocs arrondis */
+.fc .fc-event {
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 2px 6px !important;
+  font-size: 0.8rem !important;
+}
+.fc .fc-event:hover { filter: brightness(1.08); }
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+/* Forme du calendrierProposition */
+.calendrier-proposition .fc {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* Bouton pour choisir la couleur de la classe */
+input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 0;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 9999px;
+}
+input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: 9999px;
+}
+
+/* Barre swipable */
+.barre-onglets::-webkit-scrollbar {
+  display: none;        /* cache la barre (Chrome, Edge, Safari) */
+}
+.barre-onglets {
+  scrollbar-width: none; /* Firefox */
+}
