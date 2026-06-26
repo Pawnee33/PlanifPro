@@ -9,6 +9,8 @@ import { creneauVersEventRecurrent, creneauPersoVersEvent } from '../utils/crene
 import PopupAjouterObjectif from './PopupAjouterObjectif'
 import PopupCreerCreneauPerso from './PopupCreerCreneauPerso'
 import PopupGererCreneauPerso from './PopupGererCreneauPerso'
+import PopupActionsCreneau from './PopupActionsCreneau'
+import PopupScopeCreneau from './PopupScopeCreneau'
 
 function Calendrier() {
   const [events, setEvents] = useState([])
@@ -16,6 +18,8 @@ function Calendrier() {
   const [nouveauCreneau, setNouveauCreneau] = useState(null)
   const [creneauxPerso, setCreneauxPerso] = useState([])
   const [persoAGerer, setPersoAGerer] = useState(null)
+  const [creneauActions, setCreneauActions] = useState(null)
+  const [suppressionScope, setSuppressionScope] = useState(null)
 
 const charger = () => {
     Promise.all([
@@ -40,16 +44,18 @@ const charger = () => {
   }, [])
 
   // Au clic sur un créneau : on récupère le créneau, l'élève et LA DATE cliquée
-  const onEventClick = (info) => {
+ const onEventClick = (info) => {
     if (info.event.extendedProps.type === 'perso') {
       const creneauPerso = creneauxPerso.find((c) => c.id === info.event.extendedProps.persoId)
       setPersoAGerer(creneauPerso)
       return
     }
-    setCreneauObjectif({
+    // Créneau de cours → popup multi-actions
+    setCreneauActions({
       creneauId: info.event.extendedProps.creneauId,
       eleveId: info.event.extendedProps.eleveId,
-      date: info.event.start,   // date précise de l'occurrence cliquée
+      titre: info.event.title,
+      date: info.event.start,
     })
   }
 
@@ -100,6 +106,20 @@ const charger = () => {
       .catch(() => alert('Erreur lors de la suppression'))
   }
 
+  const supprimerCreneau = ({ scope, debut_jour, fin_jour }) => {
+    let url = `/creneaux/${suppressionScope.creneauId}?scope=${scope}`
+    if (scope !== 'toute_la_periode') {
+      url += `&debut_jour=${debut_jour}&fin_jour=${fin_jour}`
+    }
+    api.delete(url)
+      .then(() => {
+        alert('Cours supprimé !')
+        setSuppressionScope(null)
+        charger()
+      })
+      .catch(() => alert('Erreur lors de la suppression'))
+  }
+
   return (
     <>
       <FullCalendar
@@ -146,6 +166,42 @@ const charger = () => {
           creneau={persoAGerer}
           onModifier={modifierPerso}
           onSupprimer={supprimerPerso}
+        />
+      )}
+      {creneauActions && (
+        <PopupActionsCreneau
+          ouvert={true}
+          onFermer={() => setCreneauActions(null)}
+          creneau={creneauActions}
+          onObjectif={() => {
+            setCreneauObjectif({
+              creneauId: creneauActions.creneauId,
+              eleveId: creneauActions.eleveId,
+              date: creneauActions.date,
+            })
+            setCreneauActions(null)
+          }}
+
+          onModifier={() => {
+            alert('Modification du cours — à venir')
+            setCreneauActions(null)
+          }}
+          onSupprimer={() => {
+            setSuppressionScope({
+              creneauId: creneauActions.creneauId,
+              date: creneauActions.date.toISOString().split('T')[0],
+            })
+            setCreneauActions(null)
+          }}
+        />
+      )}
+      {suppressionScope && (
+        <PopupScopeCreneau
+          ouvert={true}
+          onFermer={() => setSuppressionScope(null)}
+          titre="Supprimer le cours"
+          dateInitiale={suppressionScope.date}
+          onValider={supprimerCreneau}
         />
       )}
     </>
