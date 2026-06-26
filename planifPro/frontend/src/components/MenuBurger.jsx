@@ -1,7 +1,7 @@
 import { User, Settings, Bell, Calendar, HelpCircle, LogOut, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-function MenuBurger({ ouvert, onFermer, utilisateur }) {
+function MenuBurger({ ouvert, onFermer, utilisateur, onOuvrirNotifications }) {
   const navigate = useNavigate()
 
   if (!ouvert) return null
@@ -48,7 +48,7 @@ function MenuBurger({ ouvert, onFermer, utilisateur }) {
         {/* Entrées */}
         {ligne(<User className="text-or" size={20} />, 'Mon Profil', () => alert('Mon profil — à venir'))}
         {ligne(<Settings className="text-white" size={20} />, 'Paramètres', () => alert('Paramètres — à venir'))}
-        {ligne(<Bell className="text-or" size={20} />, 'Notifications', () => alert('Notifications — à venir'))}
+        {ligne(<Bell className="text-or" size={20} />, 'Notifications', onOuvrirNotifications)}
         {ligne(<Calendar className="text-white" size={20} />, 'Exporter vers Google Calendar', () => alert('Export — à venir'))}
         {ligne(<HelpCircle className="text-or" size={20} />, 'Aide', () => alert('Aide — à venir'))}
         {ligne(<LogOut className="text-white" size={20} />, 'Se déconnecter', seDeconnecter)}
