@@ -12,6 +12,8 @@ import PopupGererCreneauPerso from './PopupGererCreneauPerso'
 import PopupActionsCreneau from './PopupActionsCreneau'
 import PopupScopeCreneau from './PopupScopeCreneau'
 import PopupModifierCreneau from './PopupModifierCreneau'
+import PopupChoixAjout from './PopupChoixAjout'
+import PopupAjouterCours from './PopupAjouterCours'
 
 function Calendrier() {
   const [events, setEvents] = useState([])
@@ -22,7 +24,11 @@ function Calendrier() {
   const [creneauActions, setCreneauActions] = useState(null)
   const [suppressionScope, setSuppressionScope] = useState(null)
   const [eleves, setEleves] = useState([])
+  const [classes, setClasses] = useState([])
+  const [creneauxBruts, setCreneauxBruts] = useState([])
   const [modificationCreneau, setModificationCreneau] = useState(null)
+  const [choixAjout, setChoixAjout] = useState(null)
+  const [ajoutCours, setAjoutCours] = useState(null)
 
 const charger = () => {
     Promise.all([
@@ -32,6 +38,8 @@ const charger = () => {
       api.get('/creneaux/perso/').catch(() => []),
     ]).then(([creneaux, eleves, classes, perso]) => {
       setEleves(eleves)
+      setClasses(classes)
+      setCreneauxBruts(creneaux)
       setCreneauxPerso(perso)
       const evsCours = creneaux.map((creneau) => {
         const classe = classes.find((c) => c.id === creneau.classe_id)
@@ -84,7 +92,7 @@ const charger = () => {
     const d = info.date
     const dateStr = d.toISOString().split('T')[0]            // "AAAA-MM-JJ"
     const heureStr = d.toTimeString().slice(0, 5)            // "HH:MM"
-    setNouveauCreneau({ date: dateStr, heure: heureStr })
+    setChoixAjout({ date: dateStr, heure: heureStr })
   }
 
   const creerCreneauPerso = (donnees) => {
@@ -108,6 +116,50 @@ const charger = () => {
     api.delete(`/creneaux/perso/${id}`)
       .then(() => { setPersoAGerer(null); charger() })
       .catch(() => alert('Erreur lors de la suppression'))
+  }
+
+  const ajouterCours = ({ classeId, eleveId, heureDebut, heureFin, scope, date }) => {
+    // On retrouve la classe (pour son nom, ses dates) et un créneau existant (pour le planning_id)
+    const classe = classes.find((c) => c.id === classeId)
+    const creneauDeLaClasse = creneauxBruts.find((c) => c.classe_id === classeId)
+
+    if (!creneauDeLaClasse) {
+      alert("Cette classe n'a pas encore de planning validé.")
+      return
+    }
+
+    // Durée en minutes
+    const [hDebut, mDebut] = heureDebut.split(':').map(Number)
+    const [hFin, mFin] = heureFin.split(':').map(Number)
+    const dureeMinutes = (hFin * 60 + mFin) - (hDebut * 60 + mDebut)
+
+    // Jour de la semaine en français à partir de la date cliquée
+    const jours = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']
+    const jour = jours[new Date(date).getDay()]
+
+    // Dates de période selon le scope
+    const dateDebut = scope === 'ce_jour' ? date : classe.date_debut
+    const dateFin = scope === 'ce_jour' ? date : classe.date_fin
+
+    api.post('/creneaux/', {
+      planning_id: creneauDeLaClasse.planning_id,
+      eleve_id: eleveId,
+      classe_id: classeId,
+      type: classe.nom,
+      jour,
+      heure_debut: heureDebut,
+      heure_fin: heureFin,
+      duree_minutes: dureeMinutes,
+      date_debut: dateDebut,
+      date_fin: dateFin,
+      statut: 'valide',
+    })
+      .then(() => {
+        alert('Cours ajouté !')
+        setAjoutCours(null)
+        charger()
+      })
+      .catch(() => alert("Erreur lors de l'ajout du cours"))
   }
 
   const modifierCreneau = (donnees, scopeInfo) => {
@@ -234,6 +286,32 @@ const charger = () => {
           titre="Supprimer le cours"
           dateInitiale={suppressionScope.date}
           onValider={supprimerCreneau}
+        />
+      )}
+
+      {choixAjout && (
+        <PopupChoixAjout
+          ouvert={true}
+          onFermer={() => setChoixAjout(null)}
+          onChoixPerso={() => {
+            setNouveauCreneau({ date: choixAjout.date, heure: choixAjout.heure })
+            setChoixAjout(null)
+          }}
+          onChoixCours={() => {
+            setAjoutCours({ date: choixAjout.date, heure: choixAjout.heure })
+            setChoixAjout(null)
+          }}
+        />
+      )}
+
+      {ajoutCours && (
+        <PopupAjouterCours
+          ouvert={true}
+          onFermer={() => setAjoutCours(null)}
+          classes={classes}
+          dateInitiale={ajoutCours.date}
+          heureInitiale={ajoutCours.heure}
+          onCreer={ajouterCours}
         />
       )}
     </>
