@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react'
 import { api } from '../services/helper'
 import { Bell, Menu } from 'lucide-react'
 import logo from '../assets/logo.png'
+import MenuBurger from './MenuBurger'
 
 const EnTete = () => {
     const [utilisateur, setUtilisateur] = useState(null)
+    const [menuOuvert, setMenuOuvert] = useState(false)
 
     useEffect(() => {
         api.get('/utilisateurs/profil')
@@ -30,11 +32,16 @@ const EnTete = () => {
                 <span className="text-white hidden md:inline">Bonjour {utilisateur?.prenom}</span>
 
                 <div>
-                    <button className="bg-or rounded-[30px] p-2 hover:scale-105">
+                    <button onClick={() => setMenuOuvert(true)} className="bg-or rounded-[30px] p-2 hover:scale-105">
                         <Menu className="text-white" size={18}/>
                     </button>
                 </div>
             </div>
+            <MenuBurger
+                ouvert={menuOuvert}
+                onFermer={() => setMenuOuvert(false)}
+                utilisateur={utilisateur}
+            />
         </header>
     )
 }
