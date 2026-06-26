@@ -52,7 +52,13 @@ useEffect(() => {
   return (
     <div>
       <div className="flex flex-col min-h-screen">
-        <EnTete />
+        <EnTete
+          onAccueil={() => {
+            setVueActive('planning')
+            setEleveSelectionne(null)
+            setEvenementSelectionne(null)
+          }}
+        />
       <div className="flex flex-1">
         <BarreLaterale
           classes={classes}

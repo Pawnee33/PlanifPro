@@ -76,6 +76,7 @@ function Inscription() {
           placeholder="Prénom"
           value={prenom}
           onChange={(e) => setPrenom(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') sInscrire() }}
           className="rounded-[20px] bg-bleu-nuit border border-tracer-violet text-center text-white font-base placeholder-white/70 py-3 px-6 outline-none"
         />
 
@@ -84,6 +85,7 @@ function Inscription() {
           placeholder="Nom"
           value={nom}
           onChange={(e) => setNom(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') sInscrire() }}
           className="rounded-[20px] bg-bleu-nuit border border-tracer-violet text-center text-white font-base placeholder-white/70 py-3 px-6 outline-none"
         />
 
@@ -92,6 +94,7 @@ function Inscription() {
           placeholder="Adresse e-mail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') sInscrire() }}
           className="rounded-[20px] bg-bleu-nuit border border-tracer-violet text-center text-white font-base placeholder-white/70 py-3 px-6 outline-none"
         />
 
@@ -100,6 +103,7 @@ function Inscription() {
           placeholder="Mot de passe"
           value={motDePasse}
           onChange={(e) => setMotDePasse(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') sInscrire() }}
           className="rounded-[20px] bg-bleu-nuit border border-tracer-violet text-center text-white font-base placeholder-white/70 py-3 px-6 outline-none"
         />
 
@@ -108,6 +112,7 @@ function Inscription() {
           placeholder="Confirmer le mot de passe"
           value={confirmation}
           onChange={(e) => setConfirmation(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') sInscrire() }}
           className="rounded-[20px] bg-bleu-nuit border border-tracer-violet text-center text-white font-base placeholder-white/70 py-3 px-6 outline-none"
         />
 
