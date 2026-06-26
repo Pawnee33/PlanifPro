@@ -58,3 +58,19 @@ export const creneauVersEventRecurrent = (creneau, eleves, couleur) => {
     },
   }
 }
+
+// Convertit UN créneau perso (ponctuel) en event FullCalendar.
+export const creneauPersoVersEvent = (creneauPerso) => {
+  const date = creneauPerso.date_creneau            // "AAAA-MM-JJ"
+  return {
+    title: creneauPerso.titre,
+    start: `${date}T${creneauPerso.heure_debut}`,
+    end: `${date}T${creneauPerso.heure_fin}`,
+    backgroundColor: '#323CAD',   // bleu-shadow, pour distinguer des cours
+    borderColor: '#323CAD',
+    extendedProps: {
+      type: 'perso',
+      persoId: creneauPerso.id,
+    },
+  }
+}

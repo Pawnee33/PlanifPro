@@ -629,11 +629,21 @@ class PlanningCreneauFacade:
         if isinstance(heure_fin, str):
             heure_fin = time.fromisoformat(heure_fin)
 
+        #Conversion de la date
+        date_creneau = donnees['date_creneau']
+        if isinstance(date_creneau, str):
+            date_creneau = datetime.strptime(date_creneau, '%Y-%m-%d').date()
+
+        # Calcul automatique du jour de la semaine à partir de la date
+        jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
+        jour = jours[date_creneau.weekday()]
+
         creneau_perso = CreneauPerso(
             utilisateur_id=donnees['utilisateur_id'],
             titre=donnees['titre'],
             description=donnees.get('description'),
-            jour=donnees['jour'],
+            date_creneau=date_creneau,
+            jour=jour,
             heure_debut=heure_debut,
             heure_fin=heure_fin
         )
@@ -659,9 +669,16 @@ class PlanningCreneauFacade:
         creneau_perso = self.creneau_perso_repo.obtenir(creneau_perso_id)
         if not creneau_perso:
             return None
+        # Conversion des heures (chaîne => time)
         for cle in ('heure_debut', 'heure_fin'):
             if isinstance(donnees.get(cle), str):
                 donnees[cle] = time.fromisoformat(donnees[cle])
+        # Si la date change : on la convertit et on recalcule le jour
+        if isinstance(donnees.get('date_creneau'), str):
+            date_creneau = datetime.strptime(donnees['date_creneau'], '%Y-%m-%d').date()
+            donnees['date_creneau'] = date_creneau
+            jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
+            donnees['jour'] = jours[date_creneau.weekday()]
         self.creneau_perso_repo.mis_a_jour(creneau_perso_id, donnees)
         return self.creneau_perso_repo.obtenir(creneau_perso_id).to_dict()
 
