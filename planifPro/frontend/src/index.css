@@ -14,6 +14,7 @@
   --color-bleu-clair-ciel: #6EB4E6;
   --color-or: #D59813;
   --color-or-clair: #D5AE13;
+  --color-or-tres-clair: #FCF4D6;
   --font-logo: "Konkhmer Sleokchher", sans-serif;
   --font-titre: "Libertinus Sans", serif;
   --font-base: "Kotta One", sans-serif;
@@ -84,7 +85,7 @@
   padding: 16px;
   overflow: hidden;
   box-shadow: 0 10px 30px -10px rgba(12, 40, 99, 0.25);
-  --fc-border-color: #eef0f4;                     /* lignes de grille très douces */
+  --fc-border-color: #eff4ee;                     /* lignes de grille très douces */
   --fc-today-bg-color: rgba(213, 152, 19, 0.07);  /* jour courant : doré léger */
   font-family: inherit;
 }
@@ -139,14 +140,18 @@
   border-radius: 10px !important;
   padding: 2px 6px !important;
   font-size: 0.8rem !important;
-  background: #4065B6 !important;   /* bleu moyen de ta charte */
 }
 .fc .fc-event:hover { filter: brightness(1.08); }
-c
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
   cursor: pointer;
+}
+
+/* Forme du calendrierProposition */
+.calendrier-proposition .fc {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 /* Bouton pour choisir la couleur de la classe */
@@ -166,4 +171,12 @@ input[type="color"]::-webkit-color-swatch {
 input[type="color"]::-moz-color-swatch {
   border: none;
   border-radius: 9999px;
+}
+
+/* Barre swipable */
+.barre-onglets::-webkit-scrollbar {
+  display: none;        /* cache la barre (Chrome, Edge, Safari) */
+}
+.barre-onglets {
+  scrollbar-width: none; /* Firefox */
 }

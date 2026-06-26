@@ -42,6 +42,7 @@ class Objectif(EntiteBase):
     
     contenu = db.Column(db.Text, nullable=False)
     conseils = db.Column(db.Text, nullable=True)
+    date_cours = db.Column(db.Date, nullable=True)
 
 
     @validates('contenu')
@@ -79,6 +80,7 @@ class Objectif(EntiteBase):
             'eleve_id': self.eleve_id,
             'creneau_id': self.creneau_id,
             'contenu': self.contenu,
-            'conseils': self.conseils
+            'conseils': self.conseils,
+            'date_cours': self.date_cours.isoformat() if self.date_cours else None
         })
         return donnees

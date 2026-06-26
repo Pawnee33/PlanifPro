@@ -1,13 +1,37 @@
 import React from 'react'
 import { useState } from 'react'
+import { api } from '../services/helper'
+import PopupInviterEleveClasse from './PopupInviterEleveClasse'
+import PopupCreerEvenement from './PopupCreerEvenement'
 import SectionBarre from './ui/SectionBarre'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import logo from '../assets/logo.png'
 
-const BarreLaterale = ({ classes, onCreerClasse, vueActive, onChangerVue }) => {
+const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, onChangerVue, onChoisirEleve, onChoisirEvenement }) => {
     const [classesOuvert, setClassesOuvert] = useState(false)
     const [elevesOuvert, setElevesOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
+    const [popupInviterOuverte, setPopupInviterOuverte] = useState(false)
+    const [popupEvenementOuverte, setPopupEvenementOuverte] = useState(false)
+
+    const inviterEleve = (classeId, email) => {
+        api.post(`/classes/${classeId}/inviter`, { email })
+            .then(() => {
+            alert('Invitation envoyée !')
+            setPopupInviterOuverte(false)
+            })
+            .catch(() => alert("Erreur lors de l'envoi de l'invitation"))
+        }
+
+    const creerEvenement = (donnees) => {
+        api.post('/evenements/', donnees)
+            .then(() => {
+            alert('Événement créé et notifications envoyées !')
+            setPopupEvenementOuverte(false)
+            })
+            .catch(() => alert("Erreur lors de la création de l'événement"))
+        }
+
     return (
         <aside className='w-64 flex flex-col gap-3 bg-bleu-marine border-r-[4px] border-tracer-violet p-4'>
 
@@ -48,8 +72,12 @@ const BarreLaterale = ({ classes, onCreerClasse, vueActive, onChangerVue }) => {
                     <SectionBarre
                     icone={<GraduationCap />}
                     titre="Mes élèves"
+                    elements={eleves.map((e) => ({ ...e, couleur: e.classe_couleur }))}
+                    getLabel={(eleve) => `${eleve.prenom} ${eleve.nom}`}
                     messageVide="Aucun élève pour le moment"
                     libelleBouton="+ Inviter un élève"
+                    onAction={() => setPopupInviterOuverte(true)}
+                    onChangerVue={(id) => onChoisirEleve(eleves.find((e) => e.id === id))}
                     />
                 </div>
 
@@ -58,8 +86,12 @@ const BarreLaterale = ({ classes, onCreerClasse, vueActive, onChangerVue }) => {
                     <SectionBarre
                     icone={<Star />}
                     titre="Événements"
+                    elements={evenements}
+                    getLabel={(evenement) => evenement.titre}
                     messageVide="Aucun événement pour le moment"
                     libelleBouton="+ Ajouter un événement"
+                    onAction={() => setPopupEvenementOuverte(true)}
+                    onChangerVue={(id) => onChoisirEvenement(evenements.find((e) => e.id === id))}
                     />
                 </div>
 
@@ -85,6 +117,20 @@ const BarreLaterale = ({ classes, onCreerClasse, vueActive, onChangerVue }) => {
                     </button>
                 </div>
             </div>
+            <PopupInviterEleveClasse
+              ouvert={popupInviterOuverte}
+              onFermer={() => setPopupInviterOuverte(false)}
+              classes={classes}
+              onInviter={inviterEleve}
+            />
+
+            <PopupCreerEvenement
+              ouvert={popupEvenementOuverte}
+              onFermer={() => setPopupEvenementOuverte(false)}
+              onCreer={creerEvenement}
+              classes={classes}
+              eleves={eleves}
+            />
         </aside>
     )
 }

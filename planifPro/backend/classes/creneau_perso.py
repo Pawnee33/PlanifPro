@@ -8,7 +8,7 @@ personnel ajouté par un utilisateur dans son calendrier.
 
 from planifPro import db
 from planifPro.backend.classes.entitebase import EntiteBase
-from datetime import time
+from datetime import time, date
 from sqlalchemy.orm import validates
 
 
@@ -30,6 +30,7 @@ class CreneauPerso(EntiteBase):
 
     titre = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
+    date_creneau = db.Column(db.Date, nullable=False)
     jour = db.Column(db.String(50), nullable=False)
     heure_debut = db.Column(db.Time, nullable=False)
     heure_fin = db.Column(db.Time, nullable=False)
@@ -66,6 +67,7 @@ class CreneauPerso(EntiteBase):
             'utilisateur_id': self.utilisateur_id,
             'titre': self.titre,
             'description': self.description,
+            'date_creneau': self.date_creneau.isoformat() if self.date_creneau else None,
             'jour': self.jour,
             'heure_debut': self.heure_debut.isoformat() if self.heure_debut else None,
             'heure_fin': self.heure_fin.isoformat() if self.heure_fin else None,
