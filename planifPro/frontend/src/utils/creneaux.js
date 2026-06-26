@@ -43,13 +43,22 @@ export const creneauVersEventRecurrent = (creneau, eleves, couleur) => {
   const eleve = eleves.find((e) => e.id === creneau.eleve_id)
   const titre = eleve ? `${eleve.prenom} ${eleve.nom}` : 'Élève inconnu'
 
+  // endRecur est EXCLUSIF dans FullCalendar : on prend le lendemain de date_fin
+  // pour que le dernier jour de la période soit bien affiché.
+  let finRecur = creneau.date_fin
+  if (creneau.date_fin) {
+    const dateFin = new Date(creneau.date_fin)
+    dateFin.setDate(dateFin.getDate() + 1)
+    finRecur = dateFin.toISOString().split('T')[0]
+  }
+
   return {
     title: titre,
     daysOfWeek: [jourVersNumero[creneau.jour]],   // ex. [1] pour lundi
     startTime: creneau.heure_debut,                // "10:00:00"
     endTime: creneau.heure_fin,                    // "10:45:00"
     startRecur: creneau.date_debut,                // début de la période
-    endRecur: creneau.date_fin,                    // fin de la période
+    endRecur: finRecur,                    // fin de la période
     backgroundColor: couleur,
     borderColor: couleur,
     extendedProps: {

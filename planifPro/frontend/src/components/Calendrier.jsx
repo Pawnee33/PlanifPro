@@ -11,6 +11,7 @@ import PopupCreerCreneauPerso from './PopupCreerCreneauPerso'
 import PopupGererCreneauPerso from './PopupGererCreneauPerso'
 import PopupActionsCreneau from './PopupActionsCreneau'
 import PopupScopeCreneau from './PopupScopeCreneau'
+import PopupModifierCreneau from './PopupModifierCreneau'
 
 function Calendrier() {
   const [events, setEvents] = useState([])
@@ -20,6 +21,8 @@ function Calendrier() {
   const [persoAGerer, setPersoAGerer] = useState(null)
   const [creneauActions, setCreneauActions] = useState(null)
   const [suppressionScope, setSuppressionScope] = useState(null)
+  const [eleves, setEleves] = useState([])
+  const [modificationCreneau, setModificationCreneau] = useState(null)
 
 const charger = () => {
     Promise.all([
@@ -28,6 +31,7 @@ const charger = () => {
       api.get('/classes/').catch(() => []),
       api.get('/creneaux/perso/').catch(() => []),
     ]).then(([creneaux, eleves, classes, perso]) => {
+      setEleves(eleves)
       setCreneauxPerso(perso)
       const evsCours = creneaux.map((creneau) => {
         const classe = classes.find((c) => c.id === creneau.classe_id)
@@ -104,6 +108,17 @@ const charger = () => {
     api.delete(`/creneaux/perso/${id}`)
       .then(() => { setPersoAGerer(null); charger() })
       .catch(() => alert('Erreur lors de la suppression'))
+  }
+
+  const modifierCreneau = (donnees, scopeInfo) => {
+    const payload = { ...donnees, ...scopeInfo }
+    api.put(`/creneaux/${modificationCreneau.creneauId}`, payload)
+      .then(() => {
+        alert('Cours modifié !')
+        setModificationCreneau(null)
+        charger()
+      })
+      .catch(() => alert('Erreur lors de la modification'))
   }
 
   const supprimerCreneau = ({ scope, debut_jour, fin_jour }) => {
@@ -183,9 +198,14 @@ const charger = () => {
           }}
 
           onModifier={() => {
-            alert('Modification du cours — à venir')
+            setModificationCreneau({
+              creneauId: creneauActions.creneauId,
+              eleveId: creneauActions.eleveId,
+              date: creneauActions.date.toISOString().split('T')[0],
+            })
             setCreneauActions(null)
           }}
+
           onSupprimer={() => {
             setSuppressionScope({
               creneauId: creneauActions.creneauId,
@@ -195,6 +215,18 @@ const charger = () => {
           }}
         />
       )}
+
+      {modificationCreneau && (
+        <PopupModifierCreneau
+          ouvert={true}
+          onFermer={() => setModificationCreneau(null)}
+          creneau={modificationCreneau}
+          eleves={eleves}
+          dateInitiale={modificationCreneau.date}
+          onValider={modifierCreneau}
+        />
+      )}
+
       {suppressionScope && (
         <PopupScopeCreneau
           ouvert={true}
