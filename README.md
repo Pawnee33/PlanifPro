@@ -714,6 +714,9 @@ L'application est servie sur `http://localhost:5173`.
 | `vite` | Outil de build et serveur de développement |
 | `tailwindcss` + `@tailwindcss/vite` | Styles utility-first (v4) |
 | `vite-plugin-pwa` | Manifest + service worker (PWA installable) |
+| `react-router-dom` | Routage entre les pages |
+| `@fullcalendar/react` (+ `timegrid`, `daygrid`, `interaction`) | Calendrier hebdomadaire interactif |
+| `lucide-react` | Icônes |
 
 ---
 
@@ -725,13 +728,62 @@ planifPro/frontend/
 │   ├── pwa-192.png
 │   └── pwa-512.png
 ├── src/
-│   ├── assets/             # images importées dans le code
-│   ├── App.jsx             # composant racine
-│   ├── main.jsx            # point d'entrée (monte React dans index.html)
-│   └── index.css           # import Tailwind + charte (@theme)
-├── .env                    # variables locales (ignoré par Git)
-├── .env.example            # modèle de variables (versionné)
-├── index.html              # page HTML unique (contient <div id="root">)
-├── vite.config.js          # config Vite (React, Tailwind, PWA)
-└── package.json            # dépendances + scripts (npm run dev / build)
+│   ├── assets/                 # images importées (logo…)
+│   ├── pages/                  # pages routées
+│   │   ├── Connexion.jsx
+│   │   ├── Inscription.jsx
+│   │   └── DashboardProfesseur.jsx
+│   ├── components/             # composants de l'interface
+│   │   ├── EnTete.jsx
+│   │   ├── BarreLaterale.jsx
+│   │   ├── Calendrier.jsx
+│   │   ├── EspaceClasse.jsx
+│   │   ├── FicheEleve.jsx
+│   │   ├── FicheEvenement.jsx
+│   │   ├── MenuBurger.jsx
+│   │   ├── PanneauNotifications.jsx
+│   │   ├── PanneauVoeux.jsx
+│   │   ├── PanneauEleves.jsx
+│   │   ├── PiedDePage.jsx
+│   │   ├── RouteProtegee.jsx
+│   │   ├── Popup… .jsx          # popups (créer/modifier classe, créneaux, objectifs, événements…)
+│   │   └── ui/                  # petits composants (CarteStat…)
+│   ├── services/
+│   │   └── helper.js           # appels API (token, erreurs)
+│   ├── utils/
+│   │   └── creneaux.js         # conversion créneaux → événements FullCalendar
+│   ├── App.jsx                 # routes (react-router)
+│   ├── main.jsx                # point d'entrée
+│   └── index.css               # import Tailwind + charte (@theme)
+├── .env / .env.example
+├── index.html
+├── vite.config.js
+└── package.json
 ```
+## Fonctionnalités
+
+### Espace professeur (complet)
+- **Authentification** : inscription avec choix du rôle, connexion JWT, validation par la touche Entrée
+- **Classes** : création (couleur, horaires, période), modification, copie du code d'invitation, configuration de la durée de cours par élève
+- **Invitations** : invitation d'élèves par email (Brevo), individuellement ou depuis la barre latérale
+- **Vœux & plannings** : collecte des vœux, génération de 3 propositions de planning, sélection, déplacement et échange de créneaux, suppression, validation
+- **Planning global** : calendrier hebdomadaire (FullCalendar) de tous les créneaux validés, colorés par classe
+- **Gestion des créneaux de cours** : ajout, modification/remplacement et suppression avec portée — ce jour, plusieurs jours, ou toute la période
+- **Créneaux personnels** : ajout, modification et suppression de rendez-vous ponctuels au clic sur le planning
+- **Suivi pédagogique** : objectifs datés par élève (depuis la fiche élève ou le planning), avec modification et suppression
+- **Événements** : création avec notification ciblée (toutes les classes / classes spécifiques / élèves spécifiques), modification, suppression
+- **Notifications** : cloche avec compteur de non-lues, panneau dédié, marquage « tout comme lu »
+- **Navigation** : menu burger (profil, déconnexion), logo cliquable ramenant au planning
+
+### Espace élève
+- En cours de développement : soumission des vœux, consultation et confirmation du créneau attribué, consultation des objectifs, notifications, export Google Calendar.
+
+---
+
+## Architecture frontend
+
+Le frontend suit quelques principes réutilisés dans tout le projet :
+- **Helper API centralisé** (`src/services/helper.js`) : gère l'URL de base, le token JWT et les erreurs.
+- **Popups réutilisables** : un même patron (overlay, fermeture, parent responsable de l'appel API et du rechargement).
+- **Communication par callbacks** : les composants enfants remontent les actions au parent, qui détient l'état.
+- **Conversion des créneaux** (`src/utils/creneaux.js`) : transforme les créneaux du back en événements FullCalendar (récurrents pour les cours, ponctuels pour les rendez-vous personnels).
