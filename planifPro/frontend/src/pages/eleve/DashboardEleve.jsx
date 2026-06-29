@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../../services/helper'
 import logo from '../../assets/logo.png'
 import EnTete from '../../components/EnTete'
+import BarreLateraleEleve from '../../components/eleve/BarreLateraleEleve'
 import PiedDePage from '../../components/PiedDePage'
 import Calendrier from '../../components/Calendrier'
 
@@ -25,6 +26,13 @@ useEffect(() => {
           }}
         />
       <div className="flex flex-1">
+        <BarreLateraleEleve
+          objectifs={[]}
+          professeurs={[]}
+          evenements={[]}
+          vueActive={vueActive}
+          onChangerVue={setVueActive}
+        />
       <main className="flex-1 min-w-0 p-10 pl-16 bg-bleu-moyen">
         {/* Carte notifications classes et voeux */}
         {vueActive === 'planning' && (
