@@ -4,6 +4,7 @@ import { api } from '../../services/helper'
 import logo from '../../assets/logo.png'
 import EnTete from '../../components/EnTete'
 import BarreLateraleEleve from '../../components/eleve/BarreLateraleEleve'
+import FormulaireVoeux from '../../components/eleve/FormulaireVoeux'
 import PiedDePage from '../../components/PiedDePage'
 import Calendrier from '../../components/Calendrier'
 
@@ -110,6 +111,13 @@ useEffect(() => {
           <PiedDePage />
         </div>
       </div>
+      {popupVoeuxOuverte && (
+        <FormulaireVoeux
+          ouvert={true}
+          onFermer={() => setPopupVoeuxOuverte(false)}
+          onVoeuxSoumis={chargerVoeux}
+        />
+      )}
     </div>
   )
 }
