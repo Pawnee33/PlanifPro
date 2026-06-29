@@ -38,7 +38,7 @@ const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreCla
                         icone={<Users fill="currentColor" />}
                         titre="Mes Objectifs"
                         elements={objectifs}
-                        getLabel={(objectif) => objectif.titre}
+                        getLabel={(objectif) => objectif.contenu}
                         messageVide="Aucun objectifs pour le moment"
                         vueActive={vueActive}
                         onChangerVue={(id) => onChoisirObjectif(objectifs.find((o) => o.id === id))}

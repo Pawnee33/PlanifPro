@@ -13,14 +13,22 @@ function DashboardEleve() {
   const [vueActive, setVueActive] = useState('planning')
   const [popupOuvert, setPopupOuvert] = useState(false)
   const [professeurs, setProfesseurs] = useState([])
+  const [objectifs, setObjectifs] = useState([])
+  
+  const chargerObjectifs = () => {
+    api.get('/objectifs/')
+      .then(setObjectifs)
+      .catch(() => setObjectifs([])) // 404 si aucun objectifs, liste vide
+  }
 
-    const chargerProfesseurs = () => {
+  const chargerProfesseurs = () => {
     api.get('/professeurs/')
       .then(setProfesseurs)
       .catch(() => setProfesseurs([])) // 404 si aucun professeurs, liste vide
   }
 
 useEffect(() => {
+  chargerObjectifs()
   chargerProfesseurs()
 }, [])
 
@@ -34,7 +42,7 @@ useEffect(() => {
         />
       <div className="flex flex-1">
         <BarreLateraleEleve
-          objectifs={[]}
+          objectifs={objectifs}
           professeurs={professeurs}
           evenements={[]}
           vueActive={vueActive}
