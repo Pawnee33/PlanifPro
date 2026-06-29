@@ -14,6 +14,7 @@ function DashboardEleve() {
   const [popupOuvert, setPopupOuvert] = useState(false)
   const [professeurs, setProfesseurs] = useState([])
   const [objectifs, setObjectifs] = useState([])
+  const [evenements, setEvenements] = useState([])
   
   const chargerObjectifs = () => {
     api.get('/objectifs/')
@@ -27,9 +28,15 @@ function DashboardEleve() {
       .catch(() => setProfesseurs([])) // 404 si aucun professeurs, liste vide
   }
 
+  const chargerEvenements = () => {
+    api.get('/evenements/')
+      .then(setEvenements)
+      .catch(() => setEvenements([])) // 404 si aucun événements, liste vide
+  }
 useEffect(() => {
   chargerObjectifs()
   chargerProfesseurs()
+  chargerEvenements()
 }, [])
 
   return (
@@ -44,7 +51,7 @@ useEffect(() => {
         <BarreLateraleEleve
           objectifs={objectifs}
           professeurs={professeurs}
-          evenements={[]}
+          evenements={evenements}
           vueActive={vueActive}
           onChangerVue={setVueActive}
           onRejoint={chargerProfesseurs}
