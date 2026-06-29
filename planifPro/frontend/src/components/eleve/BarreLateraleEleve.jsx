@@ -5,7 +5,7 @@ import PopupRejoindreClasse from './PopupRejoindreClasse'
 import SectionBarre from '../ui/SectionBarre'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 
-const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreClasse, vueActive, onChangerVue, onChoisirProfesseur, onChoisirEvenement, onChoisirObjectif }) => {
+const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreClasse, vueActive, onChangerVue, onChoisirProfesseur, onChoisirEvenement, onChoisirObjectif, onRejoint }) => {
     const [objectifsOuvert, setObejectifsOuvert] = useState(false)
     const [professeursOuvert, setProfesseursOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
@@ -96,6 +96,7 @@ const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreCla
             <PopupRejoindreClasse
               ouvert={popupRejoindreOuverte}
               onFermer={() => setPopupRejoindreOuverte(false)}
+              onRejoint={onRejoint}
             />
         </aside>
     )

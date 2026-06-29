@@ -12,9 +12,16 @@ import Calendrier from '../../components/Calendrier'
 function DashboardEleve() {
   const [vueActive, setVueActive] = useState('planning')
   const [popupOuvert, setPopupOuvert] = useState(false)
+  const [professeurs, setProfesseurs] = useState([])
 
+    const chargerProfesseurs = () => {
+    api.get('/professeurs/')
+      .then(setProfesseurs)
+      .catch(() => setProfesseurs([])) // 404 si aucun professeurs, liste vide
+  }
 
 useEffect(() => {
+  chargerProfesseurs()
 }, [])
 
   return (
@@ -28,10 +35,11 @@ useEffect(() => {
       <div className="flex flex-1">
         <BarreLateraleEleve
           objectifs={[]}
-          professeurs={[]}
+          professeurs={professeurs}
           evenements={[]}
           vueActive={vueActive}
           onChangerVue={setVueActive}
+          onRejoint={chargerProfesseurs}
         />
       <main className="flex-1 min-w-0 p-10 pl-16 bg-bleu-moyen">
         {/* Carte notifications classes et voeux */}
