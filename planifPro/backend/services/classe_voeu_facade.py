@@ -134,28 +134,28 @@ class ClasseVoeuFacade:
         return professeurs
 
     def obtenir_eleves_par_professeur(self, professeur_id):
-            """Retourne la liste des élèves d'un professeur via ses classes."""
-            professeur = self.professeur_repo.obtenir(professeur_id)
-            if not professeur:
-                return None
-            eleve_ids = set()
-            eleves = []
-            for classe in professeur.classes:
-                for eleve in classe.eleves:
-                    if eleve.id not in eleve_ids:
-                        eleve_ids.add(eleve.id)
-                        donnees_eleve = eleve.to_dict()
-                        donnees_eleve['classe_nom'] = classe.nom
-                        donnees_eleve['classe_couleur'] = classe.couleur
-                        ligne = db.session.execute(
-                            eleve_classe.select().where(
-                                eleve_classe.c.eleve_id == eleve.utilisateur_id,
-                                eleve_classe.c.classe_id == classe.id,
-                            )
-                        ).first()
-                        donnees_eleve['duree_minutes'] = ligne.duree_minutes if ligne else None
-                        eleves.append(donnees_eleve)
-            return eleves
+        """Retourne la liste des élèves d'un professeur via ses classes."""
+        professeur = self.professeur_repo.obtenir(professeur_id)
+        if not professeur:
+            return None
+        eleve_ids = set()
+        eleves = []
+        for classe in professeur.classes:
+            for eleve in classe.eleves:
+                if eleve.id not in eleve_ids:
+                    eleve_ids.add(eleve.id)
+                    donnees_eleve = eleve.to_dict()
+                    donnees_eleve['classe_nom'] = classe.nom
+                    donnees_eleve['classe_couleur'] = classe.couleur
+                    ligne = db.session.execute(
+                        eleve_classe.select().where(
+                            eleve_classe.c.eleve_id == eleve.utilisateur_id,
+                            eleve_classe.c.classe_id == classe.id,
+                        )
+                    ).first()
+                    donnees_eleve['duree_minutes'] = ligne.duree_minutes if ligne else None
+                    eleves.append(donnees_eleve)
+        return eleves
 
     def obtenir_classe_par_code(self, code_classe):
         """
@@ -220,6 +220,19 @@ class ClasseVoeuFacade:
                     classe.eleves.remove(eleve)
             self.classe_repo.mis_a_jour(classe.id, {})
             return True
+
+    def retirer_eleve_classe(self, classe_id, eleve_id):
+        """Retire un élève d'une classe précise."""
+        classe = self.classe_repo.obtenir(classe_id)
+        if not classe:
+            return None
+        eleve = self.eleve_repo.obtenir(eleve_id)
+        if not eleve:
+            return None
+        if eleve in classe.eleves:
+            classe.eleves.remove(eleve)
+            self.classe_repo.mis_a_jour(classe_id, {})
+        return True
 
     def mettre_a_jour_duree_eleve_classe(self, eleve_id, classe_id, duree_minutes):
         """Met à jour la durée de cours d'un élève dans une classe."""
