@@ -21,7 +21,7 @@ function CalendrierEleve({ refresh }) {
       setCreneauxPerso(perso)
       const creneauxConfirmes = creneaux.filter((creneau) => creneau.statut === 'confirme')
       const evsCours = creneauxConfirmes.map((creneau) =>
-        creneauVersEventRecurrent(creneau, [], creneau.classe_couleur, creneau.type)
+        creneauVersEventRecurrent(creneau, [], creneau.classe_couleur, creneau.professeur_nom)
       )
       const evsPerso = perso.map((creneauPerso) => creneauPersoVersEvent(creneauPerso))
       setEvents([...evsCours, ...evsPerso])
