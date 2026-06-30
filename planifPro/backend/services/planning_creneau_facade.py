@@ -11,6 +11,7 @@ from planifPro.backend.persistence.creneau_repository import CreneauRepository
 from planifPro.backend.persistence.classe_repository import ClasseRepository
 from planifPro.backend.persistence.creneau_perso_repository import CreneauPersoRepository
 from planifPro.backend.persistence.voeu_repository import VoeuRepository
+from planifPro.backend.persistence.professeur_repository import ProfesseurRepository
 from planifPro.backend.classes.planning import Planning
 from planifPro.backend.classes.creneau import Creneau
 from planifPro.backend.classes.creneau_perso import CreneauPerso
@@ -35,6 +36,7 @@ class PlanningCreneauFacade:
         self.classe_repo = ClasseRepository()
         self.creneau_perso_repo = CreneauPersoRepository()
         self.voeu_repo = VoeuRepository()
+        self.professeur_repo = ProfesseurRepository()
 
     def _parser_date(self, valeur):
         """Convertit une chaîne 'AAAA-MM-JJ' en objet date. Tolère None et date déjà parsée."""
@@ -447,7 +449,16 @@ class PlanningCreneauFacade:
             creneau for creneau in creneaux
             if creneau.planning and creneau.planning.statut == 'valide'
         ]
-        return [creneau.to_dict() for creneau in creneaux]
+        resultat = []
+        for creneau in creneaux:
+            donnees = creneau.to_dict()
+            classe = self.classe_repo.obtenir(creneau.classe_id)
+            donnees['classe_couleur'] = classe.couleur if classe else None
+            if classe:
+                prof = self.professeur_repo.obtenir(classe.professeur_id)
+                donnees['professeur_nom'] = f"{prof.prenom} {prof.nom}" if prof else None
+            resultat.append(donnees)
+        return resultat
 
     def obtenir_creneaux_par_professeur(self, professeur_id):
         """Retourne tous les créneaux validés des classes d'un professeur."""

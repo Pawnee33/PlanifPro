@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { api } from '../services/helper'
 import PopupConfigurerDuree from './PopupConfigurerDuree'
-import { Pencil } from 'lucide-react'
+import PopupRetirerEleve from './PopupRetirerEleve'
+import { Pencil,Trash2 } from 'lucide-react'
 
 function PanneauEleves({ eleves, classe, onElevesModifies }) {
   const [eleveAModifier, setEleveAModifier] = useState(null)
+  const [eleveARetirer, setEleveARetirer] = useState(null)
 
   const formatDuree = (minutes) => {
     if (minutes === 60) return '1 heure'
@@ -19,6 +21,15 @@ function PanneauEleves({ eleves, classe, onElevesModifies }) {
     })
       .then(() => onElevesModifies())
       .catch(() => alert('Erreur lors de la modification de la durée'))
+  }
+
+  const retirerEleve = async (eleveId) => {
+    try {
+      await api.delete(`/classes/${classe.id}/eleves/${eleveId}`)
+      onElevesModifies()   // pour recharger la liste côté parent
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const lancerCollecte = async () => {
@@ -51,12 +62,20 @@ function PanneauEleves({ eleves, classe, onElevesModifies }) {
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => setEleveAModifier(eleve)}
-              className="flex items-center gap-2 rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white hover:scale-105 transition"
-            >
-              <Pencil size={16} /> {eleve.duree_minutes ? 'Modifier' : 'Configurer'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setEleveAModifier(eleve)}
+                className="flex items-center gap-2 rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet text-white hover:scale-105 transition"
+              >
+                <Pencil size={16} /> {eleve.duree_minutes ? 'Modifier' : 'Configurer'}
+              </button>
+              <button
+                onClick={() => setEleveARetirer(eleve)}
+                className="flex items-center gap-2 rounded-[16px] bg-red-900 px-4 py-2 border border-red-300 text-red-100 hover:scale-105 transition"
+              >
+                <Trash2 size={16} /> Retirer
+              </button>
+            </div>
           </div>
         ))
       )}
@@ -79,6 +98,17 @@ function PanneauEleves({ eleves, classe, onElevesModifies }) {
           onConfigurer={(eleveId, duree) => {
             configurerDuree(eleveId, duree)
             setEleveAModifier(null)
+          }}
+        />
+      )}
+      {eleveARetirer && (
+        <PopupRetirerEleve
+          ouvert={true}
+          onFermer={() => setEleveARetirer(null)}
+          eleve={eleveARetirer}
+          onConfirmer={() => {
+            retirerEleve(eleveARetirer.id)
+            setEleveARetirer(null)
           }}
         />
       )}

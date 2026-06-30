@@ -3,6 +3,8 @@ import Connexion from './pages/Connexion'
 import RouteProtegee from './components/RouteProtegee'
 import Inscription from './pages/Inscription'
 import DashboardProfesseur from './pages/DashboardProfesseur'
+import DashboardEleve from './pages/eleve/DashboardEleve'
+
 
 function App() {
   return (
@@ -15,6 +17,14 @@ function App() {
         element={
           <RouteProtegee>
             <DashboardProfesseur />
+          </RouteProtegee>
+        }
+      />
+      <Route 
+        path="/dashboard-eleve"
+        element={
+          <RouteProtegee>
+            <DashboardEleve />
           </RouteProtegee>
         }
       />

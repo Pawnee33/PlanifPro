@@ -51,6 +51,11 @@ class Creneau(EntiteBase):
     duree_minutes = db.Column(db.Integer, nullable=False)
     statut = db.Column(db.String(50), nullable=False)
 
+    objectifs = db.relationship(
+        'Objectif', backref='creneau',
+        lazy=True, cascade='all, delete-orphan'
+    )
+
     @validates('statut')
     def validate_statut(self, key, value):
         """

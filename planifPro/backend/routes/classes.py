@@ -134,6 +134,23 @@ class Rejoindre(Resource):
         return classe, 201
 
 
+@api.route('/code/<code_unique>')
+class ClasseParCode(Resource):
+    """Resource pour récupérer une classe via son code (accessible élève)."""
+    @api.response(200, 'Classe trouvée')
+    @api.response(404, 'Classe introuvable')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def get(self, code_unique):
+        """Récupérer une classe via son code unique"""
+        try:
+            classe = facade.obtenir_classe_par_code(code_unique)
+            if not classe:
+                return {'error': 'Classe introuvable'}, 404
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return classe, 200
+
 @api.route('/<classe_id>')
 class ClasseResource(Resource):
     """
@@ -300,6 +317,29 @@ class EleveDuree(Resource):
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
         return maj_eleve, 200
+
+    @api.response(200, 'Élève retiré de la classe')
+    @api.response(403, 'Accès réservé aux professeurs')
+    @api.response(404, 'Classe ou élève introuvable')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def delete(self, classe_id, eleve_id):
+        """Retirer un élève d'une classe précise"""
+        claims = get_jwt()
+        if claims.get('role') != 'professeur':
+            return {'error': 'Accès réservé aux professeurs'}, 403
+
+        classe = facade.obtenir_classe(classe_id)
+        if not classe:
+                return {'error': 'Classe introuvable'}, 404
+        eleve = facade.obtenir_eleve(eleve_id)
+        if not eleve:
+                return {'error': 'eleve introuvable'}, 404
+        try:
+            eleve = facade.retirer_eleve_classe(classe_id, eleve_id)
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return {'message': 'Élève retiré de la classe'}, 200
     
 @api.route('/<classe_id>/collecte')
 class ClasseCollecte(Resource):

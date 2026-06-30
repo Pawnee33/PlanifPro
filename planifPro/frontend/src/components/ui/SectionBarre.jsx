@@ -39,9 +39,11 @@ function SectionBarre({
               </button>
             ))
           )}
-          <button onClick={onAction} className="rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet hover:scale-105 text-white">
-            {libelleBouton}
-          </button>
+          {libelleBouton && (
+            <button onClick={onAction} className="rounded-[16px] bg-bleu-roi px-4 py-2 border border-tracer-violet hover:scale-105 text-white">
+              {libelleBouton}
+            </button>
+          )}
         </div>
       )}
     </div>
