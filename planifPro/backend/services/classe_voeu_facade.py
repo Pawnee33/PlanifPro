@@ -10,6 +10,7 @@ from planifPro.backend.persistence.classe_repository import ClasseRepository
 from planifPro.backend.persistence.voeu_repository import VoeuRepository
 from planifPro.backend.persistence.eleve_repository import EleveRepository
 from planifPro.backend.persistence.professeur_repository import ProfesseurRepository
+from planifPro.backend.persistence.creneau_repository import CreneauRepository
 from planifPro.backend.classes.classe import Classe
 from planifPro.backend.classes.voeu import Voeu
 from planifPro.backend.classes.eleve import Eleve
@@ -33,6 +34,7 @@ class ClasseVoeuFacade:
         self.voeu_repo = VoeuRepository()
         self.eleve_repo = EleveRepository()
         self.professeur_repo = ProfesseurRepository()
+        self.creneau_repo = CreneauRepository()
 
     # Classe
     def creer_classe(self, donnees):
@@ -222,13 +224,27 @@ class ClasseVoeuFacade:
             return True
 
     def retirer_eleve_classe(self, classe_id, eleve_id):
-        """Retire un élève d'une classe précise."""
+        """Retire un élève d'une classe + supprime ses vœux et créneaux dans cette classe."""
         classe = self.classe_repo.obtenir(classe_id)
         if not classe:
             return None
         eleve = self.eleve_repo.obtenir(eleve_id)
         if not eleve:
             return None
+
+        # Supprimer les vœux de l'élève dans cette classe
+        voeux = self.voeu_repo.obtenir_voeux_par_eleve(eleve_id) or []
+        for voeu in voeux:
+            if voeu.classe_id == classe_id:
+                self.voeu_repo.supprime(voeu.id)
+
+        # Supprimer les créneaux de l'élève dans cette classe
+        creneaux = self.creneau_repo.obtenir_creneaux_par_eleve(eleve_id) or []
+        for creneau in creneaux:
+            if creneau.classe_id == classe_id:
+                self.creneau_repo.supprime(creneau.id)
+
+        # Détacher l'élève de la classe
         if eleve in classe.eleves:
             classe.eleves.remove(eleve)
             self.classe_repo.mis_a_jour(classe_id, {})
