@@ -8,7 +8,7 @@ import { api } from '../../services/helper'
 import { creneauVersEventRecurrent, creneauPersoVersEvent } from '../../utils/creneaux'
 import PopupGererCreneauPerso from '../PopupGererCreneauPerso'
 
-function CalendrierEleve() {
+function CalendrierEleve({ refresh }) {
   const [events, setEvents] = useState([])
   const [creneauxPerso, setCreneauxPerso] = useState([])
   const [persoAGerer, setPersoAGerer] = useState(null)
@@ -19,7 +19,8 @@ function CalendrierEleve() {
       api.get('/creneaux/perso/').catch(() => []),
     ]).then(([creneaux, perso]) => {
       setCreneauxPerso(perso)
-      const evsCours = creneaux.map((creneau) =>
+      const creneauxConfirmes = creneaux.filter((creneau) => creneau.statut === 'confirme')
+      const evsCours = creneauxConfirmes.map((creneau) =>
         creneauVersEventRecurrent(creneau, [], creneau.classe_couleur, creneau.type)
       )
       const evsPerso = perso.map((creneauPerso) => creneauPersoVersEvent(creneauPerso))
@@ -29,7 +30,7 @@ function CalendrierEleve() {
 
   useEffect(() => {
     charger()
-  }, [])
+  }, [refresh])
 
   // Clic sur un créneau : seuls les perso sont gérables (les cours sont en lecture seule)
   const onEventClick = (info) => {
