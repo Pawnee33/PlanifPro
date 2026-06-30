@@ -6,7 +6,7 @@ import EnTete from '../../components/EnTete'
 import BarreLateraleEleve from '../../components/eleve/BarreLateraleEleve'
 import FormulaireVoeux from '../../components/eleve/FormulaireVoeux'
 import PiedDePage from '../../components/PiedDePage'
-import Calendrier from '../../components/Calendrier'
+import CalendrierEleve from '../../components/eleve/CalendrierEleve'
 
 // Page de connexion — version d'interactivité.
 
@@ -100,7 +100,7 @@ useEffect(() => {
             )}
 
             <div className="mt-8">
-              <Calendrier />
+              <CalendrierEleve />
             </div>
           </>
         )}

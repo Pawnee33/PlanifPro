@@ -447,7 +447,13 @@ class PlanningCreneauFacade:
             creneau for creneau in creneaux
             if creneau.planning and creneau.planning.statut == 'valide'
         ]
-        return [creneau.to_dict() for creneau in creneaux]
+        resultat = []
+        for creneau in creneaux:
+            donnees = creneau.to_dict()
+            classe = self.classe_repo.obtenir(creneau.classe_id)
+            donnees['classe_couleur'] = classe.couleur if classe else None
+            resultat.append(donnees)
+        return resultat
 
     def obtenir_creneaux_par_professeur(self, professeur_id):
         """Retourne tous les créneaux validés des classes d'un professeur."""
