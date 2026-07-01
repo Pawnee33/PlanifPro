@@ -179,7 +179,7 @@ useEffect(() => {
             )}
 
             <div className="mt-8">
-              <CalendrierEleve refresh={refreshCalendrier} />
+              <CalendrierEleve refresh={refreshCalendrier} objectifs={objectifs} professeurs={professeurs} />
             </div>
           </>
         )}
