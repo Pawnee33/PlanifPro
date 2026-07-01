@@ -7,11 +7,13 @@ import frLocale from '@fullcalendar/core/locales/fr'
 import { api } from '../../services/helper'
 import { creneauVersEventRecurrent, creneauPersoVersEvent } from '../../utils/creneaux'
 import PopupGererCreneauPerso from '../PopupGererCreneauPerso'
+import PopupCreerCreneauPerso from '../PopupCreerCreneauPerso'
 
 function CalendrierEleve({ refresh }) {
   const [events, setEvents] = useState([])
   const [creneauxPerso, setCreneauxPerso] = useState([])
   const [persoAGerer, setPersoAGerer] = useState(null)
+  const [nouveauCreneau, setNouveauCreneau] = useState(null)
 
   const charger = () => {
     Promise.all([
@@ -53,6 +55,23 @@ function CalendrierEleve({ refresh }) {
       .catch(() => alert('Erreur lors de la suppression'))
   }
 
+  const onDateClick = (info) => {
+    const date = info.date
+    const dateStr = date.toISOString().split('T')[0]
+    const heureStr = date.toTimeString().slice(0, 5)
+    setNouveauCreneau({ date: dateStr, heure: heureStr })
+  }
+
+  const creerCreneauPerso = (donnees) => {
+    api.post('/creneaux/perso/', donnees)
+      .then(() => {
+        alert('Rendez-vous ajouté !')
+        setNouveauCreneau(null)
+        charger()
+      })
+      .catch(() => alert("Erreur lors de l'ajout du rendez-vous"))
+  }
+
   return (
     <>
       <FullCalendar
@@ -61,6 +80,7 @@ function CalendrierEleve({ refresh }) {
         events={events}
         locale={frLocale}
         eventClick={onEventClick}
+        dateClick={onDateClick}
         headerToolbar={{
           left: 'prev next',
           center: 'title',
@@ -80,6 +100,16 @@ function CalendrierEleve({ refresh }) {
           creneau={persoAGerer}
           onModifier={modifierPerso}
           onSupprimer={supprimerPerso}
+        />
+      )}
+
+      {nouveauCreneau && (
+        <PopupCreerCreneauPerso
+          ouvert={true}
+          onFermer={() => setNouveauCreneau(null)}
+          dateInitiale={nouveauCreneau.date}
+          heureInitiale={nouveauCreneau.heure}
+          onCreer={creerCreneauPerso}
         />
       )}
     </>
