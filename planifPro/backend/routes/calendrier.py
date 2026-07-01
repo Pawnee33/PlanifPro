@@ -5,12 +5,17 @@ Ce module définit les routes REST liées à l'intégration
 Google Calendar, permettant aux utilisateurs d'autoriser
 l'accès et d'exporter leurs créneaux.
 """
-from flask import request, redirect
+import os
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # DEV uniquement : autorise OAuth en HTTP local
+
+from flask import request, redirect, session
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from google_auth_oauthlib.flow import Flow
 from planifPro.backend.services.facade import PlanifProFacade
-import os
+
+# Stockage temporaire des code_verifier PKCE, indexés par state (DEV/MVP)
+verifiers_pkce = {}
 
 facade = PlanifProFacade()
 
@@ -43,7 +48,9 @@ class CalendrierAuth(Resource):
             )
             # Génère l'URL de la page d'autorisation Google
             # prompt='consent' force l'affichage de la page même si déjà autorisé
-            auth_url, _ = flow.authorization_url(prompt='consent')
+            auth_url, state = flow.authorization_url(prompt='consent')
+            # Associe le code_verifier au state pour le retrouver au callback
+            verifiers_pkce[state] = flow.code_verifier
         except Exception as e:
             return {'error': 'Erreur génération URL OAuth'}, 500
         # Retourne l'URL au frontend qui redirigera l'utilisateur vers Google
@@ -66,17 +73,20 @@ class CalendrierCallback(Resource):
                 scopes=SCOPES,
                 redirect_uri=os.getenv('GOOGLE_REDIRECT_URI')
             )
+            # Retrouve le code_verifier associé au state
+            state_recu = request.args.get('state')
+            flow.code_verifier = verifiers_pkce.get(state_recu)
             # Récupère l'URL complète avec le code d'autorisation
             authorization_response = request.url
             flow.fetch_token(authorization_response=authorization_response)
 
             # Récupère et stocke les credentials
             credentials = flow.credentials
-            # TODO: stocker credentials en BDD plutôt qu'en session
-            return {
-                'access_token': credentials.token,
-                'refresh_token': credentials.refresh_token
-            }, 200
+            # Redirige vers le front avec le token dans l'URL
+            url_front = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+            return redirect(
+                f"{url_front}/google-callback?access_token={credentials.token}"
+            )
         except Exception as e:
             return {'error': str(e)}, 500
 
@@ -119,9 +129,16 @@ class CalendrierExport(Resource):
                 if not creneau:
                     return {'error': f'Créneau {creneau_id} introuvable'}, 404
 
+                # Récupère le nom de l'élève pour le titre
+                eleve = facade.obtenir_eleve(creneau['eleve_id'])
+                if eleve:
+                    titre_cours = f"Cours {creneau['type']} - {eleve['prenom']} {eleve['nom']}"
+                else:
+                    titre_cours = f"Cours {creneau['type']}"
+
                 # Crée l'événement Google Calendar
                 evenement = {
-                    'summary': f"Cours {creneau['type']}",
+                    'summary': titre_cours,
                     'description': f"Créneau PlanifPro",
                     'start': {
                         'dateTime': f"{creneau['date_debut']}T{creneau['heure_debut']}",

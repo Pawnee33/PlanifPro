@@ -6,8 +6,9 @@ import PopupCreerEvenement from './PopupCreerEvenement'
 import SectionBarre from './ui/SectionBarre'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 import logo from '../assets/logo.png'
+import { connecterGoogle } from '../services/google'
 
-const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, onChangerVue, onChoisirEleve, onChoisirEvenement }) => {
+const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, onChangerVue, onChoisirEleve, onChoisirEvenement, onExporter, onImporter }) => {
     const [classesOuvert, setClassesOuvert] = useState(false)
     const [elevesOuvert, setElevesOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
@@ -95,9 +96,23 @@ const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, 
                     />
                 </div>
 
+                {/* Bouton connecter Google Calendar */}
+                <div>
+                    <button
+                      onClick={connecterGoogle}
+                      className="flex items-center mt-6 gap-6 rounded-full bg-or w-full px-4 py-3 text-white hover:brightness-110 transition shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]"
+                    >
+                        <CalendarDays />
+                        <span>Connecter Google</span>
+                    </button>
+                </div>
+
                 {/* Bouton exporter vers Google Calendar */}
                 <div>
-                    <button className="flex items-center mt-6 gap-6 rounded-full bg-or w-full px-4 py-3 text-white hover:brightness-110 transition shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]">
+                    <button
+                      onClick={onExporter}
+                      className="flex items-center mt-6 gap-6 rounded-full bg-or w-full px-4 py-3 text-white hover:brightness-110 transition shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]"
+                    >
                         <CalendarArrowDown />
                         <span className="flex flex-col items-start">
                             <span>Exporter</span>
@@ -108,7 +123,10 @@ const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, 
 
                 {/* Bouton importer vers Google Calendar */}
                 <div>
-                    <button className="flex items-center mt-3 gap-6 rounded-full bg-or w-full px-4 py-3 text-white hover:brightness-110 transition shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]">
+                    <button
+                      onClick={onImporter}
+                      className="flex items-center mt-3 gap-6 rounded-full bg-or w-full px-4 py-3 text-white hover:brightness-110 transition shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]"
+                    >
                         <CalendarArrowUp />
                         <span className="flex flex-col items-start">
                             <span>Importer</span>
@@ -116,6 +134,7 @@ const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, 
                         </span>
                     </button>
                 </div>
+
             </div>
             <PopupInviterEleveClasse
               ouvert={popupInviterOuverte}

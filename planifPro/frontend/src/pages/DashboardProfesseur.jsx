@@ -1,3 +1,5 @@
+import { connecterGoogle, exporterVersGoogle, importerDepuisGoogle } from '../services/google'
+import PopupImportGoogle from '../components/eleve/PopupImportGoogle'
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../services/helper'
@@ -18,9 +20,11 @@ function DashboardProfesseur() {
   const [classes, setClasses] = useState([])
   const [eleves, setEleves] = useState([])
   const [evenements, setEvenements] = useState([])
+  const [creneaux, setCreneaux] = useState([])
   const [eleveSelectionne, setEleveSelectionne] = useState(null)
   const [popupOuvert, setPopupOuvert] = useState(false)
   const [evenementSelectionne, setEvenementSelectionne] = useState(null)
+  const [popupImportOuverte, setPopupImportOuverte] = useState(false)
 
   const chargerClasses = () => {
     api.get('/classes/')
@@ -40,10 +44,17 @@ const chargerEvenements = () => {
     .catch(() => setEvenements([]))
 }
 
+const chargerCreneaux = () => {
+  api.get('/creneaux/')
+    .then(setCreneaux)
+    .catch(() => setCreneaux([]))
+}
+
 useEffect(() => {
   chargerClasses()
   chargerEleves()
   chargerEvenements()
+  chargerCreneaux()
 }, [])
 
   // On retrouve la classe dont l'id correspond à la vue active (undefined si aucune)
@@ -81,6 +92,8 @@ useEffect(() => {
             setEleveSelectionne(null)
             setVueActive(null)
           }}
+          onExporter={() => exporterVersGoogle(creneaux.map((creneau) => creneau.id))}
+          onImporter={() => setPopupImportOuverte(true)}
         />
       <main className="flex-1 min-w-0 p-10 pl-16 bg-bleu-moyen">
         {/* Carte notifications classes et voeux */}
@@ -131,6 +144,13 @@ useEffect(() => {
           onFermer={() => setPopupOuvert(false)}
           onClasseCree={chargerClasses}
         />
+
+        {popupImportOuverte && (
+          <PopupImportGoogle
+            onFermer={() => setPopupImportOuverte(false)}
+            onImporter={(dateDebut, dateFin) => importerDepuisGoogle(dateDebut, dateFin)}
+          />
+        )}
       </div>
     </div>
   )
