@@ -8,12 +8,15 @@ import { api } from '../../services/helper'
 import { creneauVersEventRecurrent, creneauPersoVersEvent } from '../../utils/creneaux'
 import PopupGererCreneauPerso from '../PopupGererCreneauPerso'
 import PopupCreerCreneauPerso from '../PopupCreerCreneauPerso'
+import PopupObjectif from './PopupObjectif'
 
-function CalendrierEleve({ refresh }) {
+function CalendrierEleve({ refresh, objectifs, professeurs }) {
   const [events, setEvents] = useState([])
   const [creneauxPerso, setCreneauxPerso] = useState([])
   const [persoAGerer, setPersoAGerer] = useState(null)
   const [nouveauCreneau, setNouveauCreneau] = useState(null)
+  const [objectifAffiche, setObjectifAffiche] = useState(null)
+  // null = fermé, {} = ouvert
 
   const charger = () => {
     Promise.all([
@@ -35,12 +38,20 @@ function CalendrierEleve({ refresh }) {
   }, [refresh])
 
   // Clic sur un créneau : seuls les perso sont gérables (les cours sont en lecture seule)
-  const onEventClick = (info) => {
-    if (info.event.extendedProps.type === 'perso') {
-      const creneauPerso = creneauxPerso.find((c) => c.id === info.event.extendedProps.persoId)
-      setPersoAGerer(creneauPerso)
+    const onEventClick = (info) => {
+      if (info.event.extendedProps.type === 'perso') {
+        const creneauPerso = creneauxPerso.find((c) => c.id === info.event.extendedProps.persoId)
+        setPersoAGerer(creneauPerso)
+        return
+      }
+      // Créneau de cours → chercher l'objectif de ce créneau
+      const creneauId = info.event.extendedProps.creneauId
+      const dateCliquee = info.event.startStr.split('T')[0]  // "AAAA-MM-JJ" de l'occurrence cliquée
+      const objectif = objectifs?.find(
+        (obj) => obj.creneau_id === creneauId && obj.date_cours === dateCliquee
+      )
+      setObjectifAffiche({ objectif }) // objectif peut être undefined → « aucun objectif »
     }
-  }
 
   const modifierPerso = (id, donnees) => {
     api.put(`/creneaux/perso/${id}`, donnees)
@@ -110,6 +121,14 @@ function CalendrierEleve({ refresh }) {
           dateInitiale={nouveauCreneau.date}
           heureInitiale={nouveauCreneau.heure}
           onCreer={creerCreneauPerso}
+        />
+      )}
+
+      {objectifAffiche && (
+        <PopupObjectif
+          objectif={objectifAffiche.objectif}
+          professeurs={professeurs}
+          onFermer={() => setObjectifAffiche(null)}
         />
       )}
     </>
