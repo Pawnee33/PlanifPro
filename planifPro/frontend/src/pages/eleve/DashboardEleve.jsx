@@ -4,6 +4,7 @@ import { api } from '../../services/helper'
 import logo from '../../assets/logo.png'
 import EnTete from '../../components/EnTete'
 import BarreLateraleEleve from '../../components/eleve/BarreLateraleEleve'
+import FicheObjectif from '../../components/eleve/FicheObjectif'
 import FormulaireVoeux from '../../components/eleve/FormulaireVoeux'
 import PiedDePage from '../../components/PiedDePage'
 import CalendrierEleve from '../../components/eleve/CalendrierEleve'
@@ -22,6 +23,8 @@ function DashboardEleve() {
   const [popupVoeuxOuverte, setPopupVoeuxOuverte] = useState(false)
   const [creneaux, setCreneaux] = useState([])
   const [refreshCalendrier, setRefreshCalendrier] = useState(0)
+  const [selection, setSelection] = useState(null)
+  // selection = { type: 'objectif' | 'evenement' | 'professeur', donnees: {...} }
   
   const chargerObjectifs = () => {
     api.get('/objectifs/')
@@ -108,6 +111,9 @@ useEffect(() => {
           vueActive={vueActive}
           onChangerVue={setVueActive}
           onRejoint={chargerProfesseurs}
+          onChoisirObjectif={(objectif) => { setSelection({ type: 'objectif', donnees: objectif }); setVueActive(null) }}
+          onChoisirEvenement={(evenement) => { setSelection({ type: 'evenement', donnees: evenement }); setVueActive(null) }}
+          onChoisirProfesseur={(professeur) => { setSelection({ type: 'professeur', donnees: professeur }); setVueActive(null) }}
         />
       <main className="flex-1 min-w-0 p-10 pl-16 bg-bleu-moyen">
         {/* Carte notifications classes et voeux */}
@@ -168,6 +174,7 @@ useEffect(() => {
           </>
         )}
 
+        {selection?.type === 'objectif' && <FicheObjectif objectif={selection.donnees} professeurs={professeurs} />}
       </main>
       </div>
         <div className="flex flex-col min-b-screen">
