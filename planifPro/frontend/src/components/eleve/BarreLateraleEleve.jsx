@@ -1,37 +1,16 @@
 import React from 'react'
 import { useState } from 'react'
-import { api } from '../services/helper'
-import PopupInviterEleveClasse from './PopupInviterEleveClasse'
-import PopupCreerEvenement from './PopupCreerEvenement'
-import SectionBarre from './ui/SectionBarre'
+import { api } from '../../services/helper'
+import PopupRejoindreClasse from './PopupRejoindreClasse'
+import SectionBarre from '../ui/SectionBarre'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
-import logo from '../assets/logo.png'
-import { connecterGoogle } from '../services/google'
 
-const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, onChangerVue, onChoisirEleve, onChoisirEvenement, onExporter, onImporter }) => {
-    const [classesOuvert, setClassesOuvert] = useState(false)
-    const [elevesOuvert, setElevesOuvert] = useState(false)
+const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreClasse, vueActive, onChangerVue, onChoisirProfesseur, onChoisirEvenement, onChoisirObjectif, onRejoint, onExporter, onImporter }) => {
+    const [objectifsOuvert, setObejectifsOuvert] = useState(false)
+    const [professeursOuvert, setProfesseursOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
-    const [popupInviterOuverte, setPopupInviterOuverte] = useState(false)
+    const [popupRejoindreOuverte, setPopupRejoindreOuverte] = useState(false)
     const [popupEvenementOuverte, setPopupEvenementOuverte] = useState(false)
-
-    const inviterEleve = (classeId, email) => {
-        api.post(`/classes/${classeId}/inviter`, { email })
-            .then(() => {
-            alert('Invitation envoyée !')
-            setPopupInviterOuverte(false)
-            })
-            .catch(() => alert("Erreur lors de l'envoi de l'invitation"))
-        }
-
-    const creerEvenement = (donnees) => {
-        api.post('/evenements/', donnees)
-            .then(() => {
-            alert('Événement créé et notifications envoyées !')
-            setPopupEvenementOuverte(false)
-            })
-            .catch(() => alert("Erreur lors de la création de l'événement"))
-        }
 
     return (
         <aside className='w-64 flex flex-col gap-3 bg-bleu-marine border-r-[4px] border-tracer-violet p-4'>
@@ -53,32 +32,30 @@ const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, 
                 </button>
             </div>
 
-                {/* Bouton Mes classes */}
+                {/* Bouton Mes Objectifs */}
                 <div>
                     <SectionBarre
                         icone={<Users fill="currentColor" />}
-                        titre="Mes classes"
-                        elements={classes}
-                        getLabel={(classe) => classe.nom}
-                        messageVide="Aucune classe pour le moment"
-                        libelleBouton="+ Créer une classe"
-                        onAction={onCreerClasse}
+                        titre="Mes Objectifs"
+                        elements={objectifs}
+                        getLabel={(objectif) => objectif.contenu}
+                        messageVide="Aucun objectifs pour le moment"
                         vueActive={vueActive}
-                        onChangerVue={onChangerVue}
+                        onChangerVue={(id) => onChoisirObjectif(objectifs.find((o) => o.id === id))}
                     />
                 </div>
 
-                {/* Bouton Mes élèves */}
+                {/* Bouton Mes Professeurss */}
                 <div>
                     <SectionBarre
                     icone={<GraduationCap />}
-                    titre="Mes élèves"
-                    elements={eleves.map((e) => ({ ...e, couleur: e.classe_couleur }))}
-                    getLabel={(eleve) => `${eleve.prenom} ${eleve.nom}`}
-                    messageVide="Aucun élève pour le moment"
-                    libelleBouton="+ Inviter un élève"
-                    onAction={() => setPopupInviterOuverte(true)}
-                    onChangerVue={(id) => onChoisirEleve(eleves.find((e) => e.id === id))}
+                    titre="Mes Professeurs"
+                    elements={professeurs.map((p) => ({ ...p, couleur: p.classe_couleur }))}
+                    getLabel={(professeur) => `${professeur.prenom} ${professeur.nom}`}
+                    messageVide="Aucun Professeur pour le moment"
+                    libelleBouton="+ Rejoindre une classe"
+                    onAction={() => setPopupRejoindreOuverte(true)}
+                    onChangerVue={(id) => onChoisirProfesseur(professeurs.find((p) => p.id === id))}
                     />
                 </div>
 
@@ -90,21 +67,8 @@ const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, 
                     elements={evenements}
                     getLabel={(evenement) => evenement.titre}
                     messageVide="Aucun événement pour le moment"
-                    libelleBouton="+ Ajouter un événement"
-                    onAction={() => setPopupEvenementOuverte(true)}
                     onChangerVue={(id) => onChoisirEvenement(evenements.find((e) => e.id === id))}
                     />
-                </div>
-
-                {/* Bouton connecter Google Calendar */}
-                <div>
-                    <button
-                      onClick={connecterGoogle}
-                      className="flex items-center mt-6 gap-6 rounded-full bg-or w-full px-4 py-3 text-white hover:brightness-110 transition shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]"
-                    >
-                        <CalendarDays />
-                        <span>Connecter Google</span>
-                    </button>
                 </div>
 
                 {/* Bouton exporter vers Google Calendar */}
@@ -134,24 +98,14 @@ const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, 
                         </span>
                     </button>
                 </div>
-
             </div>
-            <PopupInviterEleveClasse
-              ouvert={popupInviterOuverte}
-              onFermer={() => setPopupInviterOuverte(false)}
-              classes={classes}
-              onInviter={inviterEleve}
-            />
-
-            <PopupCreerEvenement
-              ouvert={popupEvenementOuverte}
-              onFermer={() => setPopupEvenementOuverte(false)}
-              onCreer={creerEvenement}
-              classes={classes}
-              eleves={eleves}
+            <PopupRejoindreClasse
+              ouvert={popupRejoindreOuverte}
+              onFermer={() => setPopupRejoindreOuverte(false)}
+              onRejoint={onRejoint}
             />
         </aside>
     )
 }
 
-export default BarreLaterale
+export default BarreLateraleEleve

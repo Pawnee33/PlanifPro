@@ -10,6 +10,7 @@ from planifPro.backend.persistence.classe_repository import ClasseRepository
 from planifPro.backend.persistence.voeu_repository import VoeuRepository
 from planifPro.backend.persistence.eleve_repository import EleveRepository
 from planifPro.backend.persistence.professeur_repository import ProfesseurRepository
+from planifPro.backend.persistence.creneau_repository import CreneauRepository
 from planifPro.backend.classes.classe import Classe
 from planifPro.backend.classes.voeu import Voeu
 from planifPro.backend.classes.eleve import Eleve
@@ -33,6 +34,7 @@ class ClasseVoeuFacade:
         self.voeu_repo = VoeuRepository()
         self.eleve_repo = EleveRepository()
         self.professeur_repo = ProfesseurRepository()
+        self.creneau_repo = CreneauRepository()
 
     # Classe
     def creer_classe(self, donnees):
@@ -130,32 +132,35 @@ class ClasseVoeuFacade:
                 professeurs_ids.add(classe.professeur_id)
                 prof = self.professeur_repo.obtenir(classe.professeur_id)
                 if prof:
-                    professeurs.append(prof.to_dict())
+                    donnees_prof = prof.to_dict()
+                    donnees_prof['classe_nom'] = classe.nom
+                    donnees_prof['code_classe'] = classe.code_classe
+                    professeurs.append(donnees_prof)
         return professeurs
 
     def obtenir_eleves_par_professeur(self, professeur_id):
-            """Retourne la liste des élèves d'un professeur via ses classes."""
-            professeur = self.professeur_repo.obtenir(professeur_id)
-            if not professeur:
-                return None
-            eleve_ids = set()
-            eleves = []
-            for classe in professeur.classes:
-                for eleve in classe.eleves:
-                    if eleve.id not in eleve_ids:
-                        eleve_ids.add(eleve.id)
-                        donnees_eleve = eleve.to_dict()
-                        donnees_eleve['classe_nom'] = classe.nom
-                        donnees_eleve['classe_couleur'] = classe.couleur
-                        ligne = db.session.execute(
-                            eleve_classe.select().where(
-                                eleve_classe.c.eleve_id == eleve.utilisateur_id,
-                                eleve_classe.c.classe_id == classe.id,
-                            )
-                        ).first()
-                        donnees_eleve['duree_minutes'] = ligne.duree_minutes if ligne else None
-                        eleves.append(donnees_eleve)
-            return eleves
+        """Retourne la liste des élèves d'un professeur via ses classes."""
+        professeur = self.professeur_repo.obtenir(professeur_id)
+        if not professeur:
+            return None
+        eleve_ids = set()
+        eleves = []
+        for classe in professeur.classes:
+            for eleve in classe.eleves:
+                if eleve.id not in eleve_ids:
+                    eleve_ids.add(eleve.id)
+                    donnees_eleve = eleve.to_dict()
+                    donnees_eleve['classe_nom'] = classe.nom
+                    donnees_eleve['classe_couleur'] = classe.couleur
+                    ligne = db.session.execute(
+                        eleve_classe.select().where(
+                            eleve_classe.c.eleve_id == eleve.utilisateur_id,
+                            eleve_classe.c.classe_id == classe.id,
+                        )
+                    ).first()
+                    donnees_eleve['duree_minutes'] = ligne.duree_minutes if ligne else None
+                    eleves.append(donnees_eleve)
+        return eleves
 
     def obtenir_classe_par_code(self, code_classe):
         """
@@ -220,6 +225,33 @@ class ClasseVoeuFacade:
                     classe.eleves.remove(eleve)
             self.classe_repo.mis_a_jour(classe.id, {})
             return True
+
+    def retirer_eleve_classe(self, classe_id, eleve_id):
+        """Retire un élève d'une classe + supprime ses vœux et créneaux dans cette classe."""
+        classe = self.classe_repo.obtenir(classe_id)
+        if not classe:
+            return None
+        eleve = self.eleve_repo.obtenir(eleve_id)
+        if not eleve:
+            return None
+
+        # Supprimer les vœux de l'élève dans cette classe
+        voeux = self.voeu_repo.obtenir_voeux_par_eleve(eleve_id) or []
+        for voeu in voeux:
+            if voeu.classe_id == classe_id:
+                self.voeu_repo.supprime(voeu.id)
+
+        # Supprimer les créneaux de l'élève dans cette classe
+        creneaux = self.creneau_repo.obtenir_creneaux_par_eleve(eleve_id) or []
+        for creneau in creneaux:
+            if creneau.classe_id == classe_id:
+                self.creneau_repo.supprime(creneau.id)
+
+        # Détacher l'élève de la classe
+        if eleve in classe.eleves:
+            classe.eleves.remove(eleve)
+            self.classe_repo.mis_a_jour(classe_id, {})
+        return True
 
     def mettre_a_jour_duree_eleve_classe(self, eleve_id, classe_id, duree_minutes):
         """Met à jour la durée de cours d'un élève dans une classe."""

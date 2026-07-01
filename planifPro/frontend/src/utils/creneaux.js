@@ -39,9 +39,9 @@ const jourVersNumero = {
 }
 
 // Convertit UN créneau en event RÉCURRENT (pour le calendrier global, sur toute la période).
-export const creneauVersEventRecurrent = (creneau, eleves, couleur) => {
+export const creneauVersEventRecurrent = (creneau, eleves, couleur, titrePersonnalise = null) => {
   const eleve = eleves.find((e) => e.id === creneau.eleve_id)
-  const titre = eleve ? `${eleve.prenom} ${eleve.nom}` : 'Élève inconnu'
+  const titre = titrePersonnalise || (eleve ? `${eleve.prenom} ${eleve.nom}` : 'Élève inconnu')
 
   // endRecur est EXCLUSIF dans FullCalendar : on prend le lendemain de date_fin
   // pour que le dernier jour de la période soit bien affiché.
