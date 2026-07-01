@@ -129,9 +129,16 @@ class CalendrierExport(Resource):
                 if not creneau:
                     return {'error': f'Créneau {creneau_id} introuvable'}, 404
 
+                # Récupère le nom de l'élève pour le titre
+                eleve = facade.obtenir_eleve(creneau['eleve_id'])
+                if eleve:
+                    titre_cours = f"Cours {creneau['type']} - {eleve['prenom']} {eleve['nom']}"
+                else:
+                    titre_cours = f"Cours {creneau['type']}"
+
                 # Crée l'événement Google Calendar
                 evenement = {
-                    'summary': f"Cours {creneau['type']}",
+                    'summary': titre_cours,
                     'description': f"Créneau PlanifPro",
                     'start': {
                         'dateTime': f"{creneau['date_debut']}T{creneau['heure_debut']}",

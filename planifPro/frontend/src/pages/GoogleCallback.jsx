@@ -1,21 +1,31 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { jwtDecode } from 'jwt-decode'
 
 function GoogleCallback() {
   const naviguer = useNavigate()
 
   useEffect(() => {
-    // Lit l'access_token dans l'URL (?access_token=...)
+    // Lit l'access_token Google dans l'URL (?access_token=...)
     const parametres = new URLSearchParams(window.location.search)
     const token = parametres.get('access_token')
 
     if (token) {
-      // Stocke le token pour l'export/import
       localStorage.setItem('google_token', token)
     }
 
-    // Redirige vers le dashboard
-    naviguer('/dashboard-eleve')
+    // Redirige vers le bon dashboard selon le rôle
+    const tokenApp = localStorage.getItem('token')
+    if (tokenApp) {
+      const { role } = jwtDecode(tokenApp)
+      if (role === 'professeur') {
+        naviguer('/dashboard-prof')
+      } else {
+        naviguer('/dashboard-eleve')
+      }
+    } else {
+      naviguer('/connexion')
+    }
   }, [])
 
   return (
