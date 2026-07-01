@@ -132,7 +132,10 @@ class ClasseVoeuFacade:
                 professeurs_ids.add(classe.professeur_id)
                 prof = self.professeur_repo.obtenir(classe.professeur_id)
                 if prof:
-                    professeurs.append(prof.to_dict())
+                    donnees_prof = prof.to_dict()
+                    donnees_prof['classe_nom'] = classe.nom
+                    donnees_prof['code_classe'] = classe.code_classe
+                    professeurs.append(donnees_prof)
         return professeurs
 
     def obtenir_eleves_par_professeur(self, professeur_id):

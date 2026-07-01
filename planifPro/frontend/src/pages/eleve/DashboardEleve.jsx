@@ -4,6 +4,9 @@ import { api } from '../../services/helper'
 import logo from '../../assets/logo.png'
 import EnTete from '../../components/EnTete'
 import BarreLateraleEleve from '../../components/eleve/BarreLateraleEleve'
+import FicheObjectif from '../../components/eleve/FicheObjectif'
+import FicheEvenement from '../../components/eleve/FicheEvenement'
+import FicheProfesseur from '../../components/eleve/FicheProfesseur'
 import FormulaireVoeux from '../../components/eleve/FormulaireVoeux'
 import PiedDePage from '../../components/PiedDePage'
 import CalendrierEleve from '../../components/eleve/CalendrierEleve'
@@ -19,9 +22,12 @@ function DashboardEleve() {
   const [evenements, setEvenements] = useState([])
   const [notifications, setNotifications] = useState([])
   const [voeux, setVoeux] = useState([])
+  const [classes, setClasses] = useState([])
   const [popupVoeuxOuverte, setPopupVoeuxOuverte] = useState(false)
   const [creneaux, setCreneaux] = useState([])
   const [refreshCalendrier, setRefreshCalendrier] = useState(0)
+  const [selection, setSelection] = useState(null)
+  // selection = { type: 'objectif' | 'evenement' | 'professeur', donnees: {...} }
   
   const chargerObjectifs = () => {
     api.get('/objectifs/')
@@ -59,6 +65,12 @@ function DashboardEleve() {
       .catch(() => setCreneaux([]))
   }
 
+  const chargerClasses = () => {
+    api.get('/classes/')
+      .then(setClasses)
+      .catch(() => setClasses([]))
+  }
+
 useEffect(() => {
   chargerObjectifs()
   chargerProfesseurs()
@@ -66,6 +78,7 @@ useEffect(() => {
   chargerNotifications()
   chargerVoeux()
   chargerCreneaux()
+  chargerClasses()
 }, [])
 
   const collecteOuverte = notifications.find(
@@ -108,6 +121,9 @@ useEffect(() => {
           vueActive={vueActive}
           onChangerVue={setVueActive}
           onRejoint={chargerProfesseurs}
+          onChoisirObjectif={(objectif) => { setSelection({ type: 'objectif', donnees: objectif }); setVueActive(null) }}
+          onChoisirEvenement={(evenement) => { setSelection({ type: 'evenement', donnees: evenement }); setVueActive(null) }}
+          onChoisirProfesseur={(professeur) => { setSelection({ type: 'professeur', donnees: professeur }); setVueActive(null) }}
         />
       <main className="flex-1 min-w-0 p-10 pl-16 bg-bleu-moyen">
         {/* Carte notifications classes et voeux */}
@@ -168,6 +184,9 @@ useEffect(() => {
           </>
         )}
 
+        {selection?.type === 'objectif' && <FicheObjectif objectif={selection.donnees} professeurs={professeurs} />}
+        {selection?.type === 'evenement' && <FicheEvenement evenement={selection.donnees} professeurs={professeurs} />}
+        {selection?.type === 'professeur' && <FicheProfesseur professeur={selection.donnees} classes={classes} />}
       </main>
       </div>
         <div className="flex flex-col min-b-screen">
