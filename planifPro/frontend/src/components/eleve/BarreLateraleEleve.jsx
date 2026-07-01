@@ -5,7 +5,7 @@ import PopupRejoindreClasse from './PopupRejoindreClasse'
 import SectionBarre from '../ui/SectionBarre'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 
-const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreClasse, vueActive, onChangerVue, onChoisirProfesseur, onChoisirEvenement, onChoisirObjectif, onRejoint }) => {
+const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreClasse, vueActive, onChangerVue, onChoisirProfesseur, onChoisirEvenement, onChoisirObjectif, onRejoint, onExporter, onImporter }) => {
     const [objectifsOuvert, setObejectifsOuvert] = useState(false)
     const [professeursOuvert, setProfesseursOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
@@ -73,7 +73,10 @@ const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreCla
 
                 {/* Bouton exporter vers Google Calendar */}
                 <div>
-                    <button className="flex items-center mt-6 gap-6 rounded-full bg-or w-full px-4 py-3 text-white hover:brightness-110 transition shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]">
+                    <button
+                      onClick={onExporter}
+                      className="flex items-center mt-6 gap-6 rounded-full bg-or w-full px-4 py-3 text-white hover:brightness-110 transition shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]"
+                    >
                         <CalendarArrowDown />
                         <span className="flex flex-col items-start">
                             <span>Exporter</span>
@@ -84,7 +87,10 @@ const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreCla
 
                 {/* Bouton importer vers Google Calendar */}
                 <div>
-                    <button className="flex items-center mt-3 gap-6 rounded-full bg-or w-full px-4 py-3 text-white hover:brightness-110 transition shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]">
+                    <button
+                      onClick={onImporter}
+                      className="flex items-center mt-3 gap-6 rounded-full bg-or w-full px-4 py-3 text-white hover:brightness-110 transition shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]"
+                    >
                         <CalendarArrowUp />
                         <span className="flex flex-col items-start">
                             <span>Importer</span>

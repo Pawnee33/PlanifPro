@@ -1,3 +1,4 @@
+import { connecterGoogle, exporterVersGoogle, importerDepuisGoogle } from '../../services/google'
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../../services/helper'
@@ -10,6 +11,7 @@ import FicheProfesseur from '../../components/eleve/FicheProfesseur'
 import FormulaireVoeux from '../../components/eleve/FormulaireVoeux'
 import PiedDePage from '../../components/PiedDePage'
 import CalendrierEleve from '../../components/eleve/CalendrierEleve'
+import PopupImportGoogle from '../../components/eleve/PopupImportGoogle'
 import { CalendarCheck, Mail } from 'lucide-react'
 
 // Page de connexion — version d'interactivité.
@@ -24,6 +26,7 @@ function DashboardEleve() {
   const [voeux, setVoeux] = useState([])
   const [classes, setClasses] = useState([])
   const [popupVoeuxOuverte, setPopupVoeuxOuverte] = useState(false)
+  const [popupImportOuverte, setPopupImportOuverte] = useState(false)
   const [creneaux, setCreneaux] = useState([])
   const [refreshCalendrier, setRefreshCalendrier] = useState(0)
   const [selection, setSelection] = useState(null)
@@ -124,11 +127,20 @@ useEffect(() => {
           onChoisirObjectif={(objectif) => { setSelection({ type: 'objectif', donnees: objectif }); setVueActive(null) }}
           onChoisirEvenement={(evenement) => { setSelection({ type: 'evenement', donnees: evenement }); setVueActive(null) }}
           onChoisirProfesseur={(professeur) => { setSelection({ type: 'professeur', donnees: professeur }); setVueActive(null) }}
+          onExporter={() => exporterVersGoogle(creneaux.map((creneau) => creneau.id))}
+          onImporter={() => setPopupImportOuverte(true)}
         />
       <main className="flex-1 min-w-0 p-10 pl-16 bg-bleu-moyen">
         {/* Carte notifications classes et voeux */}
         {vueActive === 'planning' && (
           <>
+            <button
+              onClick={connecterGoogle}
+              className="rounded-full bg-or px-5 py-2 border border-tracer-violet text-white hover:scale-105 transition"
+            >
+              Connecter Google Calendar
+            </button>
+
             {afficherBanniereVoeux && (
               <div className="flex items-center gap-4 bg-bleu-nuit border-2 border-or rounded-2xl px-5 py-4 mb-6 max-w-3xl">
                 {/* Icône */}
@@ -198,6 +210,13 @@ useEffect(() => {
           ouvert={true}
           onFermer={() => setPopupVoeuxOuverte(false)}
           onVoeuxSoumis={chargerVoeux}
+        />
+      )}
+
+      {popupImportOuverte && (
+        <PopupImportGoogle
+          onFermer={() => setPopupImportOuverte(false)}
+          onImporter={(dateDebut, dateFin) => importerDepuisGoogle(dateDebut, dateFin)}
         />
       )}
     </div>
