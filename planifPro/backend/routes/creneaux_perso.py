@@ -9,6 +9,7 @@ from flask_restx import Namespace, Resource, fields
 from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from planifPro.backend.services.facade import PlanifProFacade
+from datetime import datetime, timezone
 
 facade = PlanifProFacade()
 
@@ -94,6 +95,11 @@ class CreneauxImport(Resource):
         if not access_token:
             return {'error': 'Token Google invalide ou expiré'}, 400
 
+        # Récupère la plage de dates depuis le corps de la requête
+        donnees_requete = request.get_json(silent=True) or {}
+        date_debut = donnees_requete.get('date_debut')  # "AAAA-MM-JJ"
+        date_fin = donnees_requete.get('date_fin')       # "AAAA-MM-JJ"
+
         try:
             from googleapiclient.discovery import build
             from google.oauth2.credentials import Credentials
@@ -103,13 +109,24 @@ class CreneauxImport(Resource):
             # Crée le service Google Calendar
             service = build('calendar', 'v3', credentials=credentials)
 
-            # Récupère les événements Google Calendar
-            events_result = service.events().list(
-                calendarId='primary',
-                maxResults=50,
-                singleEvents=True,
-                orderBy='startTime'
-            ).execute()
+            # Construit les bornes de la plage (défaut : à partir de maintenant si non fourni)
+            if date_debut:
+                time_min = f"{date_debut}T00:00:00Z"
+            else:
+                time_min = datetime.now(timezone.utc).isoformat()
+
+            parametres = {
+                'calendarId': 'primary',
+                'timeMin': time_min,
+                'maxResults': 50,
+                'singleEvents': True,
+                'orderBy': 'startTime',
+            }
+            # Ajoute la borne de fin seulement si elle est fournie
+            if date_fin:
+                parametres['timeMax'] = f"{date_fin}T23:59:59Z"
+
+            events_result = service.events().list(**parametres).execute()
             events = events_result.get('items', [])
 
             creneaux_importes = []
@@ -124,7 +141,7 @@ class CreneauxImport(Resource):
                 if 'dateTime' not in start:
                     continue
 
-                from datetime import datetime
+
                 debut = datetime.fromisoformat(start['dateTime'])
                 fin = datetime.fromisoformat(end['dateTime'])
 
@@ -133,6 +150,7 @@ class CreneauxImport(Resource):
                     'utilisateur_id': utilisateur_id,
                     'titre': titre,
                     'description': description,
+                    'date_creneau': debut.date().isoformat(),
                     'jour': debut.strftime('%A').lower(),
                     'heure_debut': debut.time(),
                     'heure_fin': fin.time()
