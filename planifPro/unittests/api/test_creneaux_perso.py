@@ -19,7 +19,7 @@ class TestCreneauxPersoAPI(BaseTestCase):
         """Crée un créneau personnel. Renvoie la réponse."""
         donnees = {
             "titre": "Cours perso",
-            "jour": "lundi",
+            "date_creneau": "2026-09-07",
             "heure_debut": "09:00",
             "heure_fin": "10:00",
         }
