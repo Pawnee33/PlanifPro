@@ -171,3 +171,45 @@ class CalendrierExport(Resource):
         except Exception as e:
             return {'error': 'Erreur Google Calendar API'}, 500
         return {'message': 'Créneaux exportés avec succès'}, 200
+
+    @api.response(200, 'Créneaux supprimés de Google Calendar')
+    @api.response(401, 'Access token Google expiré')
+    @api.response(500, 'Erreur Google Calendar API')
+    @jwt_required()
+    def delete(self):
+        """Supprimer tous les créneaux PlanifPro de Google Calendar"""
+        # Récupère le token Google depuis le header
+        access_token = request.headers.get('X-Google-Token')
+        if not access_token:
+            return {'error': 'Access token Google expiré'}, 401
+
+        try:
+            from googleapiclient.discovery import build
+            from google.oauth2.credentials import Credentials
+
+            # Crée les credentials Google avec le token
+            credentials = Credentials(token=access_token)
+            # Crée le service Google Calendar
+            service = build('calendar', 'v3', credentials=credentials)
+
+            # Recherche les événements contenant le marqueur PlanifPro
+            events_result = service.events().list(
+                calendarId='primary',
+                q='Créneau PlanifPro',
+                maxResults=250,
+                singleEvents=False
+            ).execute()
+
+            nombre_supprimes = 0
+            for event in events_result.get('items', []):
+                # Vérifie la description exacte avant de supprimer (sécurité)
+                if event.get('description') == 'Créneau PlanifPro':
+                    service.events().delete(
+                        calendarId='primary',
+                        eventId=event['id']
+                    ).execute()
+                    nombre_supprimes += 1
+
+        except Exception as e:
+            return {'error': 'Erreur Google Calendar API'}, 500
+        return {'message': f'{nombre_supprimes} créneaux supprimés de Google Calendar'}, 200

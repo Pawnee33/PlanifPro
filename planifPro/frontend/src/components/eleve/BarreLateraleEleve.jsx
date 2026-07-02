@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { api } from '../../services/helper'
 import PopupRejoindreClasse from './PopupRejoindreClasse'
 import SectionBarre from '../ui/SectionBarre'
+import { supprimerDeGoogle } from '../../services/google'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 
 const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreClasse, vueActive, onChangerVue, onChoisirProfesseur, onChoisirEvenement, onChoisirObjectif, onRejoint, onExporter, onImporter }) => {
@@ -98,6 +99,21 @@ const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreCla
                         </span>
                     </button>
                 </div>
+
+                {/* Bouton supprimer les créneaux exportés */}
+                <div>
+                    <button
+                      onClick={supprimerDeGoogle}
+                      className="flex items-center mt-3 gap-6 rounded-full bg-red-900 w-full px-4 py-3 text-white hover:brightness-110 transition shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]"
+                    >
+                        <CalendarArrowDown />
+                        <span className="flex flex-col items-start">
+                            <span>Supprimer</span>
+                            <span className="text-xs">les créneaux exportés</span>
+                        </span>
+                    </button>
+                </div>
+
             </div>
             <PopupRejoindreClasse
               ouvert={popupRejoindreOuverte}
