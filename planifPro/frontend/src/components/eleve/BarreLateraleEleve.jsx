@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { api } from '../../services/helper'
 import PopupRejoindreClasse from './PopupRejoindreClasse'
 import SectionBarre from '../ui/SectionBarre'
-import { supprimerDeGoogle } from '../../services/google'
+import { connecterGoogle, supprimerDeGoogle } from '../../services/google'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 
 const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreClasse, vueActive, onChangerVue, onChoisirProfesseur, onChoisirEvenement, onChoisirObjectif, onRejoint, onExporter, onImporter }) => {
@@ -70,6 +70,17 @@ const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreCla
                     messageVide="Aucun événement pour le moment"
                     onChangerVue={(id) => onChoisirEvenement(evenements.find((e) => e.id === id))}
                     />
+                </div>
+
+                {/* Bouton connecter Google Calendar */}
+                <div>
+                    <button
+                      onClick={connecterGoogle}
+                      className="flex items-center mt-6 gap-6 rounded-full bg-or w-full px-4 py-3 text-white hover:brightness-110 transition shadow-[0_6px_14px_-4px_rgba(0,0,0,0.5)]"
+                    >
+                        <CalendarDays />
+                        <span>Connecter Google</span>
+                    </button>
                 </div>
 
                 {/* Bouton exporter vers Google Calendar */}
