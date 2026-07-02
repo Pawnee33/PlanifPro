@@ -3,14 +3,14 @@
 @theme {
   --color-bleu: oklch(48.8% 0.243 264.376);
   --color-blanc-base: #ffffff;
-  --color-bleu-nuit: #0C2863;
-  --color-bleu-marine: #181F72;
-  --color-bleu-shadow: #323CAD;
-  --color-tracer-violet: #9095F5;
-  --color-bleu-roi: #223397;
-  --color-bleu-moyen: #4065B6;
+  --color-bleu-nuit: #1B1B23;
+  --color-bleu-marine: #243147;
+  --color-bleu-shadow: #3B4659;
+  --color-tracer-violet: #CED2D9;
+  --color-bleu-roi: #06152E;
+  --color-bleu-moyen: #0E1C35;
   --color-bleu-ciel: #4975BF;
-  --color-bleu-clair: #4C7AC3;
+  --color-bleu-clair: #333F53;
   --color-bleu-clair-ciel: #6EB4E6;
   --color-or: #D59813;
   --color-or-clair: #D5AE13;
@@ -61,7 +61,7 @@
 
 /* Grille douce */
 .fc {
-  --fc-border-color: #e5e7eb;        /* lignes de grille claires */
+  --fc-border-color: #C8CDD6;        /* lignes de grille claires */
 }
 
 /* Événements arrondis, sans bordure dure */
@@ -80,12 +80,12 @@
 
 /* Conteneur : carte blanche arrondie */
 .fc {
-  background: #ffffff;
+  background: #F2F3F6;
   border-radius: 20px;
   padding: 16px;
   overflow: hidden;
   box-shadow: 0 10px 30px -10px rgba(12, 40, 99, 0.25);
-  --fc-border-color: #eff4ee;                     /* lignes de grille très douces */
+  --fc-border-color: #C8CDD6;                     /* lignes de grille très douces */
   --fc-today-bg-color: rgba(213, 152, 19, 0.07);  /* jour courant : doré léger */
   font-family: inherit;
 }
@@ -116,7 +116,7 @@
 /* En-têtes de jours */
 .fc .fc-col-header-cell {
   padding: 12px 0;
-  background: #f7f8fb;
+  background: #E9EBF0;
   border: none;
 }
 .fc .fc-col-header-cell-cushion {
