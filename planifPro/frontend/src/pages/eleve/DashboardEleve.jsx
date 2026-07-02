@@ -21,6 +21,7 @@ function DashboardEleve() {
   const [vueActive, setVueActive] = useState('planning')
   const [popupOuvert, setPopupOuvert] = useState(false)
   const [professeurs, setProfesseurs] = useState([])
+  const [mesClasses, setMesClasses] = useState([])
   const [objectifs, setObjectifs] = useState([])
   const [evenements, setEvenements] = useState([])
   const [notifications, setNotifications] = useState([])
@@ -77,6 +78,12 @@ function DashboardEleve() {
       .catch(() => setClasses([]))
   }
 
+  const chargerMesClasses = () => {
+  api.get('/eleves/mes-classes')
+    .then(setMesClasses)
+    .catch(() => setMesClasses([]))
+}
+
 useEffect(() => {
   chargerObjectifs()
   chargerProfesseurs()
@@ -85,17 +92,15 @@ useEffect(() => {
   chargerVoeux()
   chargerCreneaux()
   chargerClasses()
+  chargerMesClasses()
 }, [])
 
-  const collecteOuverte = notifications.find(
-      (notif) => notif.type === 'collecte_voeux'
-    )
-
-  const voeuxNonSoumis = voeux.length === 0
-
-  const aRejointUneClasse = professeurs.length > 0
-
-  const afficherBanniereVoeux = collecteOuverte && voeuxNonSoumis && aRejointUneClasse
+  // Classes dont la collecte est ouverte et pour lesquelles l'élève n'a pas encore soumis de vœu
+  const classesEnAttenteDeVoeux = mesClasses.filter(
+    (classe) =>
+      classe.statut === 'collecte_active' &&
+      !voeux.some((voeu) => voeu.classe_id === classe.id)
+  )
 
   const creneauAConfirmer = creneaux.find(
     (creneau) => creneau.statut !== 'confirme'
@@ -156,8 +161,8 @@ useEffect(() => {
         {/* Carte notifications classes et voeux */}
         {vueActive === 'planning' && (
           <>
-            {afficherBanniereVoeux && (
-              <div className="flex items-center gap-4 bg-bleu-nuit border-2 border-or rounded-2xl px-5 py-4 mb-6 max-w-3xl">
+            {classesEnAttenteDeVoeux.map((classe) => (
+              <div key={classe.id} className="flex items-center gap-4 bg-bleu-nuit border-2 border-or rounded-2xl px-5 py-4 mb-6 max-w-3xl">
                 {/* Icône */}
                 <div className="rounded-full bg-or w-12 h-12 flex items-center justify-center shrink-0">
                   <Mail className="text-white" />
@@ -165,18 +170,18 @@ useEffect(() => {
 
                 {/* Texte */}
                 <p className="text-white flex-1">
-                  {professeurs[0] ? `${professeurs[0].prenom} ${professeurs[0].nom}` : 'Votre professeur'} a envoyé le formulaire de vœux
+                  {classe.professeur_prenom} {classe.professeur_nom} a envoyé le formulaire de vœux pour la classe {classe.nom}
                 </p>
 
                 {/* Bouton */}
                 <button
-                  onClick={() => setPopupVoeuxOuverte(true)}
+                  onClick={() => setPopupVoeuxOuverte(classe)}
                   className="rounded-full bg-bleu-roi px-5 py-2 border border-tracer-violet text-white hover:scale-105 transition shrink-0"
                 >
                   Soumettre vos vœux
                 </button>
               </div>
-            )}
+            ))}
 
             {creneauAConfirmer && (
               <div className="flex items-center gap-4 bg-bleu-nuit border-2 border-or rounded-2xl px-5 py-4 mb-6 max-w-3xl">
@@ -232,8 +237,9 @@ useEffect(() => {
       {popupVoeuxOuverte && (
         <FormulaireVoeux
           ouvert={true}
+          classe={popupVoeuxOuverte}
           onFermer={() => setPopupVoeuxOuverte(false)}
-          onVoeuxSoumis={chargerVoeux}
+          onVoeuxSoumis={() => { chargerVoeux(); chargerMesClasses() }}
         />
       )}
 
