@@ -2,10 +2,7 @@ import { useState } from 'react'
 import { api } from '../../services/helper'
 import { X, Plus, Trash2, ChevronDown } from 'lucide-react'
 
-function FormulaireVoeux({ ouvert, onFermer, onVoeuxSoumis }) {
-  // Étape 1 : l'élève saisit le code de la classe
-  const [code, setCode] = useState('')
-  const [classe, setClasse] = useState(null)
+function FormulaireVoeux({ ouvert, classe, onFermer, onVoeuxSoumis }) {
   // Étape 2 : la liste des vœux (chaque vœu = { jour, heure })
   const [voeux, setVoeux] = useState([{ jour: '', heure: '' }])
   const [erreur, setErreur] = useState('')
@@ -14,17 +11,6 @@ function FormulaireVoeux({ ouvert, onFermer, onVoeuxSoumis }) {
 
   const styleChamp =
     'bg-bleu-nuit rounded-lg px-3 py-2 text-white border border-tracer-violet'
-
-  // Charge la classe à partir du code saisi
-  const chargerClasse = async () => {
-    setErreur('')
-    try {
-      const classeTrouvee = await api.get(`/classes/code/${code}`)
-      setClasse(classeTrouvee)
-    } catch (err) {
-      setErreur(err.message)
-    }
-  }
 
   // Ajoute une ligne de vœu vide
   const ajouterVoeu = () => {
@@ -91,27 +77,6 @@ function FormulaireVoeux({ ouvert, onFermer, onVoeuxSoumis }) {
 
         <h2 className="text-or text-lg mb-4">Soumettre mes vœux</h2>
 
-        {/* Étape 1 : saisie du code tant que la classe n'est pas chargée */}
-        {!classe ? (
-          <>
-            <label className="block text-white mb-1">Code de la classe</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Ex : ESD235BH"
-                value={code}
-                onChange={(evenement) => setCode(evenement.target.value)}
-                className={`${styleChamp} flex-1 placeholder:text-white/60`}
-              />
-              <button
-                onClick={chargerClasse}
-                className="rounded-[16px] bg-or px-4 py-2 border border-tracer-violet text-white hover:scale-105"
-              >
-                Valider
-              </button>
-            </div>
-          </>
-        ) : (
           <>
             {/* Rappel des contraintes du professeur */}
             <p className="text-white/70 text-sm mb-4">
@@ -195,7 +160,6 @@ function FormulaireVoeux({ ouvert, onFermer, onVoeuxSoumis }) {
               </button>
             </div>
           </>
-        )}
 
         {/* Message d'erreur (back ou validation) */}
         {erreur && <p className="text-red-300 text-sm mt-4">{erreur}</p>}

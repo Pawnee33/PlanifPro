@@ -138,6 +138,21 @@ class ClasseVoeuFacade:
                     professeurs.append(donnees_prof)
         return professeurs
 
+    def obtenir_classes_par_eleve(self, eleve_id):
+        """Retourne les classes d'un élève (une entrée par classe) avec statut et professeur."""
+        eleve = self.eleve_repo.obtenir(eleve_id)
+        if not eleve:
+            return None
+        classes = []
+        for classe in eleve.classes:
+            donnees_classe = classe.to_dict()
+            prof = self.professeur_repo.obtenir(classe.professeur_id)
+            if prof:
+                donnees_classe['professeur_prenom'] = prof.prenom
+                donnees_classe['professeur_nom'] = prof.nom
+            classes.append(donnees_classe)
+        return classes
+
     def obtenir_eleves_par_professeur(self, professeur_id):
         """Retourne la liste des élèves d'un professeur via ses classes."""
         professeur = self.professeur_repo.obtenir(professeur_id)

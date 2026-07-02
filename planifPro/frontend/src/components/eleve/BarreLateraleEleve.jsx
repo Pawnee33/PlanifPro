@@ -1,7 +1,6 @@
 import React from 'react'
 import { useState } from 'react'
 import { api } from '../../services/helper'
-import PopupRejoindreClasse from './PopupRejoindreClasse'
 import SectionBarre from '../ui/SectionBarre'
 import { connecterGoogle, supprimerDeGoogle } from '../../services/google'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
@@ -10,7 +9,6 @@ const BarreLateraleEleve = ({ ouverte, onFermer, objectifs, professeurs, eveneme
     const [objectifsOuvert, setObejectifsOuvert] = useState(false)
     const [professeursOuvert, setProfesseursOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
-    const [popupRejoindreOuverte, setPopupRejoindreOuverte] = useState(false)
     const [popupEvenementOuverte, setPopupEvenementOuverte] = useState(false)
 
     return (
@@ -58,7 +56,7 @@ const BarreLateraleEleve = ({ ouverte, onFermer, objectifs, professeurs, eveneme
                     getLabel={(professeur) => `${professeur.prenom} ${professeur.nom}`}
                     messageVide="Aucun Professeur pour le moment"
                     libelleBouton="+ Rejoindre une classe"
-                    onAction={() => setPopupRejoindreOuverte(true)}
+                    onAction={onRejoindreClasse}
                     onChangerVue={(id) => onChoisirProfesseur(professeurs.find((p) => p.id === id))}
                     />
                 </div>
@@ -129,11 +127,6 @@ const BarreLateraleEleve = ({ ouverte, onFermer, objectifs, professeurs, eveneme
                 </div>
 
             </div>
-            <PopupRejoindreClasse
-              ouvert={popupRejoindreOuverte}
-              onFermer={() => setPopupRejoindreOuverte(false)}
-              onRejoint={onRejoint}
-            />
         </aside>
     )
 }
