@@ -1,20 +1,21 @@
 import React from 'react'
 import { useState } from 'react'
 import { api } from '../../services/helper'
-import PopupRejoindreClasse from './PopupRejoindreClasse'
 import SectionBarre from '../ui/SectionBarre'
 import { connecterGoogle, supprimerDeGoogle } from '../../services/google'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 
-const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreClasse, vueActive, onChangerVue, onChoisirProfesseur, onChoisirEvenement, onChoisirObjectif, onRejoint, onExporter, onImporter }) => {
+const BarreLateraleEleve = ({ ouverte, onFermer, objectifs, professeurs, evenements, onRejoindreClasse, vueActive, onChangerVue, onChoisirProfesseur, onChoisirEvenement, onChoisirObjectif, onRejoint, onExporter, onImporter }) => {
     const [objectifsOuvert, setObejectifsOuvert] = useState(false)
     const [professeursOuvert, setProfesseursOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
-    const [popupRejoindreOuverte, setPopupRejoindreOuverte] = useState(false)
     const [popupEvenementOuverte, setPopupEvenementOuverte] = useState(false)
 
     return (
-        <aside className='w-64 flex flex-col gap-3 bg-bleu-marine border-r-[4px] border-tracer-violet p-4'>
+        <aside className={`w-64 flex flex-col gap-3 bg-bleu-marine border-r-[4px] border-tracer-violet p-4
+          fixed inset-y-0 left-0 z-50 transition-transform duration-300
+          ${ouverte ? 'translate-x-0' : '-translate-x-full'}
+          lg:static lg:translate-x-0 lg:z-auto`}>
 
             <div className="flex flex-col gap-5">
 
@@ -55,7 +56,7 @@ const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreCla
                     getLabel={(professeur) => `${professeur.prenom} ${professeur.nom}`}
                     messageVide="Aucun Professeur pour le moment"
                     libelleBouton="+ Rejoindre une classe"
-                    onAction={() => setPopupRejoindreOuverte(true)}
+                    onAction={onRejoindreClasse}
                     onChangerVue={(id) => onChoisirProfesseur(professeurs.find((p) => p.id === id))}
                     />
                 </div>
@@ -126,11 +127,6 @@ const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreCla
                 </div>
 
             </div>
-            <PopupRejoindreClasse
-              ouvert={popupRejoindreOuverte}
-              onFermer={() => setPopupRejoindreOuverte(false)}
-              onRejoint={onRejoint}
-            />
         </aside>
     )
 }

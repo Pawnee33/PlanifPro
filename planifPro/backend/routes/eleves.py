@@ -59,6 +59,32 @@ class ElevesList(Resource):
             return {'error': 'Erreur interne du serveur'}, 500
         return tout_eleves, 200
 
+@api.route('/mes-classes')
+class MesClasses(Resource):
+    """
+    Resource pour récupérer les classes de l'élève connecté.
+    """
+    @api.response(200, 'Liste des classes affichée')
+    @api.response(403, 'Accès réservé aux élèves')
+    @api.response(404, 'Aucune classe trouvée')
+    @api.response(500, 'Erreur interne du serveur')
+    @jwt_required()
+    def get(self):
+        """Lister les classes de l'élève connecté (avec statut et professeur)"""
+        eleve_id = get_jwt_identity()
+
+        claims = get_jwt()
+        if claims.get('role') != 'eleve':
+            return {'error': 'Accès réservé aux élèves'}, 403
+
+        try:
+            classes = facade.obtenir_classes_par_eleve(eleve_id)
+            if not classes:
+                return {'error': 'Aucune classe trouvée'}, 404
+        except Exception as e:
+            return {'error': 'Erreur interne du serveur'}, 500
+        return classes, 200
+
 @api.route('/inviter')
 class Inviter(Resource):
     """

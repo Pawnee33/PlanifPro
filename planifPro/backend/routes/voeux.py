@@ -121,7 +121,17 @@ class Relancer(Resource):
         try:
             for eleve_id in eleve_ids:
                 eleve = facade.obtenir_eleve(eleve_id)
-                if eleve and eleve['token_fcm']:
+                if not eleve:
+                    continue
+                # Notification in-app (visible dans la cloche)
+                facade.creer_notification({
+                    'utilisateur_id': eleve_id,
+                    'type': 'collecte_voeux',
+                    'titre': 'Rappel vœux',
+                    'message': f"N'oubliez pas de soumettre vos vœux pour la classe {classe['nom']} !",
+                })
+                # Notification push (si l'élève a un token FCM)
+                if eleve['token_fcm']:
                     envoyer_notification(
                         eleve['token_fcm'],
                         "Rappel vœux",

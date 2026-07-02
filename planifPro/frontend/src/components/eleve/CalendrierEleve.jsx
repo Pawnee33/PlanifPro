@@ -15,6 +15,7 @@ function CalendrierEleve({ refresh, objectifs, professeurs }) {
   const [creneauxPerso, setCreneauxPerso] = useState([])
   const [persoAGerer, setPersoAGerer] = useState(null)
   const [nouveauCreneau, setNouveauCreneau] = useState(null)
+  const [estMobile, setEstMobile] = useState(window.innerWidth < 768)
   const [objectifAffiche, setObjectifAffiche] = useState(null)
   // null = fermé, {} = ouvert
 
@@ -37,21 +38,29 @@ function CalendrierEleve({ refresh, objectifs, professeurs }) {
     charger()
   }, [refresh])
 
-  // Clic sur un créneau : seuls les perso sont gérables (les cours sont en lecture seule)
-    const onEventClick = (info) => {
-      if (info.event.extendedProps.type === 'perso') {
-        const creneauPerso = creneauxPerso.find((c) => c.id === info.event.extendedProps.persoId)
-        setPersoAGerer(creneauPerso)
-        return
-      }
-      // Créneau de cours → chercher l'objectif de ce créneau
-      const creneauId = info.event.extendedProps.creneauId
-      const dateCliquee = info.event.startStr.split('T')[0]  // "AAAA-MM-JJ" de l'occurrence cliquée
-      const objectif = objectifs?.find(
-        (obj) => obj.creneau_id === creneauId && obj.date_cours === dateCliquee
-      )
-      setObjectifAffiche({ objectif }) // objectif peut être undefined → « aucun objectif »
+  useEffect(() => {
+    const gererRedimensionnement = () => {
+      setEstMobile(window.innerWidth < 768)
     }
+    window.addEventListener('resize', gererRedimensionnement)
+    return () => window.removeEventListener('resize', gererRedimensionnement)
+  }, [])
+
+  // Clic sur un créneau : seuls les perso sont gérables (les cours sont en lecture seule)
+  const onEventClick = (info) => {
+    if (info.event.extendedProps.type === 'perso') {
+      const creneauPerso = creneauxPerso.find((c) => c.id === info.event.extendedProps.persoId)
+      setPersoAGerer(creneauPerso)
+      return
+    }
+    // Créneau de cours → chercher l'objectif de ce créneau
+    const creneauId = info.event.extendedProps.creneauId
+    const dateCliquee = info.event.startStr.split('T')[0]  // "AAAA-MM-JJ" de l'occurrence cliquée
+    const objectif = objectifs?.find(
+      (obj) => obj.creneau_id === creneauId && obj.date_cours === dateCliquee
+    )
+    setObjectifAffiche({ objectif }) // objectif peut être undefined → « aucun objectif »
+  }
 
   const modifierPerso = (id, donnees) => {
     api.put(`/creneaux/perso/${id}`, donnees)
@@ -86,8 +95,10 @@ function CalendrierEleve({ refresh, objectifs, professeurs }) {
   return (
     <>
       <FullCalendar
+        key={estMobile ? 'mois' : 'semaine'}
         plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
-        initialView="timeGridWeek"
+        initialView={estMobile ? 'dayGridMonth' : 'timeGridWeek'}
+        height={estMobile ? 'calc(100vh - 180px)' : 'auto'}
         events={events}
         locale={frLocale}
         eventClick={onEventClick}
@@ -95,7 +106,7 @@ function CalendrierEleve({ refresh, objectifs, professeurs }) {
         headerToolbar={{
           left: 'prev next',
           center: 'title',
-          right: 'timeGridWeek dayGridMonth',
+          right: estMobile ? 'dayGridMonth' : 'timeGridWeek dayGridMonth',
         }}
         slotDuration="00:30:00"
         slotLabelInterval="00:30:00"

@@ -5,6 +5,7 @@ import { api } from '../../services/helper'
 import logo from '../../assets/logo.png'
 import EnTete from '../../components/EnTete'
 import BarreLateraleEleve from '../../components/eleve/BarreLateraleEleve'
+import PopupRejoindreClasse from '../../components/eleve/PopupRejoindreClasse'
 import FicheObjectif from '../../components/eleve/FicheObjectif'
 import FicheEvenement from '../../components/eleve/FicheEvenement'
 import FicheProfesseur from '../../components/eleve/FicheProfesseur'
@@ -12,7 +13,7 @@ import FormulaireVoeux from '../../components/eleve/FormulaireVoeux'
 import PiedDePage from '../../components/PiedDePage'
 import CalendrierEleve from '../../components/eleve/CalendrierEleve'
 import PopupImportGoogle from '../../components/eleve/PopupImportGoogle'
-import { CalendarCheck, Mail } from 'lucide-react'
+import { CalendarCheck, Mail, Menu } from 'lucide-react'
 
 // Page de connexion — version d'interactivité.
 
@@ -20,15 +21,18 @@ function DashboardEleve() {
   const [vueActive, setVueActive] = useState('planning')
   const [popupOuvert, setPopupOuvert] = useState(false)
   const [professeurs, setProfesseurs] = useState([])
+  const [mesClasses, setMesClasses] = useState([])
   const [objectifs, setObjectifs] = useState([])
   const [evenements, setEvenements] = useState([])
   const [notifications, setNotifications] = useState([])
   const [voeux, setVoeux] = useState([])
   const [classes, setClasses] = useState([])
+  const [popupRejoindreOuverte, setPopupRejoindreOuverte] = useState(false)
   const [popupVoeuxOuverte, setPopupVoeuxOuverte] = useState(false)
   const [popupImportOuverte, setPopupImportOuverte] = useState(false)
   const [creneaux, setCreneaux] = useState([])
   const [refreshCalendrier, setRefreshCalendrier] = useState(0)
+  const [sidebarOuverte, setSidebarOuverte] = useState(false)
   const [selection, setSelection] = useState(null)
   // selection = { type: 'objectif' | 'evenement' | 'professeur', donnees: {...} }
   
@@ -74,6 +78,12 @@ function DashboardEleve() {
       .catch(() => setClasses([]))
   }
 
+  const chargerMesClasses = () => {
+  api.get('/eleves/mes-classes')
+    .then(setMesClasses)
+    .catch(() => setMesClasses([]))
+}
+
 useEffect(() => {
   chargerObjectifs()
   chargerProfesseurs()
@@ -82,17 +92,15 @@ useEffect(() => {
   chargerVoeux()
   chargerCreneaux()
   chargerClasses()
+  chargerMesClasses()
 }, [])
 
-  const collecteOuverte = notifications.find(
-      (notif) => notif.type === 'collecte_voeux'
-    )
-
-  const voeuxNonSoumis = voeux.length === 0
-
-  const aRejointUneClasse = professeurs.length > 0
-
-  const afficherBanniereVoeux = collecteOuverte && voeuxNonSoumis && aRejointUneClasse
+  // Classes dont la collecte est ouverte et pour lesquelles l'élève n'a pas encore soumis de vœu
+  const classesEnAttenteDeVoeux = mesClasses.filter(
+    (classe) =>
+      classe.statut === 'collecte_active' &&
+      !voeux.some((voeu) => voeu.classe_id === classe.id)
+  )
 
   const creneauAConfirmer = creneaux.find(
     (creneau) => creneau.statut !== 'confirme'
@@ -117,25 +125,44 @@ useEffect(() => {
           }}
         />
       <div className="flex flex-1">
+        {/* Burger sidebar — mobile uniquement */}
+        <button
+          onClick={() => setSidebarOuverte(true)}
+          className="lg:hidden fixed top-24 left-4 z-40 bg-or rounded-full p-2 shadow-lg"
+        >
+          <Menu className="text-white" />
+        </button>
+
+        {/* Overlay sombre — ferme la sidebar au clic (mobile uniquement) */}
+        {sidebarOuverte && (
+          <div
+            onClick={() => setSidebarOuverte(false)}
+            className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          />
+        )}
+
         <BarreLateraleEleve
+          ouverte={sidebarOuverte}
+          onFermer={() => setSidebarOuverte(false)}
           objectifs={objectifs}
           professeurs={professeurs}
           evenements={evenements}
           vueActive={vueActive}
-          onChangerVue={setVueActive}
+          onChangerVue={(vue) => { setVueActive(vue); setSelection(null) }}
           onRejoint={chargerProfesseurs}
+          onRejoindreClasse={() => setPopupRejoindreOuverte(true)}
           onChoisirObjectif={(objectif) => { setSelection({ type: 'objectif', donnees: objectif }); setVueActive(null) }}
           onChoisirEvenement={(evenement) => { setSelection({ type: 'evenement', donnees: evenement }); setVueActive(null) }}
           onChoisirProfesseur={(professeur) => { setSelection({ type: 'professeur', donnees: professeur }); setVueActive(null) }}
           onExporter={() => exporterVersGoogle(creneaux.map((creneau) => creneau.id))}
           onImporter={() => setPopupImportOuverte(true)}
         />
-      <main className="flex-1 min-w-0 p-10 pl-16 bg-bleu-moyen">
+      <main className="flex-1 min-w-0 p-4 lg:p-10 lg:pl-16 bg-bleu-moyen">
         {/* Carte notifications classes et voeux */}
         {vueActive === 'planning' && (
           <>
-            {afficherBanniereVoeux && (
-              <div className="flex items-center gap-4 bg-bleu-nuit border-2 border-or rounded-2xl px-5 py-4 mb-6 max-w-3xl">
+            {classesEnAttenteDeVoeux.map((classe) => (
+              <div key={classe.id} className="flex items-center gap-4 bg-bleu-nuit border-2 border-or rounded-2xl px-5 py-4 mb-6 max-w-3xl">
                 {/* Icône */}
                 <div className="rounded-full bg-or w-12 h-12 flex items-center justify-center shrink-0">
                   <Mail className="text-white" />
@@ -143,18 +170,18 @@ useEffect(() => {
 
                 {/* Texte */}
                 <p className="text-white flex-1">
-                  {professeurs[0] ? `${professeurs[0].prenom} ${professeurs[0].nom}` : 'Votre professeur'} a envoyé le formulaire de vœux
+                  {classe.professeur_prenom} {classe.professeur_nom} a envoyé le formulaire de vœux pour la classe {classe.nom}
                 </p>
 
                 {/* Bouton */}
                 <button
-                  onClick={() => setPopupVoeuxOuverte(true)}
+                  onClick={() => setPopupVoeuxOuverte(classe)}
                   className="rounded-full bg-bleu-roi px-5 py-2 border border-tracer-violet text-white hover:scale-105 transition shrink-0"
                 >
                   Soumettre vos vœux
                 </button>
               </div>
-            )}
+            ))}
 
             {creneauAConfirmer && (
               <div className="flex items-center gap-4 bg-bleu-nuit border-2 border-or rounded-2xl px-5 py-4 mb-6 max-w-3xl">
@@ -183,7 +210,7 @@ useEffect(() => {
               </div>
             )}
 
-            <div className="mt-8">
+            <div className="mt-4 lg:mt-8">
               <CalendrierEleve refresh={refreshCalendrier} objectifs={objectifs} professeurs={professeurs} />
             </div>
           </>
@@ -198,11 +225,21 @@ useEffect(() => {
           <PiedDePage />
         </div>
       </div>
+
+      {popupRejoindreOuverte && (
+        <PopupRejoindreClasse
+          ouvert={true}
+          onFermer={() => setPopupRejoindreOuverte(false)}
+          onRejoint={chargerProfesseurs}
+        />
+      )}
+
       {popupVoeuxOuverte && (
         <FormulaireVoeux
           ouvert={true}
+          classe={popupVoeuxOuverte}
           onFermer={() => setPopupVoeuxOuverte(false)}
-          onVoeuxSoumis={chargerVoeux}
+          onVoeuxSoumis={() => { chargerVoeux(); chargerMesClasses() }}
         />
       )}
 
