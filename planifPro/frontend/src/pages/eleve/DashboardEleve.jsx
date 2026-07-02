@@ -12,7 +12,7 @@ import FormulaireVoeux from '../../components/eleve/FormulaireVoeux'
 import PiedDePage from '../../components/PiedDePage'
 import CalendrierEleve from '../../components/eleve/CalendrierEleve'
 import PopupImportGoogle from '../../components/eleve/PopupImportGoogle'
-import { CalendarCheck, Mail } from 'lucide-react'
+import { CalendarCheck, Mail, Menu } from 'lucide-react'
 
 // Page de connexion — version d'interactivité.
 
@@ -29,6 +29,7 @@ function DashboardEleve() {
   const [popupImportOuverte, setPopupImportOuverte] = useState(false)
   const [creneaux, setCreneaux] = useState([])
   const [refreshCalendrier, setRefreshCalendrier] = useState(0)
+  const [sidebarOuverte, setSidebarOuverte] = useState(false)
   const [selection, setSelection] = useState(null)
   // selection = { type: 'objectif' | 'evenement' | 'professeur', donnees: {...} }
   
@@ -117,12 +118,30 @@ useEffect(() => {
           }}
         />
       <div className="flex flex-1">
+        {/* Burger sidebar — mobile uniquement */}
+        <button
+          onClick={() => setSidebarOuverte(true)}
+          className="lg:hidden fixed top-24 left-4 z-40 bg-or rounded-full p-2 shadow-lg"
+        >
+          <Menu className="text-white" />
+        </button>
+
+        {/* Overlay sombre — ferme la sidebar au clic (mobile uniquement) */}
+        {sidebarOuverte && (
+          <div
+            onClick={() => setSidebarOuverte(false)}
+            className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          />
+        )}
+
         <BarreLateraleEleve
+          ouverte={sidebarOuverte}
+          onFermer={() => setSidebarOuverte(false)}
           objectifs={objectifs}
           professeurs={professeurs}
           evenements={evenements}
           vueActive={vueActive}
-          onChangerVue={setVueActive}
+          onChangerVue={(vue) => { setVueActive(vue); setSelection(null) }}
           onRejoint={chargerProfesseurs}
           onChoisirObjectif={(objectif) => { setSelection({ type: 'objectif', donnees: objectif }); setVueActive(null) }}
           onChoisirEvenement={(evenement) => { setSelection({ type: 'evenement', donnees: evenement }); setVueActive(null) }}
@@ -130,7 +149,7 @@ useEffect(() => {
           onExporter={() => exporterVersGoogle(creneaux.map((creneau) => creneau.id))}
           onImporter={() => setPopupImportOuverte(true)}
         />
-      <main className="flex-1 min-w-0 p-10 pl-16 bg-bleu-moyen">
+      <main className="flex-1 min-w-0 p-4 lg:p-10 lg:pl-16 bg-bleu-moyen">
         {/* Carte notifications classes et voeux */}
         {vueActive === 'planning' && (
           <>
@@ -183,7 +202,7 @@ useEffect(() => {
               </div>
             )}
 
-            <div className="mt-8">
+            <div className="mt-4 lg:mt-8">
               <CalendrierEleve refresh={refreshCalendrier} objectifs={objectifs} professeurs={professeurs} />
             </div>
           </>

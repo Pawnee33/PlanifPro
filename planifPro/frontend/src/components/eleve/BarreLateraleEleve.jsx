@@ -6,7 +6,7 @@ import SectionBarre from '../ui/SectionBarre'
 import { connecterGoogle, supprimerDeGoogle } from '../../services/google'
 import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap, Star, ChevronDown, ChevronUp } from 'lucide-react'
 
-const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreClasse, vueActive, onChangerVue, onChoisirProfesseur, onChoisirEvenement, onChoisirObjectif, onRejoint, onExporter, onImporter }) => {
+const BarreLateraleEleve = ({ ouverte, onFermer, objectifs, professeurs, evenements, onRejoindreClasse, vueActive, onChangerVue, onChoisirProfesseur, onChoisirEvenement, onChoisirObjectif, onRejoint, onExporter, onImporter }) => {
     const [objectifsOuvert, setObejectifsOuvert] = useState(false)
     const [professeursOuvert, setProfesseursOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
@@ -14,7 +14,10 @@ const BarreLateraleEleve = ({ objectifs, professeurs, evenements, onRejoindreCla
     const [popupEvenementOuverte, setPopupEvenementOuverte] = useState(false)
 
     return (
-        <aside className='w-64 flex flex-col gap-3 bg-bleu-marine border-r-[4px] border-tracer-violet p-4'>
+        <aside className={`w-64 flex flex-col gap-3 bg-bleu-marine border-r-[4px] border-tracer-violet p-4
+          fixed inset-y-0 left-0 z-50 transition-transform duration-300
+          ${ouverte ? 'translate-x-0' : '-translate-x-full'}
+          lg:static lg:translate-x-0 lg:z-auto`}>
 
             <div className="flex flex-col gap-5">
 
