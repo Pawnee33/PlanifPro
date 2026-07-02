@@ -27,6 +27,16 @@ export_model = api.model('Export', {
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
+JOURS_VERS_BYDAY = {
+    'lundi': 'MO',
+    'mardi': 'TU',
+    'mercredi': 'WE',
+    'jeudi': 'TH',
+    'vendredi': 'FR',
+    'samedi': 'SA',
+    'dimanche': 'SU',
+}
+
 
 @api.route('/auth')
 class CalendrierAuth(Resource):
@@ -149,7 +159,7 @@ class CalendrierExport(Resource):
                         'timeZone': 'Europe/Paris'
                     },
                     'recurrence': [
-                        f"RRULE:FREQ=WEEKLY;UNTIL={creneau['date_fin'].replace('-', '')}T000000Z"
+                        f"RRULE:FREQ=WEEKLY;BYDAY={JOURS_VERS_BYDAY[creneau['jour']]};UNTIL={creneau['date_fin'].replace('-', '')}T000000Z"
                     ]
                 }
                 # Insère l'événement dans Google Calendar
