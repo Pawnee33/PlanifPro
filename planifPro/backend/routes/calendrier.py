@@ -10,7 +10,7 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # DEV uniquement : autorise OAu
 
 from flask import request, redirect, session
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from google_auth_oauthlib.flow import Flow
 from planifPro.backend.services.facade import PlanifProFacade
 
@@ -139,12 +139,23 @@ class CalendrierExport(Resource):
                 if not creneau:
                     return {'error': f'Créneau {creneau_id} introuvable'}, 404
 
-                # Récupère le nom de l'élève pour le titre
-                eleve = facade.obtenir_eleve(creneau['eleve_id'])
-                if eleve:
-                    titre_cours = f"Cours {creneau['type']} - {eleve['prenom']} {eleve['nom']}"
+                # Le titre dépend du rôle : le prof voit l'élève, l'élève voit le prof
+                role = get_jwt().get('role')
+                if role == 'professeur':
+                    # Côté prof : afficher le nom de l'élève
+                    eleve = facade.obtenir_eleve(creneau['eleve_id'])
+                    if eleve:
+                        titre_cours = f"Cours {creneau['type']} - {eleve['prenom']} {eleve['nom']}"
+                    else:
+                        titre_cours = f"Cours {creneau['type']}"
                 else:
-                    titre_cours = f"Cours {creneau['type']}"
+                    # Côté élève : afficher le nom du professeur
+                    classe = facade.obtenir_classe(creneau['classe_id'])
+                    professeur = facade.obtenir_professeur(classe['professeur_id']) if classe else None
+                    if professeur:
+                        titre_cours = f"Cours {creneau['type']} - {professeur['prenom']} {professeur['nom']}"
+                    else:
+                        titre_cours = f"Cours {creneau['type']}"
 
                 # Crée l'événement Google Calendar
                 evenement = {
