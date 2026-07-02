@@ -1,4 +1,4 @@
-import { connecterGoogle, exporterVersGoogle, importerDepuisGoogle } from '../../services/google'
+import { exporterVersGoogle, importerDepuisGoogle } from '../../services/google'
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../../services/helper'
@@ -134,13 +134,6 @@ useEffect(() => {
         {/* Carte notifications classes et voeux */}
         {vueActive === 'planning' && (
           <>
-            <button
-              onClick={connecterGoogle}
-              className="rounded-full bg-or px-5 py-2 border border-tracer-violet text-white hover:scale-105 transition"
-            >
-              Connecter Google Calendar
-            </button>
-
             {afficherBanniereVoeux && (
               <div className="flex items-center gap-4 bg-bleu-nuit border-2 border-or rounded-2xl px-5 py-4 mb-6 max-w-3xl">
                 {/* Icône */}

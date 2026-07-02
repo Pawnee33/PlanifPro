@@ -62,3 +62,30 @@ export const importerDepuisGoogle = async (dateDebut, dateFin) => {
     alert("Erreur lors de l'import : " + erreur.message)
   }
 }
+
+// Supprime tous les créneaux PlanifPro de Google Calendar
+export const supprimerDeGoogle = async () => {
+  if (!localStorage.getItem('google_token')) {
+    alert("Veuillez d'abord connecter Google Calendar")
+    return
+  }
+  try {
+    const tokenApp = localStorage.getItem('token')
+    const tokenGoogle = localStorage.getItem('google_token')
+    const reponse = await fetch(`${BASE_URL}/calendrier/export`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${tokenApp}`,
+        'X-Google-Token': tokenGoogle,
+      },
+    })
+    const donnees = await reponse.json()
+    if (!reponse.ok) {
+      throw new Error(donnees.error || 'Erreur serveur')
+    }
+    alert(donnees.message)
+  } catch (erreur) {
+    alert('Erreur lors de la suppression : ' + erreur.message)
+  }
+}
