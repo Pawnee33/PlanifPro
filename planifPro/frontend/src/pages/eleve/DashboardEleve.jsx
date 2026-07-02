@@ -5,6 +5,7 @@ import { api } from '../../services/helper'
 import logo from '../../assets/logo.png'
 import EnTete from '../../components/EnTete'
 import BarreLateraleEleve from '../../components/eleve/BarreLateraleEleve'
+import PopupRejoindreClasse from '../../components/eleve/PopupRejoindreClasse'
 import FicheObjectif from '../../components/eleve/FicheObjectif'
 import FicheEvenement from '../../components/eleve/FicheEvenement'
 import FicheProfesseur from '../../components/eleve/FicheProfesseur'
@@ -25,6 +26,7 @@ function DashboardEleve() {
   const [notifications, setNotifications] = useState([])
   const [voeux, setVoeux] = useState([])
   const [classes, setClasses] = useState([])
+  const [popupRejoindreOuverte, setPopupRejoindreOuverte] = useState(false)
   const [popupVoeuxOuverte, setPopupVoeuxOuverte] = useState(false)
   const [popupImportOuverte, setPopupImportOuverte] = useState(false)
   const [creneaux, setCreneaux] = useState([])
@@ -143,6 +145,7 @@ useEffect(() => {
           vueActive={vueActive}
           onChangerVue={(vue) => { setVueActive(vue); setSelection(null) }}
           onRejoint={chargerProfesseurs}
+          onRejoindreClasse={() => setPopupRejoindreOuverte(true)}
           onChoisirObjectif={(objectif) => { setSelection({ type: 'objectif', donnees: objectif }); setVueActive(null) }}
           onChoisirEvenement={(evenement) => { setSelection({ type: 'evenement', donnees: evenement }); setVueActive(null) }}
           onChoisirProfesseur={(professeur) => { setSelection({ type: 'professeur', donnees: professeur }); setVueActive(null) }}
@@ -217,6 +220,15 @@ useEffect(() => {
           <PiedDePage />
         </div>
       </div>
+
+      {popupRejoindreOuverte && (
+        <PopupRejoindreClasse
+          ouvert={true}
+          onFermer={() => setPopupRejoindreOuverte(false)}
+          onRejoint={chargerProfesseurs}
+        />
+      )}
+
       {popupVoeuxOuverte && (
         <FormulaireVoeux
           ouvert={true}
