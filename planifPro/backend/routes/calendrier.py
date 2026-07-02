@@ -10,7 +10,7 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # DEV uniquement : autorise OAu
 
 from flask import request, redirect, session
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from google_auth_oauthlib.flow import Flow
 from planifPro.backend.services.facade import PlanifProFacade
 
@@ -26,6 +26,16 @@ export_model = api.model('Export', {
 })
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
+
+JOURS_VERS_BYDAY = {
+    'lundi': 'MO',
+    'mardi': 'TU',
+    'mercredi': 'WE',
+    'jeudi': 'TH',
+    'vendredi': 'FR',
+    'samedi': 'SA',
+    'dimanche': 'SU',
+}
 
 
 @api.route('/auth')
@@ -129,12 +139,23 @@ class CalendrierExport(Resource):
                 if not creneau:
                     return {'error': f'Créneau {creneau_id} introuvable'}, 404
 
-                # Récupère le nom de l'élève pour le titre
-                eleve = facade.obtenir_eleve(creneau['eleve_id'])
-                if eleve:
-                    titre_cours = f"Cours {creneau['type']} - {eleve['prenom']} {eleve['nom']}"
+                # Le titre dépend du rôle : le prof voit l'élève, l'élève voit le prof
+                role = get_jwt().get('role')
+                if role == 'professeur':
+                    # Côté prof : afficher le nom de l'élève
+                    eleve = facade.obtenir_eleve(creneau['eleve_id'])
+                    if eleve:
+                        titre_cours = f"Cours {creneau['type']} - {eleve['prenom']} {eleve['nom']}"
+                    else:
+                        titre_cours = f"Cours {creneau['type']}"
                 else:
-                    titre_cours = f"Cours {creneau['type']}"
+                    # Côté élève : afficher le nom du professeur
+                    classe = facade.obtenir_classe(creneau['classe_id'])
+                    professeur = facade.obtenir_professeur(classe['professeur_id']) if classe else None
+                    if professeur:
+                        titre_cours = f"Cours {creneau['type']} - {professeur['prenom']} {professeur['nom']}"
+                    else:
+                        titre_cours = f"Cours {creneau['type']}"
 
                 # Crée l'événement Google Calendar
                 evenement = {
@@ -149,7 +170,7 @@ class CalendrierExport(Resource):
                         'timeZone': 'Europe/Paris'
                     },
                     'recurrence': [
-                        f"RRULE:FREQ=WEEKLY;UNTIL={creneau['date_fin'].replace('-', '')}T000000Z"
+                        f"RRULE:FREQ=WEEKLY;BYDAY={JOURS_VERS_BYDAY[creneau['jour']]};UNTIL={creneau['date_fin'].replace('-', '')}T000000Z"
                     ]
                 }
                 # Insère l'événement dans Google Calendar
@@ -161,3 +182,45 @@ class CalendrierExport(Resource):
         except Exception as e:
             return {'error': 'Erreur Google Calendar API'}, 500
         return {'message': 'Créneaux exportés avec succès'}, 200
+
+    @api.response(200, 'Créneaux supprimés de Google Calendar')
+    @api.response(401, 'Access token Google expiré')
+    @api.response(500, 'Erreur Google Calendar API')
+    @jwt_required()
+    def delete(self):
+        """Supprimer tous les créneaux PlanifPro de Google Calendar"""
+        # Récupère le token Google depuis le header
+        access_token = request.headers.get('X-Google-Token')
+        if not access_token:
+            return {'error': 'Access token Google expiré'}, 401
+
+        try:
+            from googleapiclient.discovery import build
+            from google.oauth2.credentials import Credentials
+
+            # Crée les credentials Google avec le token
+            credentials = Credentials(token=access_token)
+            # Crée le service Google Calendar
+            service = build('calendar', 'v3', credentials=credentials)
+
+            # Recherche les événements contenant le marqueur PlanifPro
+            events_result = service.events().list(
+                calendarId='primary',
+                q='Créneau PlanifPro',
+                maxResults=250,
+                singleEvents=False
+            ).execute()
+
+            nombre_supprimes = 0
+            for event in events_result.get('items', []):
+                # Vérifie la description exacte avant de supprimer (sécurité)
+                if event.get('description') == 'Créneau PlanifPro':
+                    service.events().delete(
+                        calendarId='primary',
+                        eventId=event['id']
+                    ).execute()
+                    nombre_supprimes += 1
+
+        except Exception as e:
+            return {'error': 'Erreur Google Calendar API'}, 500
+        return {'message': f'{nombre_supprimes} créneaux supprimés de Google Calendar'}, 200
