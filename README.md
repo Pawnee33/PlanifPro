@@ -212,10 +212,10 @@ PlanifPro/
 
 Le backend suit une **architecture en couches** :
 
-- **Routes (Flask-RESTX)** — exposent les endpoints REST, valident les entrées, gèrent les codes HTTP et l'authentification JWT.
-- **Façade (`PlanifProFacade`)** — point d'entrée unique de la logique métier. Elle agrège quatre façades spécialisées (`AuthFacade`, `ClasseVoeuFacade`, `PlanningCreneauFacade`, `ObjectifEvenementNotificationFacade`). Les routes ne parlent jamais directement aux repositories.
-- **Repositories (pattern Repository)** — encapsulent tous les accès SQLAlchemy. Une classe de base `SQLAlchemyRepository` factorise les opérations CRUD communes.
-- **Modèles (SQLAlchemy)** — définissent les tables, les validations (`@validates`) et la sérialisation (`to_dict()`).
+- **Routes (Flask-RESTX)** : exposent les endpoints REST, valident les entrées, gèrent les codes HTTP et l'authentification JWT.
+- **Façade (`PlanifProFacade`)** : point d'entrée unique de la logique métier. Elle agrège quatre façades spécialisées (`AuthFacade`, `ClasseVoeuFacade`, `PlanningCreneauFacade`, `ObjectifEvenementNotificationFacade`). Les routes ne parlent jamais directement aux repositories.
+- **Repositories (pattern Repository)** : encapsulent tous les accès SQLAlchemy. Une classe de base `SQLAlchemyRepository` factorise les opérations CRUD communes.
+- **Modèles (SQLAlchemy)** : définissent les tables, les validations (`@validates`) et la sérialisation (`to_dict()`).
 
 Ce découpage isole la logique métier de la persistance et des routes, ce qui facilite les tests et les évolutions.
 
@@ -463,7 +463,73 @@ Le front tourne sur `http://localhost:5173`.
 npm run build       # génère le dossier dist/
 npm run preview     # sert le build localement pour vérification
 ```
+---
 
+# Installation avec Docker
+
+Alternative à l'installation manuelle : lancer toute la stack (base PostgreSQL + backend + frontend) en une seule commande, sans installer Python, Node ni PostgreSQL sur la machine.
+
+## Prérequis
+- Docker
+- Docker Compose (plugin v2 : commande `docker compose`)
+
+---
+
+## 1. Configurer les variables d'environnement
+
+Le `docker-compose.yml` lit ton fichier `.env` (back) pour les clés Brevo, Google et JWT. Assure-toi qu'il existe à la racine (voir section *Configurer les variables d'environnement* plus haut).
+
+> `DATABASE_URL` est **surchargée** automatiquement par le compose pour pointer vers le conteneur PostgreSQL — pas besoin d'y toucher.
+
+Les fichiers de clés (`cle_google/`, `cle_firebase/`) doivent être présents à la racine : ils sont montés dans le conteneur au lancement (jamais copiés dans l'image).
+
+---
+
+## 2. Lancer la stack
+
+```bash
+docker compose up --build
+```
+
+- `--build` (re)construit les images (nécessaire la première fois).
+- Les migrations (`flask db upgrade`) sont appliquées automatiquement au démarrage du backend.
+
+Les services démarrés :
+
+| Service | Description | Accès |
+|---------|-------------|-------|
+| `db` | Base PostgreSQL 16 | interne (port 5432) |
+| `back` | API Flask (gunicorn) | http://localhost:5000 |
+| `front` | Front React servi par nginx | http://localhost:8080 |
+
+---
+
+## 3. Utiliser l'application
+
+Ouvre **http://localhost:8080** dans le navigateur.
+
+> La base démarre **vierge**. Crée un compte via l'inscription, ou rejoue les scripts de `tests/` pour peupler des données de démonstration.
+
+---
+
+## 4. Arrêter la stack
+
+```bash
+docker compose down       # arrête et supprime les conteneurs (garde la base)
+docker compose down -v    # + supprime le volume PostgreSQL (remet la base à zéro)
+```
+
+---
+
+## Architecture Docker
+
+| Fichier | Rôle |
+|---------|------|
+| `Dockerfile` (racine) | Image du backend (Python 3.12 + gunicorn) |
+| `planifPro/frontend/Dockerfile` | Image du frontend (build Node 20 multi-stage → nginx) |
+| `planifPro/frontend/nginx.conf` | Config nginx : routage SPA (`try_files` vers `index.html`) |
+| `docker-compose.yml` | Orchestration des 3 services + réseau + volumes |
+| `.dockerignore` | Exclusion des secrets et fichiers inutiles des images |
 ---
 
 # Convention de nommage : PlanifPro
