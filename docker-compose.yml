@@ -1,0 +1,51 @@
+services:
+  # ---------- Base de données PostgreSQL ----------
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: planifpro
+      POSTGRES_PASSWORD: planifpro
+      POSTGRES_DB: planifpro
+    volumes:
+      - donnees_db:/var/lib/postgresql/data
+    healthcheck:
+      # Le back n'est lancé qu'une fois la base réellement prête
+      test: ["CMD-SHELL", "pg_isready -U planifpro"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ---------- Backend Flask ----------
+  back:
+    build: .                          # utilise le Dockerfile de la racine
+    env_file: .env                    # tes variables (Brevo, Google, JWT...)
+    environment:
+      # On surcharge DATABASE_URL : "db" = nom du service PostgreSQL sur le réseau Compose
+      DATABASE_URL: postgresql://planifpro:planifpro@db:5432/planifpro
+      FLASK_APP: planifPro.run
+    volumes:
+      # Les fichiers de clés (exclus de l'image) sont montés depuis le disque
+      - ./cle_google:/app/cle_google:ro
+      - ./cle_firebase:/app/cle_firebase:ro
+    command: sh -c "flask db upgrade && gunicorn --bind 0.0.0.0:5000 planifPro.run:app"
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ---------- Frontend React + nginx ----------
+  front:
+    build:
+      context: ./planifPro/frontend
+      args:
+        # L'URL que le navigateur utilisera pour joindre l'API (port hôte du back)
+        VITE_API_URL: http://localhost:5000/api/v1
+    ports:
+      - "8080:80"
+    depends_on:
+      - back
+
+volumes:
+  donnees_db:
+  
