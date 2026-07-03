@@ -6,86 +6,222 @@ PlanifPro est une application web et mobile (PWA : Progressive Web App) de gesti
 Le public visé : les professeurs et coachs de toutes catégories (ex : professeur de musique, de sport, etc.) qui travaillent dans différentes structures publiques, privées, ou à leur compte.
 L'application permet la gestion des cours et la génération de planning en fonction des différentes classes du formateur.
 
+Le principe : le professeur définit ses disponibilités, les élèves soumettent leurs vœux de créneaux, un algorithme génère **trois propositions de planning**, et le professeur en valide une.
+
+---
+
+## Fonctionnalités :
+
+### Côté professeur / coach
+- Création et gestion de classes (conservatoire, cours privé, association) avec code unique de rattachement
+- Invitation d'élèves par email (Brevo) ou partage du code de classe
+- Définition des disponibilités et lancement de la collecte des vœux
+- Génération automatique de **3 propositions de planning** par algorithme, puis sélection et validation de l'une d'elles
+- Réajustement du planning validé : ajout / modification / suppression de créneaux avec portée (ce jour / toute la période / plusieurs jours)
+- Créneaux personnels ponctuels
+- Objectifs pédagogiques datés, par élève
+- Événements avec 3 modes de destinataires (toutes les classes / classes ciblées / élèves ciblés)
+- Notifications : push (Firebase FCM) + email (Brevo) + in-app
+- Export / import Google Calendar (OAuth 2.0)
+- Dashboard responsive avec planning global (FullCalendar)
+
+### Côté élève
+- Rejoindre une ou plusieurs classes via un code
+- Soumission des vœux de créneaux (une soumission par classe)
+- Consultation du planning validé
+- Réception des objectifs, événements et notifications
+- Export / import Google Calendar
+- Interface responsive (mobile / desktop), PWA installable
+
+---
+
+## Stack technique :
+
+### Frontend : déployé sur Vercel
+| Techno | Usage |
+|--------|-------|
+| React + Vite | Framework SPA + build |
+| Tailwind CSS v4 | Styles (charte via `@theme`) |
+| FullCalendar | Affichage des plannings |
+| react-router-dom | Routage |
+| lucide-react | Icônes |
+| vite-plugin-pwa | PWA installable + service worker |
+
+### Backend : déployé sur Render
+| Techno | Usage |
+|--------|-------|
+| Flask + Flask-RESTX | API REST + Swagger |
+| SQLAlchemy + Flask-Migrate | ORM + migrations |
+| PostgreSQL | Base de données |
+| Flask-JWT-Extended | Authentification JWT |
+| Flask-Bcrypt | Hachage des mots de passe |
+| gunicorn | Serveur WSGI de production |
+
+### Services externes
+| Service | Usage |
+|---------|-------|
+| Firebase Cloud Messaging | Notifications push |
+| Brevo | Envoi d'emails |
+| Google Calendar API (OAuth 2.0) | Export / import de créneaux |
+
+---
+
+## Captures d'écran :
+
+> Placez vos captures dans `planifPro/documentations/captures/` puis mettez à jour les chemins ci-dessous.
+
+| Écran | Aperçu |
+|-------|--------|
+| Connexion | `![Connexion](planifPro/documentations/captures/connexion.png)` |
+| Dashboard professeur | `![Dashboard prof](planifPro/documentations/captures/dashboard-prof.png)` |
+| Dashboard élève | `![Dashboard élève](planifPro/documentations/captures/dashboard-eleve.png)` |
+
+_(Retirez les accents graves une fois les images ajoutées pour que Markdown les affiche.)_
+
+---
+
 ## Structure du projet :
 
 ```
 PlanifPro/
-├── .env.example                       # modèle de variables d'environnement
+├── .env.example                       # modèle de variables d'environnement (back)
+├── .github/
+│   └── pull_request_template.md
 ├── README.md
 ├── config.py                          # configurations Dev / Prod
 ├── requirements.txt
+├── cle_google/                        # secret Google OAuth (non versionné)
+├── cle_firebase/                      # secret Firebase (non versionné)
 ├── migrations/                        # Flask-Migrate / Alembic
 │   ├── alembic.ini
 │   ├── env.py
 │   ├── script.py.mako
 │   └── versions/                      # fichiers de migration
-├── planifPro/
-│   ├── __init__.py                    # create_app()
-│   ├── run.py                         # point d'entrée (app = create_app())
-│   ├── backend/
-│   │   ├── classes/                   # modèles SQLAlchemy
-│   │   │   ├── entitebase.py
-│   │   │   ├── utilisateur.py
-│   │   │   ├── professeur.py
-│   │   │   ├── eleve.py
-│   │   │   ├── classe.py
-│   │   │   ├── voeu.py
-│   │   │   ├── planning.py
-│   │   │   ├── creneau.py
-│   │   │   ├── creneau_perso.py
-│   │   │   ├── objectif.py
-│   │   │   ├── evenement.py
-│   │   │   ├── notification.py
-│   │   │   └── tables_relations.py
-│   │   ├── persistence/               # repositories
-│   │   │   ├── repository.py
-│   │   │   ├── utilisateur_repository.py
-│   │   │   ├── professeur_repository.py
-│   │   │   ├── eleve_repository.py
-│   │   │   ├── classe_repository.py
-│   │   │   ├── voeu_repository.py
-│   │   │   ├── planning_repository.py
-│   │   │   ├── creneau_repository.py
-│   │   │   ├── creneau_perso_repository.py
-│   │   │   ├── objectif_repository.py
-│   │   │   ├── evenement_repository.py
-│   │   │   └── notification_repository.py
-│   │   ├── routes/                    # endpoints Flask-RESTX
-│   │   │   ├── authentification.py
-│   │   │   ├── utilisateurs.py
-│   │   │   ├── professeurs.py
-│   │   │   ├── eleves.py
-│   │   │   ├── classes.py
-│   │   │   ├── voeux.py
-│   │   │   ├── plannings.py
-│   │   │   ├── creneaux.py
-│   │   │   ├── creneaux_perso.py
-│   │   │   ├── objectifs.py
-│   │   │   ├── evenements.py
-│   │   │   ├── notifications.py
-│   │   │   └── calendrier.py
-│   │   └── services/                  # façades + services
-│   │       ├── facade.py
-│   │       ├── auth_facade.py
-│   │       ├── classe_voeu_facade.py
-│   │       ├── planning_creneau_facade.py
-│   │       ├── objectif_evenement_notification_facade.py
-│   │       ├── email_service.py       # Brevo
-│   │       └── fcm_service.py         # Firebase Cloud Messaging
-│   ├── documentations/
-│   │   ├── Projet_Portfolio_MVP.pdf
-│   │   └── Projet-Porfolio_Technical_Documentation.pdf
-│   ├── frontend/
-│   │   ├── images/
-│   │   └── pages/
-│   └── unittests/                     # tests unitaires (pytest)
-└── tests/                             # scripts de test API (curl)
-    ├── test_auth.sh
-    ├── test_setup.sh
-    ├── test_classes.sh
-    ├── test_voeux.sh
-    └── test_planning.sh
+├── tests/                             # scripts de test API (curl)
+│   ├── test_auth.sh
+│   ├── test_setup.sh
+│   ├── test_classes.sh
+│   ├── test_voeux.sh
+│   ├── test_planning.sh
+│   ├── test_creneaux.sh
+│   ├── test_evenements.sh
+│   ├── test_objectifs.sh
+│   └── test_chantecler.sh
+└── planifPro/
+    ├── __init__.py                    # create_app()
+    ├── run.py                         # point d'entrée (app = create_app())
+    ├── backend/
+    │   ├── classes/                   # modèles SQLAlchemy
+    │   │   ├── entitebase.py
+    │   │   ├── utilisateur.py
+    │   │   ├── professeur.py
+    │   │   ├── eleve.py
+    │   │   ├── classe.py
+    │   │   ├── voeu.py
+    │   │   ├── planning.py
+    │   │   ├── creneau.py
+    │   │   ├── creneau_perso.py
+    │   │   ├── objectif.py
+    │   │   ├── evenement.py
+    │   │   ├── notification.py
+    │   │   └── tables_relations.py
+    │   ├── persistence/               # repositories (pattern Repository)
+    │   │   ├── repository.py
+    │   │   ├── utilisateur_repository.py
+    │   │   ├── professeur_repository.py
+    │   │   ├── eleve_repository.py
+    │   │   ├── classe_repository.py
+    │   │   ├── voeu_repository.py
+    │   │   ├── planning_repository.py
+    │   │   ├── creneau_repository.py
+    │   │   ├── creneau_perso_repository.py
+    │   │   ├── objectif_repository.py
+    │   │   ├── evenement_repository.py
+    │   │   └── notification_repository.py
+    │   ├── routes/                    # endpoints Flask-RESTX
+    │   │   ├── authentification.py
+    │   │   ├── utilisateurs.py
+    │   │   ├── professeurs.py
+    │   │   ├── eleves.py
+    │   │   ├── classes.py
+    │   │   ├── voeux.py
+    │   │   ├── plannings.py
+    │   │   ├── creneaux.py
+    │   │   ├── creneaux_perso.py
+    │   │   ├── objectifs.py
+    │   │   ├── evenements.py
+    │   │   ├── notifications.py
+    │   │   └── calendrier.py
+    │   └── services/                  # façades + services externes
+    │       ├── facade.py              # PlanifProFacade (agrège les 4 façades)
+    │       ├── auth_facade.py
+    │       ├── classe_voeu_facade.py
+    │       ├── planning_creneau_facade.py
+    │       ├── objectif_evenement_notification_facade.py
+    │       ├── email_service.py       # Brevo
+    │       └── fcm_service.py         # Firebase Cloud Messaging
+    ├── unittests/                     # tests unitaires (pytest)
+    │   ├── api/                       # tests des routes
+    │   └── models/                    # tests des modèles
+    ├── documentations/
+    │   ├── Projet_Portfolio_MVP.pdf
+    │   └── Projet-Porfolio_Technical_Documentation.pdf
+    └── frontend/                      # application React (Vite + Tailwind v4 + FullCalendar)
+        ├── index.html
+        ├── package.json
+        ├── vite.config.js
+        ├── eslint.config.js
+        ├── .env.example               # variables front (VITE_*)
+        ├── public/                    # favicon + icônes PWA (pwa-192, pwa-512)
+        └── src/
+            ├── main.jsx               # point d'entrée React
+            ├── App.jsx                # routes (react-router-dom)
+            ├── index.css              # Tailwind + charte (@theme)
+            ├── assets/                # logo, hero
+            ├── services/              # couche API
+            │   ├── helper.js          # wrapper fetch + JWT (api.get/post/put/delete)
+            │   └── google.js          # OAuth + export/import Google Calendar
+            ├── utils/
+            │   └── creneaux.js        # helpers créneaux FullCalendar
+            ├── pages/
+            │   ├── Connexion.jsx
+            │   ├── Inscription.jsx
+            │   ├── GoogleCallback.jsx
+            │   ├── DashboardProfesseur.jsx
+            │   └── eleve/
+            │       └── DashboardEleve.jsx
+            └── components/
+                ├── EnTete.jsx / PiedDePage.jsx / RouteProtegee.jsx / MenuBurger.jsx
+                ├── Calendrier.jsx / CalendrierProposition.jsx
+                ├── BarreLaterale.jsx / EspaceClasse.jsx / ClasseEleves.jsx
+                ├── CarteStatistique.jsx
+                ├── Panneau*.jsx                                        # Voeux, Eleves, Planning, Notifications
+                ├── Fiche*.jsx                                          # FicheEleve, FicheEvenement
+                ├── Popup*.jsx                                          # popups prof (classe, créneau, événement, objectif, invitation…)
+                ├── ui/                                                 # CarteStat, CarteInfo, SectionBarre, SectionHoraires
+                └── eleve/                                              # composants spécifiques élève
+                    │                                              
+                    ├── BarreLateraleEleve.jsx / CalendrierEleve.jsx / FormulaireVoeux.jsx
+                    ├── Fiche*.jsx                                      # Objectif, Evenement, Professeur
+                    └── Popup*.jsx                                      # RejoindreClasse, ImportGoogle, Objectif
 ```
+
+---
+
+## Architecture :
+
+Le backend suit une **architecture en couches** :
+
+- **Routes (Flask-RESTX)** — exposent les endpoints REST, valident les entrées, gèrent les codes HTTP et l'authentification JWT.
+- **Façade (`PlanifProFacade`)** — point d'entrée unique de la logique métier. Elle agrège quatre façades spécialisées (`AuthFacade`, `ClasseVoeuFacade`, `PlanningCreneauFacade`, `ObjectifEvenementNotificationFacade`). Les routes ne parlent jamais directement aux repositories.
+- **Repositories (pattern Repository)** — encapsulent tous les accès SQLAlchemy. Une classe de base `SQLAlchemyRepository` factorise les opérations CRUD communes.
+- **Modèles (SQLAlchemy)** — définissent les tables, les validations (`@validates`) et la sérialisation (`to_dict()`).
+
+Ce découpage isole la logique métier de la persistance et des routes, ce qui facilite les tests et les évolutions.
+
+Côté frontend, l'application est une **SPA React** organisée en pages (une par écran) et composants réutilisables, avec une couche services (`helper.js`) qui centralise les appels API et l'injection du token JWT.
+
+---
 
 # Installation : PlanifPro Backend
 
@@ -267,7 +403,70 @@ Tests d'API (curl) : voir la section **Tests** plus bas.
 python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-# Convention de nommage — PlanifPro
+---
+
+# Installation : PlanifPro Frontend
+
+## Prérequis
+- Node.js 18+ (LTS recommandé)
+- npm
+- Le backend lancé (voir section précédente)
+
+---
+
+## 1. Aller dans le dossier frontend
+
+```bash
+cd planifPro/frontend
+```
+
+---
+
+## 2. Installer les dépendances
+
+```bash
+npm install
+```
+
+---
+
+## 3. Configurer les variables d'environnement
+
+```bash
+cp .env.example .env
+```
+
+Contenu du `.env` :
+
+```
+VITE_API_URL=http://localhost:5000/api/v1
+```
+
+> `VITE_API_URL` est l'URL de base de l'API backend. En production, remplace-la par
+> l'URL publique de l'API (Render).
+
+---
+
+## 4. Lancer le serveur de développement
+
+```bash
+npm run dev
+```
+
+Le front tourne sur `http://localhost:5173`.
+
+---
+
+## 5. Build de production
+
+```bash
+npm run build       # génère le dossier dist/
+npm run preview     # sert le build localement pour vérification
+```
+
+---
+
+# Convention de nommage : PlanifPro
 
 ## Branches
 
@@ -342,7 +541,7 @@ git push origin feature/nom-de-la-feature
 # 7. Fermer l'issue liée (Closes #N)
 ```
 
-# Rituels de développement — PlanifPro
+# Rituels de développement : PlanifPro
 
 ## À chaque fonctionnalité terminée
 
@@ -381,7 +580,7 @@ git push origin feature/nom-de-la-feature
 4. `requirements.txt` à jour si nouveau package installé
 
 ---
-# Migrations Flask-Migrate — PlanifPro
+# Migrations Flask-Migrate : PlanifPro
 
 ## Prérequis
 
@@ -507,283 +706,44 @@ chmod +x tests/*.sh
 #    sélection → modification → validation, et planning global (dashboard)
 ./tests/test_planning.sh
 
-# 6. Commande pour tout suprimer
-sudo -u postgres psql -d planifpro -c "TRUNCATE utilisateurs CASCADE;"
+# 6. Créneaux : ajout / modification / suppression avec portée
+./tests/test_creneaux.sh
 
-# 7. Commande pour lancer le serveur backend
-python -m planifPro.run
+# 7. Événements
+./tests/test_evenements.sh
+
+# 8. Objectifs pédagogiques
+./tests/test_objectifs.sh
+
+# Commande pour tout supprimer (reset de la base)
+sudo -u postgres psql -d planifpro -c "TRUNCATE utilisateurs CASCADE;"
 ```
 
 > Les scripts 2 à 5 s'enchaînent et réutilisent les données créées par les précédents.
 > Relance la chaîne sur une base propre : les plannings sont générés une seule fois par classe
 > (une 2ᵉ génération renvoie une erreur `409`).
-
-# Installation : PlanifPro Frontend (React PWA)
-
-Le frontend est une PWA développée avec **React + Vite**, stylée avec **Tailwind CSS v4**,
-et installable grâce à **vite-plugin-pwa**. Il vit dans le dossier `planifPro/frontend/`.
-
-## Prérequis
-- Node.js 20+ (LTS recommandé)
-- npm 10+
-
-Vérifier l'installation :
-
-```bash
-node -v && npm -v
-```
+>
+> `test_chantecler.sh` est un scénario de démonstration complet (données de test dédiées).
 
 ---
 
-## 1. Initialiser le projet React avec Vite
+## Déploiement :
 
-Depuis la racine du projet, se placer dans le dossier frontend, puis scaffolder Vite **dans** ce dossier :
+- **Frontend** : déployé sur **Vercel** (build automatique à partir de `planifPro/frontend/`).
+- **Backend** : déployé sur **Render** (`gunicorn "planifPro.run:app"`).
+- **Base de données** : PostgreSQL managé (Render).
 
-```bash
-cd planifPro/frontend
-npm create vite@latest .
-```
+> URLs de production : _à compléter une fois le déploiement effectué._
 
-Répondre aux questions :
-- **Select a framework** → `React`
-- **Select a variant** → `JavaScript` (sans React Compiler)
-- **Install with npm and start now?** → `Yes`
-
-Cela génère le squelette du projet, installe les dépendances (`node_modules/`) et lance le serveur de développement sur `http://localhost:5173`.
-
-> Pour arrêter le serveur : `Ctrl + C`. Pour le relancer : `npm run dev`.
+Variables d'environnement à définir côté hébergeur :
+- **Back (Render)** : `DATABASE_URL`, `JWT_SECRET_KEY`, `BREVO_API_KEY`, `BREVO_FROM_EMAIL`, `FIREBASE_CREDENTIALS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `GOOGLE_CLIENT_SECRETS`
+- **Front (Vercel)** : `VITE_API_URL` (URL publique de l'API)
 
 ---
 
-## 2. Nettoyer le boilerplate de démo
+## Auteur :
 
-Repartir d'une base propre :
-- `src/App.jsx` → composant minimal (voir ci-dessous)
-- `src/index.css` → ne garder que l'import Tailwind (étape 3)
-- Supprimer `src/App.css`
+Projet portfolio réalisé en solo dans le cadre de la formation **Holberton School Bordeaux**.
 
-Contenu minimal de `src/App.jsx` (aucun import nécessaire) :
-
-```jsx
-function App() {
-  return (
-    <div className="text-2xl font-bold text-blue-700">
-      PlanifPro
-    </div>
-  )
-}
-
-export default App
-```
-
----
-
-## 3. Configurer Tailwind CSS v4
-
-Installer Tailwind et son plugin officiel pour Vite :
-
-```bash
-npm install -D tailwindcss @tailwindcss/vite
-```
-
-Brancher le plugin dans `vite.config.js` :
-
-```js
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-})
-```
-
-Importer Tailwind dans `src/index.css` (obligatoirement en **première ligne**) :
-
-```css
-@import "tailwindcss";
-```
-
-> En Tailwind v4, plus besoin de `tailwind.config.js`. La configuration (couleurs, polices)
-> se fait directement dans le CSS via le bloc `@theme`.
-
-Charte graphique de PlanifPro (à ajouter juste après l'import dans `src/index.css`) :
-
-```css
-@theme {
-  --color-bleu-nuit: #0C2863;
-  --color-bleu-marine: #181F72;
-  --color-bleu-roi: #223397;
-  --color-bleu-moyen: #4065B6;
-  --color-bleu-ciel: #4975BF;
-  --color-bleu-clair: #4C7AC3;
-  --color-or: #D59813;
-  --color-or-clair: #D5AE13;
-  --color-violet: #9095F5;
-}
-```
-
-Ces couleurs deviennent alors des classes utilitaires : `bg-bleu-nuit`, `text-or`, `border-violet`, etc.
-
----
-
-## 4. Configurer la PWA (manifest + service worker)
-
-Installer le plugin :
-
-```bash
-npm install -D vite-plugin-pwa
-```
-
-Ajouter `VitePWA` dans `vite.config.js` :
-
-```js
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import { VitePWA } from 'vite-plugin-pwa'
-
-export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-    VitePWA({
-      registerType: 'autoUpdate',     // le service worker se met à jour tout seul
-      devOptions: { enabled: true },  // permet de tester la PWA en mode dev
-      manifest: {
-        name: 'PlanifPro',
-        short_name: 'PlanifPro',
-        description: 'Gestion de planning pédagogique entre professeurs et élèves',
-        theme_color: '#0C2863',
-        background_color: '#ffffff',
-        display: 'standalone',
-        start_url: '/',
-        icons: [
-          { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'pwa-512.png', sizes: '512x512', type: 'image/png' },
-        ],
-      },
-    }),
-  ],
-})
-```
-
-Placer deux icônes carrées au format PNG dans `public/` :
-- `pwa-192.png` (192×192 px)
-- `pwa-512.png` (512×512 px)
-
-> Vérifier le manifest : DevTools (`F12`) → onglet **Application** → **Manifest**.
-> Les icônes du manifest ne s'affichent pas dans la page : elles servent à l'installation de l'appli.
-
----
-
-## 5. Configurer les variables d'environnement
-
-Dans Vite, une variable doit commencer par `VITE_` pour être accessible côté React
-(lecture via `import.meta.env.VITE_API_URL`).
-
-Créer `planifPro/frontend/.env` (ignoré par Git) :
-
-```
-VITE_API_URL=http://localhost:5000/api/v1
-```
-
-Créer `planifPro/frontend/.env.example` (modèle versionné) avec la même ligne.
-
-> Redémarrer le serveur après toute modification du `.env` :
-> Vite ne lit les variables qu'au démarrage.
-
----
-
-## 6. Lancer le frontend
-
-```bash
-cd planifPro/frontend
-npm run dev
-```
-
-L'application est servie sur `http://localhost:5173`.
-
----
-
-## Dépendances frontend principales
-
-| Paquet | Usage |
-|--------|-------|
-| `react` / `react-dom` | Bibliothèque d'interface |
-| `vite` | Outil de build et serveur de développement |
-| `tailwindcss` + `@tailwindcss/vite` | Styles utility-first (v4) |
-| `vite-plugin-pwa` | Manifest + service worker (PWA installable) |
-| `react-router-dom` | Routage entre les pages |
-| `@fullcalendar/react` (+ `timegrid`, `daygrid`, `interaction`) | Calendrier hebdomadaire interactif |
-| `lucide-react` | Icônes |
-
----
-
-## Structure du dossier frontend
-
-```
-planifPro/frontend/
-├── public/                 # fichiers statiques (icônes PWA, favicon)
-│   ├── pwa-192.png
-│   └── pwa-512.png
-├── src/
-│   ├── assets/                 # images importées (logo…)
-│   ├── pages/                  # pages routées
-│   │   ├── Connexion.jsx
-│   │   ├── Inscription.jsx
-│   │   └── DashboardProfesseur.jsx
-│   ├── components/             # composants de l'interface
-│   │   ├── EnTete.jsx
-│   │   ├── BarreLaterale.jsx
-│   │   ├── Calendrier.jsx
-│   │   ├── EspaceClasse.jsx
-│   │   ├── FicheEleve.jsx
-│   │   ├── FicheEvenement.jsx
-│   │   ├── MenuBurger.jsx
-│   │   ├── PanneauNotifications.jsx
-│   │   ├── PanneauVoeux.jsx
-│   │   ├── PanneauEleves.jsx
-│   │   ├── PiedDePage.jsx
-│   │   ├── RouteProtegee.jsx
-│   │   ├── Popup… .jsx          # popups (créer/modifier classe, créneaux, objectifs, événements…)
-│   │   └── ui/                  # petits composants (CarteStat…)
-│   ├── services/
-│   │   └── helper.js           # appels API (token, erreurs)
-│   ├── utils/
-│   │   └── creneaux.js         # conversion créneaux → événements FullCalendar
-│   ├── App.jsx                 # routes (react-router)
-│   ├── main.jsx                # point d'entrée
-│   └── index.css               # import Tailwind + charte (@theme)
-├── .env / .env.example
-├── index.html
-├── vite.config.js
-└── package.json
-```
-## Fonctionnalités
-
-### Espace professeur (complet)
-- **Authentification** : inscription avec choix du rôle, connexion JWT, validation par la touche Entrée
-- **Classes** : création (couleur, horaires, période), modification, copie du code d'invitation, configuration de la durée de cours par élève
-- **Invitations** : invitation d'élèves par email (Brevo), individuellement ou depuis la barre latérale
-- **Vœux & plannings** : collecte des vœux, génération de 3 propositions de planning, sélection, déplacement et échange de créneaux, suppression, validation
-- **Planning global** : calendrier hebdomadaire (FullCalendar) de tous les créneaux validés, colorés par classe
-- **Gestion des créneaux de cours** : ajout, modification/remplacement et suppression avec portée — ce jour, plusieurs jours, ou toute la période
-- **Créneaux personnels** : ajout, modification et suppression de rendez-vous ponctuels au clic sur le planning
-- **Suivi pédagogique** : objectifs datés par élève (depuis la fiche élève ou le planning), avec modification et suppression
-- **Événements** : création avec notification ciblée (toutes les classes / classes spécifiques / élèves spécifiques), modification, suppression
-- **Notifications** : cloche avec compteur de non-lues, panneau dédié, marquage « tout comme lu »
-- **Navigation** : menu burger (profil, déconnexion), logo cliquable ramenant au planning
-
-### Espace élève
-- En cours de développement : soumission des vœux, consultation et confirmation du créneau attribué, consultation des objectifs, notifications, export Google Calendar.
-
----
-
-## Architecture frontend
-
-Le frontend suit quelques principes réutilisés dans tout le projet :
-- **Helper API centralisé** (`src/services/helper.js`) : gère l'URL de base, le token JWT et les erreurs.
-- **Popups réutilisables** : un même patron (overlay, fermeture, parent responsable de l'appel API et du rechargement).
-- **Communication par callbacks** : les composants enfants remontent les actions au parent, qui détient l'état.
-- **Conversion des créneaux** (`src/utils/creneaux.js`) : transforme les créneaux du back en événements FullCalendar (récurrents pour les cours, ponctuels pour les rendez-vous personnels).
+- **Pawnee Defize** : [GitHub](https://github.com/Pawnee33)
+- [LinkedIn](https://www.linkedin.com/in/pawnee-defize/)
