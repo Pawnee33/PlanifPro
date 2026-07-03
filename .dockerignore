@@ -1,0 +1,23 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets & env (ne JAMAIS embarquer dans l'image)
+.env
+.env.example
+cle_google/
+cle_firebase/
+flask.log
+
+# Git / CI
+.git/
+.github/
+
+# Front (le back n'en a pas besoin — il a son propre Dockerfile)
+planifPro/frontend/
+
+# Docs & tests curl (inutiles dans l'image de prod)
+planifPro/documentations/
+tests/
