@@ -20,4 +20,4 @@ EXPOSE 5000
 
 # Lancement en production via gunicorn
 # ${PORT:-5000} : utilise $PORT si défini (Render), sinon 5000 en local
-CMD gunicorn --bind 0.0.0.0:${PORT:-5000} "planifPro.run:app"
+CMD sh -c "flask db upgrade && gunicorn --bind 0.0.0.0:${PORT:-5000} planifPro.run:app"
