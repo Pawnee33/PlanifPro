@@ -15,7 +15,7 @@ Cette page rassemble l'ensemble des livrables demandés pour le Stage 4 (MVP Dev
 | **Sprint Reviews** | [Google Docs : Sprint Reviews](https://docs.google.com/document/d/1_3C8nWxGPyosWEBdRuBM4uCvyTfjU1cXHybenF8ziWQ/edit?usp=sharing) |
 | **Retrospectives** | [Wiki GitHub : PlanifPro](https://github.com/Pawnee33/PlanifPro/wiki) (une rétrospective par sprint, Sprints 1 à 5) |
 | **Source repository** | [github.com/Pawnee33/PlanifPro](https://github.com/Pawnee33/PlanifPro) |
-| **Bug tracking** | [GitHub Issues](https://github.com/Pawnee33/PlanifPro/issues) (bugs : #104 à #111) |
+| **Bug tracking** | [GitHub Issues]([https://github.com/Pawnee33/PlanifPro/issues](https://github.com/users/Pawnee33/projects/2)) (bugs : #104 à #111) |
 | **Testing evidence & results** | Tests unitaires (pytest, 217 tests) + scripts d'API (`tests/`) + tests end to end. Voir ci-dessous. |
 | **Production environment** | Front : [planif-pro.vercel.app](https://planif-pro.vercel.app) — Back : [planifpro-back.onrender.com](https://planifpro-back.onrender.com) |
 
