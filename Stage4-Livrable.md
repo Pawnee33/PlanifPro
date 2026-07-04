@@ -24,7 +24,7 @@ Cette page rassemble l'ensemble des livrables demandés pour le Stage 4 (MVP Dev
 ## Environnement de production
 
 - **Frontend** (Vercel) : https://planif-pro.vercel.app
-- **Backend / API** (Render, Docker) : https://planifpro-back.onrender.com
+- **Backend / API** (Render, Docker) : https://planifpro-back.onrender.com/api/v1/
 - **Documentation API (Swagger)** : https://planifpro-back.onrender.com/api/v1/
 - **Base de données** : PostgreSQL 16 managée sur Render (accès interne)
 
