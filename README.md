@@ -795,15 +795,26 @@ sudo -u postgres psql -d planifpro -c "TRUNCATE utilisateurs CASCADE;"
 
 ## Déploiement :
 
-- **Frontend** : déployé sur **Vercel** (build automatique à partir de `planifPro/frontend/`).
-- **Backend** : déployé sur **Render** (`gunicorn "planifPro.run:app"`).
-- **Base de données** : PostgreSQL managé (Render).
+L'application est déployée et accessible en ligne :
 
-> URLs de production : _à compléter une fois le déploiement effectué._
+| Service | Plateforme | URL |
+|---------|-----------|-----|
+| **Frontend** | Vercel | https://planif-pro.vercel.app |
+| **Backend (API)** | Render (Docker) | https://planifpro-back.onrender.com |
+| **Documentation API (Swagger)** | Render | https://planifpro-back.onrender.com/api/v1/ |
+| **Base de données** | Render (PostgreSQL 16) | — (interne) |
 
-Variables d'environnement à définir côté hébergeur :
-- **Back (Render)** : `DATABASE_URL`, `JWT_SECRET_KEY`, `BREVO_API_KEY`, `BREVO_FROM_EMAIL`, `FIREBASE_CREDENTIALS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `GOOGLE_CLIENT_SECRETS`
-- **Front (Vercel)** : `VITE_API_URL` (URL publique de l'API)
+### Architecture de déploiement
+- **Frontend** : build Vite déployé sur Vercel, redéploiement automatique à chaque push sur `main`.
+- **Backend** : conteneur Docker construit et déployé sur Render (Web Service), migrations appliquées automatiquement au démarrage (`flask db upgrade`).
+- **Base de données** : PostgreSQL managé sur Render, connecté au backend via l'URL interne privée.
+- **Services externes** : les fichiers de credentials (Google, Firebase) sont injectés via les *Secret Files* de Render ; les autres secrets via les variables d'environnement.
+
+### Variables d'environnement de production
+- **Backend (Render)** : `DATABASE_URL`, `FLASK_APP`, `JWT_SECRET_KEY`, `BREVO_API_KEY`, `BREVO_FROM_EMAIL`, `FIREBASE_CREDENTIALS`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CLIENT_SECRETS`, `GOOGLE_REDIRECT_URI`, `FRONTEND_URL`
+- **Frontend (Vercel)** : `VITE_API_URL`
+
+> ℹ️ Le backend est hébergé sur le plan gratuit de Render : après une période d'inactivité, la première requête peut prendre ~30 secondes (réveil du service).
 
 ---
 
