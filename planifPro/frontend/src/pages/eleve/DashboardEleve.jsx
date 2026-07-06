@@ -122,6 +122,7 @@ useEffect(() => {
         <EnTete
           onAccueil={() => {
             setVueActive('planning')
+            setSelection(null)
           }}
         />
       <div className="flex flex-1">

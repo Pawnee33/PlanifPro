@@ -15,7 +15,7 @@ function CalendrierEleve({ refresh, objectifs, professeurs }) {
   const [creneauxPerso, setCreneauxPerso] = useState([])
   const [persoAGerer, setPersoAGerer] = useState(null)
   const [nouveauCreneau, setNouveauCreneau] = useState(null)
-  const [estMobile, setEstMobile] = useState(window.innerWidth < 768)
+  const [estMobile, setEstMobile] = useState(window.innerWidth < 768 || window.innerHeight < 500)
   const [objectifAffiche, setObjectifAffiche] = useState(null)
   // null = fermé, {} = ouvert
 
@@ -40,7 +40,7 @@ function CalendrierEleve({ refresh, objectifs, professeurs }) {
 
   useEffect(() => {
     const gererRedimensionnement = () => {
-      setEstMobile(window.innerWidth < 768)
+      setEstMobile(window.innerWidth < 768 || window.innerHeight < 500)
     }
     window.addEventListener('resize', gererRedimensionnement)
     return () => window.removeEventListener('resize', gererRedimensionnement)
@@ -98,7 +98,7 @@ function CalendrierEleve({ refresh, objectifs, professeurs }) {
         key={estMobile ? 'mois' : 'semaine'}
         plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
         initialView={estMobile ? 'dayGridMonth' : 'timeGridWeek'}
-        height={estMobile ? 'calc(100vh - 180px)' : 'auto'}
+        height={estMobile ? `calc(100vh - ${window.innerHeight < 500 ? 30 : 180}px)` : 'auto'}
         events={events}
         locale={frLocale}
         eventClick={onEventClick}
