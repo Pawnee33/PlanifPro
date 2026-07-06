@@ -34,6 +34,16 @@ class Utilisateur(EntiteBase):
     parametres = db.Column(db.JSON, nullable=True)
     token_fcm = db.Column(db.String(255), nullable=True)
 
+    notifications = db.relationship(
+        'Notification', backref='utilisateur',
+        lazy=True, cascade='all, delete-orphan'
+    )
+
+    creneaux_perso = db.relationship(
+        'CreneauPerso', backref='utilisateur',
+        lazy=True, cascade='all, delete-orphan'
+    )
+
     @validates('prenom')
     def validate_prenom(self, key, value):
         """
