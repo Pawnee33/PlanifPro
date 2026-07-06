@@ -228,6 +228,12 @@ Côté frontend, l'application est une **SPA React** organisée en pages (une pa
 
 ---
 
+### Diagramme ER
+
+![Diagramme ER de PlanifPro](planifPro/documentations/Diagramme_ER_PlanifPro.jpg)
+
+---
+
 # Installation : PlanifPro Backend
 
 ## Prérequis
