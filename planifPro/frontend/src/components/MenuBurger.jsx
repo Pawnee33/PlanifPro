@@ -29,7 +29,7 @@ function MenuBurger({ ouvert, onFermer, utilisateur, onOuvrirNotifications }) {
     <div onClick={onFermer} className="fixed inset-0 bg-black/50 flex items-start justify-end z-50">
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-bleu-clair border-2 border-tracer-violet rounded-2xl w-full max-w-xs mt-20 mr-6 overflow-hidden"
+        className="bg-bleu-clair border-2 border-tracer-violet rounded-2xl w-full max-w-xs mt-20 mr-6 overflow-y-auto max-h-[calc(100vh-6rem)]"
       >
         {/* En-tête : avatar + nom + rôle */}
         <div className="relative bg-bleu-nuit px-5 py-4 flex items-center gap-3">

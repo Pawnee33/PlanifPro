@@ -13,7 +13,7 @@ const BarreLateraleEleve = ({ ouverte, onFermer, objectifs, professeurs, eveneme
 
     return (
         <aside className={`w-64 flex flex-col gap-3 bg-bleu-marine border-r-[4px] border-tracer-violet p-4
-          fixed inset-y-0 left-0 z-50 transition-transform duration-300
+          fixed inset-y-0 left-0 z-50 transition-transform duration-300 overflow-y-auto
           ${ouverte ? 'translate-x-0' : '-translate-x-full'}
           lg:static lg:translate-x-0 lg:z-auto`}>
 
