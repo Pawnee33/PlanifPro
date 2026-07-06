@@ -69,7 +69,13 @@ class AuthFacade:
         utilisateur = self.utilisateur_repo.obtenir(utilisateur_id)
         if not utilisateur:
             return None
-        self.utilisateur_repo.mis_a_jour(utilisateur_id, donnees_utilisateur)
+        # On copie pour ne pas modifier le dictionnaire d'origine
+        donnees = dict(donnees_utilisateur)
+        # Si un nouveau mot de passe est fourni, on le hache et on retire le champ en clair
+        mot_de_passe = donnees.pop('mot_de_passe', None)
+        if mot_de_passe:
+            utilisateur.hash_password(mot_de_passe)
+        self.utilisateur_repo.mis_a_jour(utilisateur_id, donnees)
         return self.utilisateur_repo.obtenir(utilisateur_id).to_dict()
 
     def obtenir_utilisateur_par_email(self, email):
@@ -88,7 +94,14 @@ class AuthFacade:
 
     def supprimer_utilisateur(self, utilisateur_id):
         """Supprimer un utilisateur existant et toutes les données associées (cascade)."""
-        self.utilisateur_repo.supprime(utilisateur_id)
+        utilisateur = self.utilisateur_repo.obtenir(utilisateur_id)
+        if not utilisateur:
+            return
+        # On supprime via la bonne classe fille pour déclencher les cascades
+        if utilisateur.role == 'professeur':
+            self.professeur_repo.supprime(utilisateur_id)
+        else:
+            self.eleve_repo.supprime(utilisateur_id)
 
     # Professeur
     def creer_professeur(self, donnees):
