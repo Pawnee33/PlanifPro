@@ -1,8 +1,11 @@
+import { useState } from 'react'
+import PopupMonProfil from './PopupMonProfil'
 import { User, Settings, Bell, Calendar, HelpCircle, LogOut, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 function MenuBurger({ ouvert, onFermer, utilisateur, onOuvrirNotifications }) {
   const navigate = useNavigate()
+  const [profilOuvert, setProfilOuvert] = useState(false)
 
   if (!ouvert) return null
 
@@ -26,6 +29,7 @@ function MenuBurger({ ouvert, onFermer, utilisateur, onOuvrirNotifications }) {
   )
 
   return (
+    <>
     <div onClick={onFermer} className="fixed inset-0 bg-black/50 flex items-start justify-end z-50">
       <div
         onClick={(e) => e.stopPropagation()}
@@ -46,7 +50,7 @@ function MenuBurger({ ouvert, onFermer, utilisateur, onOuvrirNotifications }) {
         </div>
 
         {/* Entrées */}
-        {ligne(<User className="text-or" size={20} />, 'Mon Profil', () => alert('Mon profil — à venir'))}
+        {ligne(<User className="text-or" size={20} />, 'Mon Profil', () => setProfilOuvert(true))}
         {ligne(<Settings className="text-white" size={20} />, 'Paramètres', () => alert('Paramètres — à venir'))}
         {ligne(<Bell className="text-or" size={20} />, 'Notifications', onOuvrirNotifications)}
         {ligne(<Calendar className="text-white" size={20} />, 'Exporter vers Google Calendar', () => alert('Export — à venir'))}
@@ -54,6 +58,8 @@ function MenuBurger({ ouvert, onFermer, utilisateur, onOuvrirNotifications }) {
         {ligne(<LogOut className="text-white" size={20} />, 'Se déconnecter', seDeconnecter)}
       </div>
     </div>
+      {profilOuvert && <PopupMonProfil onFermer={() => setProfilOuvert(false)} />}
+    </>
   )
 }
 
