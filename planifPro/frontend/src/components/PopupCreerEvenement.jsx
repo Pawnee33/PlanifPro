@@ -32,8 +32,8 @@ function PopupCreerEvenement({ ouvert, onFermer, onCreer, classes, eleves }) {
 
   //Adapter valider pour construire destinataires selon le mode
   const valider = () => {
-    if (!titre.trim() || !date) {
-      alert('Veuillez saisir un titre et une date')
+    if (!titre.trim() || !date || !description.trim()) {
+      alert('Veuillez remplir tous les champs : titre, date et description')
       return
     }
     if ((mode === 'classes' || mode === 'eleves') && selection.length === 0) {
