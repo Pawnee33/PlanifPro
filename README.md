@@ -220,6 +220,11 @@ Le backend suit une **architecture en couches** :
 Ce découpage isole la logique métier de la persistance et des routes, ce qui facilite les tests et les évolutions.
 
 Côté frontend, l'application est une **SPA React** organisée en pages (une par écran) et composants réutilisables, avec une couche services (`helper.js`) qui centralise les appels API et l'injection du token JWT.
+---
+
+### Diagramme d'architecture
+
+![Architecture système de PlanifPro](planifPro/documentations/Architecture_systeme_PlanifPro.jpg)
 
 ---
 
