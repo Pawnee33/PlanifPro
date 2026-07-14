@@ -25,7 +25,15 @@ function EspaceClasse({ classe, onClasseModifiee }) {
   }
 
   useEffect(() => {
+    // Chargement initial (et à chaque changement de classe)
     chargerEleves()
+
+    // Rafraîchissement automatique toutes les 10 secondes, pour voir
+    // les élèves rejoindre et les vœux arriver sans recharger la page
+    const intervalle = setInterval(chargerEleves, 10000)
+
+    // Nettoyage : on arrête l'intervalle au démontage ou au changement de classe
+    return () => clearInterval(intervalle)
   }, [classe.id])
 
   // --- Helpers d'affichage ---
