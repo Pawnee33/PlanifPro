@@ -8,10 +8,22 @@ function PanneauVoeux({ eleves, classe, onPlanningGenere }) {
 
   // Recharge les voeux quand on change de classe
   useEffect(() => {
-    api
-      .get(`/voeux/statut/${classe.id}`)
-      .then(setVoeux)
-      .catch(() => setVoeux([]))
+    const chargerVoeux = () => {
+      api
+        .get(`/voeux/statut/${classe.id}`)
+        .then(setVoeux)
+        .catch(() => setVoeux([]))
+    }
+
+    // Chargement initial (et à chaque changement de classe)
+    chargerVoeux()
+
+    // Rafraîchissement automatique toutes les 10 secondes, pour voir
+    // les vœux soumis par les élèves sans recharger la page
+    const intervalle = setInterval(chargerVoeux, 10000)
+
+    // Nettoyage : on arrête l'intervalle au démontage ou au changement de classe
+    return () => clearInterval(intervalle)
   }, [classe.id])
 
   // --- Helpers d'affichage ---

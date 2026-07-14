@@ -50,11 +50,24 @@ const chargerCreneaux = () => {
     .catch(() => setCreneaux([]))
 }
 
-useEffect(() => {
+// Recharge toutes les données du tableau de bord
+const chargerTout = () => {
   chargerClasses()
   chargerEleves()
   chargerEvenements()
   chargerCreneaux()
+}
+
+useEffect(() => {
+  // Chargement initial au montage
+  chargerTout()
+
+  // Rafraîchissement automatique toutes les 10 secondes, pour voir
+  // les élèves rejoindre les classes sans recharger la page
+  const intervalle = setInterval(chargerTout, 10000)
+
+  // Nettoyage : on arrête l'intervalle quand le composant disparaît
+  return () => clearInterval(intervalle)
 }, [])
 
   // On retrouve la classe dont l'id correspond à la vue active (undefined si aucune)

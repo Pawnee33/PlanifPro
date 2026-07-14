@@ -1,4 +1,3 @@
-import { jwtDecode } from 'jwt-decode'
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../services/helper'
@@ -40,10 +39,7 @@ function Connexion() {
       // Succès : on range le jeton JWT dans le navigateur
       localStorage.setItem('token', donnees.access_token)
 
-      // Redirection vers les dashboards
-      const { role } = jwtDecode(donnees.access_token)   // on lit le rôle dans le token
-
-      if (role === 'professeur') {
+      if (donnees.role === 'professeur') {
         navigate('/dashboard-prof')
       } else {
         navigate('/dashboard-eleve')   // (n'existe pas encore — on le créera)
