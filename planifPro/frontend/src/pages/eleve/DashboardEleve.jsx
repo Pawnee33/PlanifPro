@@ -84,7 +84,7 @@ function DashboardEleve() {
     .catch(() => setMesClasses([]))
 }
 
-useEffect(() => {
+const chargerTout = () => {
   chargerObjectifs()
   chargerProfesseurs()
   chargerEvenements()
@@ -93,6 +93,18 @@ useEffect(() => {
   chargerCreneaux()
   chargerClasses()
   chargerMesClasses()
+}
+
+useEffect(() => {
+  // Chargement initial au montage
+  chargerTout()
+
+  // Rafraîchissement automatique toutes les 10 secondes, pour voir
+  // les actions du professeur sans recharger la page manuellement
+  const intervalle = setInterval(chargerTout, 10000)
+
+  // Nettoyage : on arrête l'intervalle quand le composant disparaît
+  return () => clearInterval(intervalle)
 }, [])
 
   // Classes dont la collecte est ouverte et pour lesquelles l'élève n'a pas encore soumis de vœu
