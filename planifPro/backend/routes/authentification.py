@@ -71,7 +71,7 @@ class Connexion(Resource):
                 )
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
-        return {'access_token': access_token}, 200
+        return {'access_token': access_token, 'role': utilisateur.role}, 200
 
 
 @api.route('/protected')
