@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import PopupMonProfil from './PopupMonProfil'
-import { api } from '../services/helper'
 import { User, Settings, Bell, Calendar, HelpCircle, LogOut, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -11,9 +10,8 @@ function MenuBurger({ ouvert, onFermer, utilisateur, onOuvrirNotifications }) {
   if (!ouvert) return null
 
   const seDeconnecter = () => {
-    // On demande au serveur d'effacer le cookie httpOnly (le front ne peut pas le faire lui-même)
-    api.post('/authentification/deconnexion')
-      .finally(() => navigate('/connexion'))
+    localStorage.removeItem('token')
+    navigate('/connexion')
   }
 
   // initiales pour l'avatar

@@ -4,16 +4,13 @@ const BASE_URL = import.meta.env.VITE_API_URL
 async function requete(chemin, options = {}) {
     // On prépare les en-têtes en JSON
     const headers = { 'Content-Type': 'application/json', ...options.headers }
-    // Le token n'est plus géré ici : il voyage dans un cookie httpOnly,
-    // envoyé automatiquement par le navigateur grâce à "credentials: include".
-
-    // L'appel HTTP : "credentials: include" dit au navigateur d'envoyer
-    // (et d'accepter) les cookies, même en cross-origin (front Vercel <-> back Render).
-    const reponse = await fetch(`${BASE_URL}${chemin}`, {
-        ...options,
-        headers,
-        credentials: 'include',
-    })
+    // Si un token existe, on l'ajoute (nécessaire pour les routes protégées)
+    const token = localStorage.getItem('token')
+    if (token) {
+        headers.Authorization = `Bearer ${token}`
+    }
+    // L'appel HTTP : on fusionne les options (methode, body) avec nos en-têtes
+    const reponse = await fetch(`${BASE_URL}${chemin}`, { ...options, headers})
     // On lit la réponse JSON
     const donnees = await reponse.json()
     // Si statut non 2xx, on lève l'erreur

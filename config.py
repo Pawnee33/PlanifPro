@@ -15,24 +15,13 @@ class Config:
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=8)
 
-    # --- Authentification par cookie httpOnly ---
-    # Le token n'est plus lu dans l'en-tête Authorization mais dans un cookie.
-    JWT_TOKEN_LOCATION = ['cookies']
-    # Le cookie est envoyé sur toutes les routes de l'API.
-    JWT_COOKIE_CSRF_PROTECT = False   # protection CSRF (obligatoire avec les cookies)
-    JWT_COOKIE_SAMESITE = 'None'     # nécessaire car front et back sont sur des domaines différents
-    JWT_COOKIE_SECURE = True         # cookie envoyé uniquement en HTTPS
-
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    # En local on est en HTTP (pas HTTPS), donc on assouplit :
-    JWT_COOKIE_SECURE = False
-    JWT_COOKIE_SAMESITE = 'Lax'
 
 
 class ProductionConfig(Config):
-    pass   # garde Secure=True et SameSite=None (cross-domain Vercel ↔ Render)
+    pass
 
 
 class TestingConfig(Config):
@@ -43,10 +32,6 @@ class TestingConfig(Config):
         'poolclass': StaticPool,
     }
     JWT_SECRET_KEY = 'cle-jwt-de-test-pour-les-tests-unitaires-planifpro'
-
-    # Les tests utilisent l'en-tête Authorization, pas les cookies
-    JWT_TOKEN_LOCATION = ['headers']
-    JWT_COOKIE_CSRF_PROTECT = False
 
 
 config = {
