@@ -14,13 +14,28 @@ const EnTete = ({ onAccueil }) => {
     const [notifsOuvertes, setNotifsOuvertes] = useState(false)
 
     useEffect(() => {
+        // Le profil ne change pas pendant la session : chargé une seule fois
         api.get('/utilisateurs/profil')
             .then(setUtilisateur)
             .catch(() => {})
-        api.get('/notifications/')
-            .then(setNotifications)
-            .catch(() => setNotifications([]))
-        }, [])
+
+        // Fonction qui recharge les notifications
+        const chargerNotifications = () => {
+            api.get('/notifications/')
+                .then(setNotifications)
+                .catch(() => setNotifications([]))
+        }
+
+        // Chargement initial
+        chargerNotifications()
+
+        // Rafraîchissement automatique toutes les 10 secondes, pour voir
+        // les nouvelles notifications sans recharger la page
+        const intervalle = setInterval(chargerNotifications, 10000)
+
+        // Nettoyage : on arrête l'intervalle quand le composant disparaît
+        return () => clearInterval(intervalle)
+    }, [])
 
     const toutMarquerLu = () => {
         api.put('/notifications/lire')
