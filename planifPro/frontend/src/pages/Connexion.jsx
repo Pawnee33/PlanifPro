@@ -33,12 +33,11 @@ function Connexion() {
       // api.post s'occupe de tout (URL complète, en-tête JSON, token, lecture de la réponse)
       const donnees = await api.post('/authentification/connexion', {
           email,
-          mot_de_passe: motDePasse,                       // clé attendue par ton backend
+          mot_de_passe: motDePasse,
         })
 
-      // Succès : on range le jeton JWT dans le navigateur
-      localStorage.setItem('token', donnees.access_token)
-
+      // Le token est désormais dans un cookie httpOnly, posé par le serveur.
+      // Rien à stocker côté front : on redirige simplement selon le rôle reçu.
       if (donnees.role === 'professeur') {
         navigate('/dashboard-prof')
       } else {

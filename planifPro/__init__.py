@@ -46,6 +46,7 @@ def create_app(config_class="config.DevelopmentConfig"):
         app,
         resources={r"/api/*": {"origins": [
             "http://localhost:5173",              # front en développement (Vite)
+            "http://127.0.0.1:5173",              # idem, via 127.0.0.1 (WSL notamment)
             "https://planif-pro.vercel.app",      # front en production
         ]}},
         supports_credentials=True,   # autorise l'envoi des cookies
