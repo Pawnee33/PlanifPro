@@ -1,5 +1,6 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import create_access_token
+from flask import jsonify
+from flask_jwt_extended import create_access_token, set_access_cookies, unset_jwt_cookies
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from planifPro.backend.services.facade import PlanifProFacade
 
@@ -71,7 +72,11 @@ class Connexion(Resource):
                 )
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
-        return {'access_token': access_token, 'role': utilisateur.role}, 200
+
+        # Le token part dans un cookie httpOnly, plus dans le corps de la réponse
+        reponse = jsonify({'role': utilisateur.role, 'message': 'Connexion réussie'})
+        set_access_cookies(reponse, access_token)
+        return reponse
 
 
 @api.route('/protected')
@@ -88,3 +93,12 @@ class ProtectedResource(Resource):
             "message": f"Hello utilisateur {current_utilisateur}",
             "role": role
         }, 200
+
+@api.route('/deconnexion')
+class Deconnexion(Resource):
+    @api.response(200, 'Déconnexion réussie')
+    def post(self):
+        """Déconnecter l'utilisateur en effaçant le cookie JWT"""
+        reponse = jsonify({'message': 'Déconnexion réussie'})
+        unset_jwt_cookies(reponse)   # efface le cookie côté navigateur
+        return reponse
