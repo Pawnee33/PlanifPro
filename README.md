@@ -11,7 +11,7 @@ Le principe : le professeur définit ses disponibilités, les élèves soumetten
 ---
 ## Vidéo Démo PlanifPro :
 
-[![Regarder la vidéo](https://img.youtube.com/vi/https://youtu.be/j9FvMufDVs4?si=GWbnptu0Eip74EEb/maxresdefault.jpg)](https://www.youtube.com/watch?v=https://youtu.be/j9FvMufDVs4?si=GWbnptu0Eip74EEb)
+[![Regarder la vidéo](https://img.youtube.com/vi/j9FvMufDVs4/maxresdefault.jpg)](https://youtu.be/j9FvMufDVs4?si=GWbnptu0Eip74EEb)
 
 ## Fonctionnalités :
 
