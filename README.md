@@ -9,6 +9,9 @@ L'application permet la gestion des cours et la génération de planning en fonc
 Le principe : le professeur définit ses disponibilités, les élèves soumettent leurs vœux de créneaux, un algorithme génère **trois propositions de planning**, et le professeur en valide une.
 
 ---
+## Vidéo Démo PlanifPro :
+
+[![Regarder la vidéo](https://img.youtube.com/vi/https://youtu.be/j9FvMufDVs4?si=GWbnptu0Eip74EEb/maxresdefault.jpg)](https://www.youtube.com/watch?v=https://youtu.be/j9FvMufDVs4?si=GWbnptu0Eip74EEb)
 
 ## Fonctionnalités :
 
