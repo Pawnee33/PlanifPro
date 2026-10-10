@@ -23,6 +23,8 @@ services:
       # On surcharge DATABASE_URL : "db" = nom du service PostgreSQL sur le réseau Compose
       DATABASE_URL: postgresql://planifpro:planifpro@db:5432/planifpro
       FLASK_APP: planifPro.run
+      # Origine du front (port hôte 8080) autorisée à envoyer le cookie JWT à l'API
+      CORS_ORIGINS: http://localhost:8080
     volumes:
       # Les fichiers de clés (exclus de l'image) sont montés depuis le disque
       - ./cle_google:/app/cle_google:ro

@@ -42,7 +42,13 @@ def create_app(config_class="config.DevelopmentConfig"):
     bcrypt.init_app(app)
     jwt.init_app(app)
     db.init_app(app)
-    cors.init_app(app, resources={r"/api/*": {"origins": "*"}})
+    # supports_credentials : autorise le navigateur à envoyer le cookie JWT.
+    # Dans ce mode, l'origine "*" est interdite : on liste les origines du front.
+    cors.init_app(
+        app,
+        resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},
+        supports_credentials=True,
+    )
     migrate.init_app(app, db)
 
     from planifPro.backend.classes.utilisateur import Utilisateur

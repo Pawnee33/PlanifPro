@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { jwtDecode } from 'jwt-decode'
 
 function GoogleCallback() {
   const naviguer = useNavigate()
@@ -14,10 +13,9 @@ function GoogleCallback() {
       localStorage.setItem('google_token', token)
     }
 
-    // Redirige vers le bon dashboard selon le rôle
-    const tokenApp = localStorage.getItem('token')
-    if (tokenApp) {
-      const { role } = jwtDecode(tokenApp)
+    // Redirige vers le bon dashboard selon le rôle (mémorisé à la connexion)
+    const role = localStorage.getItem('role')
+    if (role) {
       if (role === 'professeur') {
         naviguer('/dashboard-prof')
       } else {
