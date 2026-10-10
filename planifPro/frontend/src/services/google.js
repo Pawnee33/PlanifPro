@@ -14,15 +14,15 @@ export const connecterGoogle = async () => {
 
 // Appel POST avec le token Google en header (le helper ne gère pas les headers custom)
 async function postAvecTokenGoogle(chemin, corps) {
-  const tokenApp = localStorage.getItem('token')
   const tokenGoogle = localStorage.getItem('google_token')
   const reponse = await fetch(`${BASE_URL}${chemin}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${tokenApp}`,
+      'X-CSRF-TOKEN': localStorage.getItem('csrf_token'),
       'X-Google-Token': tokenGoogle,
     },
+    credentials: 'include',   // envoie le cookie JWT (HttpOnly)
     body: JSON.stringify(corps),
   })
   const donnees = await reponse.json()
@@ -70,15 +70,15 @@ export const supprimerDeGoogle = async () => {
     return
   }
   try {
-    const tokenApp = localStorage.getItem('token')
     const tokenGoogle = localStorage.getItem('google_token')
     const reponse = await fetch(`${BASE_URL}/calendrier/export`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${tokenApp}`,
+        'X-CSRF-TOKEN': localStorage.getItem('csrf_token'),
         'X-Google-Token': tokenGoogle,
       },
+      credentials: 'include',   // envoie le cookie JWT (HttpOnly)
     })
     const donnees = await reponse.json()
     if (!reponse.ok) {

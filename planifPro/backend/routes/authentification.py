@@ -1,5 +1,7 @@
+from flask import jsonify
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import create_access_token
+from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, get_csrf_token
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from planifPro.backend.services.facade import PlanifProFacade
 
@@ -69,9 +71,28 @@ class Connexion(Resource):
                 identity=str(utilisateur.id),
                 additional_claims={"role": utilisateur.role}
                 )
+            # Le JWT n'est plus renvoyé dans le corps : il part dans un cookie
+            # HttpOnly. Le front reçoit seulement le rôle et le jeton CSRF
+            # (à renvoyer dans l'en-tête X-CSRF-TOKEN des requêtes d'écriture).
+            reponse = jsonify({
+                'role': utilisateur.role,
+                'csrf_token': get_csrf_token(access_token)
+            })
+            set_access_cookies(reponse, access_token)
         except Exception as e:
             return {'error': 'Erreur interne du serveur'}, 500
-        return {'access_token': access_token, 'role': utilisateur.role}, 200
+        return reponse
+
+
+@api.route('/deconnexion')
+class Deconnexion(Resource):
+    @api.response(200, 'Déconnexion réussie')
+    def post(self):
+        """Déconnecter l'utilisateur en effaçant le cookie JWT"""
+        # Le cookie étant HttpOnly, seul le serveur peut le supprimer.
+        reponse = jsonify({'message': 'Déconnexion réussie'})
+        unset_jwt_cookies(reponse)
+        return reponse
 
 
 @api.route('/protected')

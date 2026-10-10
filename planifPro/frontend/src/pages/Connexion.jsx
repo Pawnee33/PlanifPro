@@ -36,8 +36,11 @@ function Connexion() {
           mot_de_passe: motDePasse,                       // clé attendue par ton backend
         })
 
-      // Succès : on range le jeton JWT dans le navigateur
-      localStorage.setItem('token', donnees.access_token)
+      // Succès : le jeton JWT est déposé par le backend dans un cookie HttpOnly
+      // (le JavaScript n'y a pas accès). On ne garde ici que le rôle (pour
+      // l'affichage) et le jeton CSRF (à renvoyer avec les requêtes d'écriture).
+      localStorage.setItem('role', donnees.role)
+      localStorage.setItem('csrf_token', donnees.csrf_token)
 
       if (donnees.role === 'professeur') {
         navigate('/dashboard-prof')
@@ -96,7 +99,7 @@ function Connexion() {
         {erreur && <p className="text-center text-sm text-red-300">{erreur}</p>}
 
         <button
-          onClick={seConnecter}  
+          onClick={seConnecter}
           className="rounded-full bg-or py-3 text-white font-base text-lg hover:brightness-110 transition backdrop-blur-sm shadow-[0px_10px_10px_-08px_#0C2863]"
         >
           Se connecter

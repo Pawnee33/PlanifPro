@@ -2,6 +2,7 @@ import { useState } from 'react'
 import PopupMonProfil from './PopupMonProfil'
 import { User, Settings, Bell, Calendar, HelpCircle, LogOut, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { deconnecter } from '../services/helper'
 
 function MenuBurger({ ouvert, onFermer, utilisateur, onOuvrirNotifications }) {
   const navigate = useNavigate()
@@ -9,8 +10,8 @@ function MenuBurger({ ouvert, onFermer, utilisateur, onOuvrirNotifications }) {
 
   if (!ouvert) return null
 
-  const seDeconnecter = () => {
-    localStorage.removeItem('token')
+  const seDeconnecter = async () => {
+    await deconnecter()
     navigate('/connexion')
   }
 
