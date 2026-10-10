@@ -33,11 +33,15 @@ function Connexion() {
       // api.post s'occupe de tout (URL complète, en-tête JSON, token, lecture de la réponse)
       const donnees = await api.post('/authentification/connexion', {
           email,
-          mot_de_passe: motDePasse,
+          mot_de_passe: motDePasse,                       // clé attendue par ton backend
         })
 
-      // Le token est désormais dans un cookie httpOnly, posé par le serveur.
-      // Rien à stocker côté front : on redirige simplement selon le rôle reçu.
+      // Succès : le jeton JWT est déposé par le backend dans un cookie HttpOnly
+      // (le JavaScript n'y a pas accès). On ne garde ici que le rôle (pour
+      // l'affichage) et le jeton CSRF (à renvoyer avec les requêtes d'écriture).
+      localStorage.setItem('role', donnees.role)
+      localStorage.setItem('csrf_token', donnees.csrf_token)
+
       if (donnees.role === 'professeur') {
         navigate('/dashboard-prof')
       } else {
@@ -95,7 +99,7 @@ function Connexion() {
         {erreur && <p className="text-center text-sm text-red-300">{erreur}</p>}
 
         <button
-          onClick={seConnecter}  
+          onClick={seConnecter}
           className="rounded-full bg-or py-3 text-white font-base text-lg hover:brightness-110 transition backdrop-blur-sm shadow-[0px_10px_10px_-08px_#0C2863]"
         >
           Se connecter

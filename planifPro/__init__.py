@@ -42,14 +42,12 @@ def create_app(config_class="config.DevelopmentConfig"):
     bcrypt.init_app(app)
     jwt.init_app(app)
     db.init_app(app)
+    # supports_credentials : autorise le navigateur à envoyer le cookie JWT.
+    # Dans ce mode, l'origine "*" est interdite : on liste les origines du front.
     cors.init_app(
         app,
-        resources={r"/api/*": {"origins": [
-            "http://localhost:5173",              # front en développement (Vite)
-            "http://127.0.0.1:5173",              # idem, via 127.0.0.1 (WSL notamment)
-            "https://planif-pro.vercel.app",      # front en production
-        ]}},
-        supports_credentials=True,   # autorise l'envoi des cookies
+        resources={r"/api/*": {"origins": app.config["CORS_ORIGINS"]}},
+        supports_credentials=True,
     )
     migrate.init_app(app, db)
 

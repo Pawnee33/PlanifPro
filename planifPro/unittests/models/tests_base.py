@@ -10,6 +10,8 @@ planning) réutilisables par toutes les suites de tests d'endpoints.
 import unittest
 import uuid
 
+from flask_jwt_extended import get_csrf_token
+
 from planifPro import create_app, db
 
 
@@ -23,7 +25,10 @@ class BaseTestCase(unittest.TestCase):
         self.contexte = self.app.app_context()
         self.contexte.push()
         db.create_all()
-        self.client = self.app.test_client()
+        # use_cookies=False : le client ne mémorise pas les cookies. Un même
+        # test connecte souvent plusieurs utilisateurs (prof + élève) ; chaque
+        # requête envoie donc explicitement son cookie via entetes_auth().
+        self.client = self.app.test_client(use_cookies=False)
 
     def tearDown(self):
         db.session.remove()
@@ -53,15 +58,26 @@ class BaseTestCase(unittest.TestCase):
         )
         return reponse, payload
 
+    def cookie_jwt(self, reponse):
+        """Renvoie l'en-tête Set-Cookie du JWT d'une réponse, ou None."""
+        for entete in reponse.headers.getlist("Set-Cookie"):
+            if entete.startswith("access_token_cookie="):
+                return entete
+        return None
+
     def connexion(self, email, mot_de_passe="motdepasse123"):
-        """Connecte un utilisateur. Renvoie le token JWT, ou None si échec."""
+        """Connecte un utilisateur. Renvoie le token JWT (lu dans le cookie), ou None si échec."""
         reponse = self.client.post(
             "/api/v1/authentification/connexion",
             json={"email": email, "mot_de_passe": mot_de_passe},
         )
         if reponse.status_code != 200:
             return None
-        return reponse.get_json().get("access_token")
+        cookie = self.cookie_jwt(reponse)
+        if cookie is None:
+            return None
+        # "access_token_cookie=<token>; HttpOnly; Path=/; ..." -> <token>
+        return cookie.split(";")[0].split("=", 1)[1]
 
     def creer_et_connecter(self, role="professeur"):
         """Inscrit puis connecte un utilisateur. Renvoie (token, payload)."""
@@ -70,8 +86,11 @@ class BaseTestCase(unittest.TestCase):
         return token, payload
 
     def entetes_auth(self, token):
-        """Construit les headers Authorization à partir d'un token JWT."""
-        return {"Authorization": f"Bearer {token}"}
+        """Construit les headers d'une requête authentifiée : cookie JWT + jeton CSRF."""
+        return {
+            "Cookie": f"access_token_cookie={token}",
+            "X-CSRF-TOKEN": get_csrf_token(token),
+        }
 
     # ----- Fixtures classe -----
     def payload_classe(self, **kwargs):

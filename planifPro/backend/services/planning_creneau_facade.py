@@ -155,15 +155,20 @@ class PlanningCreneauFacade:
                 return False
         return True
 
-    def _placer_eleve(self, voeu, duree, jours_horaires, occupe):
+    def _placer_eleve(self, voeu, duree, jours_horaires, occupe, ordre_voeux=('1', '2', '3')):
         """
-        Trouve un emplacement pour un élève : d'abord ses vœux (par
-        priorité), sinon le premier créneau libre de la dispo.
+        Trouve un emplacement pour un élève : d'abord ses vœux (dans l'ordre
+        de priorité donné), sinon le premier créneau libre de la dispo.
+
+        ordre_voeux : ordre dans lequel tester les vœux (ex: ('2','1','3')
+        pour tenter le 2e choix avant le 1er). Permet de varier les propositions.
 
         Retourne (jour, debut_min) ou None si la dispo est pleine.
         """
-        # Les vœux de l'élève, dans l'ordre voeu1, voeu2, voeu3
-        for souhait in voeu.creneaux_souhaites.values():
+        for cle in ordre_voeux:
+            souhait = voeu.creneaux_souhaites.get(cle)
+            if not souhait:
+                continue
             jour = souhait['jour']
             if jour not in jours_horaires:
                 continue
@@ -191,24 +196,23 @@ class PlanningCreneauFacade:
         jours_horaires = classe.jours_horaires
         voeux = self.voeu_repo.obtenir_voeux_par_classe(classe_id) or []
 
-        # Proposition 1 : ordre de soumission (premier arrivé)
+        # Proposition 1 : ordre de soumission + priorité normale des vœux (1, 2, 3)
         voeux_1 = sorted(voeux, key=lambda v: v.soumis_le)
-        self._helper_proposition(jours_horaires, voeux_1, classe, 1)
+        self._helper_proposition(jours_horaires, voeux_1, classe, 1, ordre_voeux=('1', '2', '3'))
 
-        # Proposition 2 : ordre aléatoire
+        # Proposition 2 : ordre aléatoire des élèves + on tente le 2e choix en premier
         voeux_2 = voeux.copy()
         random.shuffle(voeux_2)
-        self._helper_proposition(jours_horaires, voeux_2, classe, 2)
+        self._helper_proposition(jours_horaires, voeux_2, classe, 2, ordre_voeux=('2', '1', '3'))
 
-        # Proposition 3 : ordre de soumission inversé
+        # Proposition 3 : ordre de soumission inversé + on tente le 3e choix en premier
         voeux_3 = sorted(voeux, key=lambda v: v.soumis_le, reverse=True)
-        self._helper_proposition(jours_horaires, voeux_3, classe, 3)
+        self._helper_proposition(jours_horaires, voeux_3, classe, 3, ordre_voeux=('3', '2', '1'))
 
         return self.obtenir_plannings_par_classe(classe_id)
 
-    def _helper_proposition(self, jours_horaires, voeux, classe, numero_proposition):
+    def _helper_proposition(self, jours_horaires, voeux, classe, numero_proposition, ordre_voeux=('1', '2', '3')):
         """Génère une proposition : place chaque élève et crée un Creneau par placement."""
-        # occupe[jour] = intervalles déjà pris (debut_min, fin_min)
         occupe = {jour: [] for jour in jours_horaires}
 
         planning = Planning(
@@ -220,10 +224,9 @@ class PlanningCreneauFacade:
 
         for voeu in voeux:
             duree = self._duree_eleve(voeu.eleve_id, classe.id)
-            place = self._placer_eleve(voeu, duree, jours_horaires, occupe)
+            place = self._placer_eleve(voeu, duree, jours_horaires, occupe, ordre_voeux)
             if not place:
-                # dispo pleine (cas extrême)
-                continue  
+                continue
             jour, debut_min = place
             occupe[jour].append((debut_min, debut_min + duree))
 

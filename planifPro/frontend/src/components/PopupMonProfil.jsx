@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X, Trash2 } from 'lucide-react'
-import { api } from '../services/helper'
+import { api, deconnecter } from '../services/helper'
 
 /**
  * Popup de gestion du profil de l'utilisateur connecté.
@@ -82,8 +82,8 @@ function PopupMonProfil({ onFermer }) {
     if (!confirmation) return
 
     api.delete('/utilisateurs/profil')
-      .then(() => {
-        localStorage.removeItem('token')
+      .then(async () => {
+        await deconnecter()
         navigate('/connexion')
       })
       .catch((erreur) => setMessage({ type: 'erreur', texte: erreur.message }))

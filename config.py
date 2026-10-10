@@ -15,24 +15,41 @@ class Config:
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=8)
 
-    # --- Authentification par cookie httpOnly ---
-    # Le token n'est plus lu dans l'en-tête Authorization mais dans un cookie.
+    # ----- JWT stocké dans un cookie HttpOnly -----
+    # Le token n'est plus lu dans l'en-tête Authorization mais dans un cookie
+    # que le JavaScript ne peut pas lire (protection contre le vol par XSS).
     JWT_TOKEN_LOCATION = ['cookies']
-    # Le cookie est envoyé sur toutes les routes de l'API.
-    JWT_COOKIE_CSRF_PROTECT = False   # protection CSRF (obligatoire avec les cookies)
-    JWT_COOKIE_SAMESITE = 'None'     # nécessaire car front et back sont sur des domaines différents
-    JWT_COOKIE_SECURE = True         # cookie envoyé uniquement en HTTPS
-
+    # False : le cookie survit à la fermeture du navigateur (comme l'ancien
+    # localStorage) ; c'est l'expiration du JWT (8 h) qui termine la session.
+    JWT_SESSION_COOKIE = False
+    # En production (HTTPS) : JWT_COOKIE_SECURE=true.
+    JWT_COOKIE_SECURE = os.getenv('JWT_COOKIE_SECURE', 'false').lower() == 'true'
+    # 'Lax' si le front et l'API sont sur le même site (localhost, ou API
+    # servie derrière le domaine du front). 'None' s'ils sont sur deux domaines
+    # différents (exige JWT_COOKIE_SECURE=true).
+    JWT_COOKIE_SAMESITE = os.getenv('JWT_COOKIE_SAMESITE', 'Lax')
+    # Protection CSRF : toute requête POST / PUT / PATCH / DELETE doit porter
+    # l'en-tête X-CSRF-TOKEN. Le jeton est renvoyé dans la réponse de connexion
+    # (et non dans un cookie, illisible par le front s'il est sur un autre domaine).
+    JWT_COOKIE_CSRF_PROTECT = True
+    JWT_CSRF_IN_COOKIES = False
+ 
+    # Origines autorisées à appeler l'API avec le cookie (séparées par des
+    # virgules). Par défaut : l'URL du frontend.
+    CORS_ORIGINS = [
+        origine.strip().rstrip('/')
+        for origine in os.getenv(
+            'CORS_ORIGINS', os.getenv('FRONTEND_URL', 'http://localhost:5173')
+        ).split(',')
+    ]
+ 
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    # En local on est en HTTP (pas HTTPS), donc on assouplit :
-    JWT_COOKIE_SECURE = False
-    JWT_COOKIE_SAMESITE = 'Lax'
 
 
 class ProductionConfig(Config):
-    pass   # garde Secure=True et SameSite=None (cross-domain Vercel ↔ Render)
+    pass
 
 
 class TestingConfig(Config):
@@ -43,10 +60,6 @@ class TestingConfig(Config):
         'poolclass': StaticPool,
     }
     JWT_SECRET_KEY = 'cle-jwt-de-test-pour-les-tests-unitaires-planifpro'
-
-    # Les tests utilisent l'en-tête Authorization, pas les cookies
-    JWT_TOKEN_LOCATION = ['headers']
-    JWT_COOKIE_CSRF_PROTECT = False
 
 
 config = {
