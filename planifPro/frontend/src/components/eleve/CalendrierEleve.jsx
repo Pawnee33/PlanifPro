@@ -98,7 +98,7 @@ function CalendrierEleve({ refresh, objectifs, professeurs }) {
         key={estMobile ? 'mois' : 'semaine'}
         plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
         initialView={estMobile ? 'dayGridMonth' : 'timeGridWeek'}
-        height={estMobile ? `calc(100vh - ${window.innerHeight < 500 ? 30 : 180}px)` : 'auto'}
+        height={estMobile ? `calc(100dvh - ${window.innerHeight < 500 ? 30 : 150}px)` : 'auto'}
         events={events}
         locale={frLocale}
         eventClick={onEventClick}

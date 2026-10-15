@@ -49,7 +49,7 @@ function PanneauEleves({ eleves, classe, onElevesModifies }) {
         eleves.map((eleve) => (
           <div
             key={eleve.id}
-            className="bg-bleu-nuit rounded-2xl border-2 border-or p-4 flex items-center justify-between gap-4"
+            className="bg-bleu-nuit rounded-2xl border-2 border-or p-4 flex flex-wrap items-center justify-between gap-4"
           >
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-or w-10 h-10 flex items-center justify-center text-white font-bold">

@@ -27,7 +27,7 @@ function PopupGererCreneauPerso({ ouvert, onFermer, creneau, onModifier, onSuppr
   return (
     <div
       onClick={onFermer}
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -59,7 +59,7 @@ function PopupGererCreneauPerso({ ouvert, onFermer, creneau, onModifier, onSuppr
         />
 
         <div className="flex gap-3 mb-4">
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="block text-white mb-1">Heure de début</label>
             <input
               type="time"
@@ -68,7 +68,7 @@ function PopupGererCreneauPerso({ ouvert, onFermer, creneau, onModifier, onSuppr
               className="w-full bg-bleu-nuit rounded-lg px-3 py-2 text-white border border-tracer-violet"
             />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="block text-white mb-1">Heure de fin</label>
             <input
               type="time"

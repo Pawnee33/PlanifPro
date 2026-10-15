@@ -8,7 +8,7 @@ import { Users, CalendarDays, CalendarArrowDown, CalendarArrowUp, GraduationCap,
 import logo from '../assets/logo.png'
 import { connecterGoogle, supprimerDeGoogle } from '../services/google'
 
-const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, onChangerVue, onChoisirEleve, onChoisirEvenement, onExporter, onImporter }) => {
+const BarreLaterale = ({ ouverte, onFermer, classes, eleves, evenements, onCreerClasse, vueActive, onChangerVue, onChoisirEleve, onChoisirEvenement, onExporter, onImporter }) => {
     const [classesOuvert, setClassesOuvert] = useState(false)
     const [elevesOuvert, setElevesOuvert] = useState(false)
     const [evenementsOuvert, setEvenementsOuvert] = useState(false)
@@ -34,7 +34,10 @@ const BarreLaterale = ({ classes, eleves, evenements, onCreerClasse, vueActive, 
         }
 
     return (
-        <aside className='w-64 flex flex-col gap-3 bg-bleu-marine border-r-[4px] border-tracer-violet p-4'>
+        <aside className={`w-64 flex flex-col gap-3 bg-bleu-marine border-r-[4px] border-tracer-violet p-4
+          fixed inset-y-0 left-0 z-50 transition-transform duration-300 overflow-y-auto
+          ${ouverte ? 'translate-x-0' : '-translate-x-full'}
+          lg:static lg:translate-x-0 lg:z-auto`}>
 
             <div className="flex flex-col gap-5">
 

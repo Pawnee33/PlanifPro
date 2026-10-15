@@ -84,7 +84,7 @@ function FicheEleve({ eleve }) {
         ) : (
           <div className="flex flex-col gap-2">
             {creneaux.map((creneau) => (
-              <div key={creneau.id} className="bg-bleu-marine border-2 border-tracer-violet rounded-xl px-4 py-2 text-white flex items-center justify-between">
+              <div key={creneau.id} className="bg-bleu-marine border-2 border-tracer-violet rounded-xl px-4 py-2 text-white flex flex-wrap items-center justify-between gap-2">
                 <span>
                   <span className="capitalize">{creneau.jour}</span>{' '}
                   {creneau.heure_debut?.slice(0, 5)} - {creneau.heure_fin?.slice(0, 5)}
