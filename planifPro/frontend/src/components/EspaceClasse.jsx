@@ -186,7 +186,7 @@ function EspaceClasse({ classe, onClasseModifiee }) {
       </div>
 
       {/* Onglets */}
-      <div className="flex gap-24 border-b-4 border-white/20">
+      <div className="flex gap-6 sm:gap-24 border-b-4 border-white/20">
         {onglets.map((onglet, index) => (
           <button
             key={onglet.id}

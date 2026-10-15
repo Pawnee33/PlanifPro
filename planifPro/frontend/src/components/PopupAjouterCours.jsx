@@ -39,7 +39,7 @@ function PopupAjouterCours({ ouvert, onFermer, classes, dateInitiale, heureIniti
   }
 
   return (
-    <div onClick={onFermer} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div onClick={onFermer} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div onClick={(e) => e.stopPropagation()} className="relative bg-bleu-clair border-2 border-tracer-violet rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
         <button onClick={onFermer} className="absolute top-4 right-4 bg-bleu-roi rounded-lg p-1 border border-tracer-violet text-white hover:brightness-110 transition">
           <X size={18} />
@@ -74,12 +74,12 @@ function PopupAjouterCours({ ouvert, onFermer, classes, dateInitiale, heureIniti
         </select>
 
         <div className="flex gap-3 mb-4">
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="block text-white mb-1 text-sm">Heure de début</label>
             <input type="time" value={heureDebut} onChange={(e) => setHeureDebut(e.target.value)}
               className="w-full bg-bleu-nuit rounded-lg px-3 py-2 text-white border border-tracer-violet" />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="block text-white mb-1 text-sm">Heure de fin</label>
             <input type="time" value={heureFin} onChange={(e) => setHeureFin(e.target.value)}
               className="w-full bg-bleu-nuit rounded-lg px-3 py-2 text-white border border-tracer-violet" />

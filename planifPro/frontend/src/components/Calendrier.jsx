@@ -29,6 +29,16 @@ function Calendrier() {
   const [modificationCreneau, setModificationCreneau] = useState(null)
   const [choixAjout, setChoixAjout] = useState(null)
   const [ajoutCours, setAjoutCours] = useState(null)
+  const [estMobile, setEstMobile] = useState(window.innerWidth < 768 || window.innerHeight < 500)
+
+  // Bascule en vue mois sur petit écran (la vue semaine y est illisible)
+  useEffect(() => {
+    const gererRedimensionnement = () => {
+      setEstMobile(window.innerWidth < 768 || window.innerHeight < 500)
+    }
+    window.addEventListener('resize', gererRedimensionnement)
+    return () => window.removeEventListener('resize', gererRedimensionnement)
+  }, [])
 
 const charger = () => {
     Promise.all([
@@ -190,8 +200,10 @@ const charger = () => {
   return (
     <>
       <FullCalendar
+        key={estMobile ? 'mois' : 'semaine'}
         plugins={[timeGridPlugin, dayGridPlugin, interactionPlugin]}
-        initialView="timeGridWeek"
+        initialView={estMobile ? 'dayGridMonth' : 'timeGridWeek'}
+        height={estMobile ? 'calc(100dvh - 150px)' : 'auto'}
         events={events}
         locale={frLocale}
         eventClick={onEventClick}
@@ -199,7 +211,7 @@ const charger = () => {
         headerToolbar={{
           left: 'prev next',
           center: 'title',
-          right: 'timeGridWeek dayGridMonth',
+          right: estMobile ? 'dayGridMonth' : 'timeGridWeek dayGridMonth',
         }}
         slotDuration="00:30:00"
         slotLabelInterval="00:30:00"

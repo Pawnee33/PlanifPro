@@ -161,28 +161,28 @@ useEffect(() => {
           professeurs={professeurs}
           evenements={evenements}
           vueActive={vueActive}
-          onChangerVue={(vue) => { setVueActive(vue); setSelection(null) }}
+          onChangerVue={(vue) => { setVueActive(vue); setSelection(null); setSidebarOuverte(false) }}
           onRejoint={chargerProfesseurs}
           onRejoindreClasse={() => setPopupRejoindreOuverte(true)}
-          onChoisirObjectif={(objectif) => { setSelection({ type: 'objectif', donnees: objectif }); setVueActive(null) }}
-          onChoisirEvenement={(evenement) => { setSelection({ type: 'evenement', donnees: evenement }); setVueActive(null) }}
-          onChoisirProfesseur={(professeur) => { setSelection({ type: 'professeur', donnees: professeur }); setVueActive(null) }}
+          onChoisirObjectif={(objectif) => { setSelection({ type: 'objectif', donnees: objectif }); setVueActive(null); setSidebarOuverte(false) }}
+          onChoisirEvenement={(evenement) => { setSelection({ type: 'evenement', donnees: evenement }); setVueActive(null); setSidebarOuverte(false) }}
+          onChoisirProfesseur={(professeur) => { setSelection({ type: 'professeur', donnees: professeur }); setVueActive(null); setSidebarOuverte(false) }}
           onExporter={() => exporterVersGoogle(creneaux.map((creneau) => creneau.id))}
           onImporter={() => setPopupImportOuverte(true)}
         />
-      <main className="flex-1 min-w-0 p-4 lg:p-10 lg:pl-16 bg-bleu-moyen">
+      <main className="flex-1 min-w-0 p-4 pt-16 lg:p-10 lg:pl-16 bg-bleu-moyen">
         {/* Carte notifications classes et voeux */}
         {vueActive === 'planning' && (
           <>
             {classesEnAttenteDeVoeux.map((classe) => (
-              <div key={classe.id} className="flex items-center gap-4 bg-bleu-nuit border-2 border-or rounded-2xl px-5 py-4 mb-6 max-w-3xl">
+              <div key={classe.id} className="flex flex-wrap items-center gap-4 bg-bleu-nuit border-2 border-or rounded-2xl px-5 py-4 mb-6 max-w-3xl">
                 {/* Icône */}
                 <div className="rounded-full bg-or w-12 h-12 flex items-center justify-center shrink-0">
                   <Mail className="text-white" />
                 </div>
 
                 {/* Texte */}
-                <p className="text-white flex-1">
+                <p className="text-white flex-1 min-w-[200px]">
                   {classe.professeur_prenom} {classe.professeur_nom} a envoyé le formulaire de vœux pour la classe {classe.nom}
                 </p>
 
@@ -197,14 +197,14 @@ useEffect(() => {
             ))}
 
             {creneauAConfirmer && (
-              <div className="flex items-center gap-4 bg-bleu-nuit border-2 border-or rounded-2xl px-5 py-4 mb-6 max-w-3xl">
+              <div className="flex flex-wrap items-center gap-4 bg-bleu-nuit border-2 border-or rounded-2xl px-5 py-4 mb-6 max-w-3xl">
                 {/* Icône */}
                 <div className="rounded-full bg-or w-12 h-12 flex items-center justify-center shrink-0">
                   <CalendarCheck className="text-white" />
                 </div>
 
                 {/* Infos sur deux lignes */}
-                <div className="flex-1">
+                <div className="flex-1 min-w-[200px]">
                   <p className="text-white text-lg">
                     {creneauAConfirmer.type} : {creneauAConfirmer.jour} {creneauAConfirmer.heure_debut.slice(0, 5)}
                   </p>
@@ -223,7 +223,7 @@ useEffect(() => {
               </div>
             )}
 
-            <div className="mt-4 lg:mt-8">
+            <div className="calendrier-plein-ecran -mx-4 md:mx-0 lg:mt-8">
               <CalendrierEleve refresh={refreshCalendrier} objectifs={objectifs} professeurs={professeurs} />
             </div>
           </>
