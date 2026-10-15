@@ -87,7 +87,7 @@ function PanneauVoeux({ eleves, classe, onPlanningGenere }) {
           <SquareCheckBig size={16} className="text-green-400 mt-1" />
         </div>
       ) : (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-white text-xl">Statut des voeux par élèves</h3>
           <button
             onClick={relancerTous}
@@ -107,7 +107,7 @@ function PanneauVoeux({ eleves, classe, onPlanningGenere }) {
             //la carte d'un élève côté gauche
             <div
               key={eleve.id}
-              className="bg-bleu-nuit rounded-2xl border-2 border-or p-4 flex items-center justify-between gap-4"
+              className="bg-bleu-nuit rounded-2xl border-2 border-or p-4 flex flex-wrap items-center justify-between gap-4"
             >
               <div className="flex items-center gap-3">
                 {/* initiales : 1re lettre du prénom + 1re du nom */}
@@ -158,7 +158,7 @@ function PanneauVoeux({ eleves, classe, onPlanningGenere }) {
       ) : (
         <div className="bg-linear-to-br bg-bleu-nuit border-2 border-tracer-violet rounded-3xl p-6 mt-2">
           {/* ligne : bloc gauche (titre + chips) | bouton à droite */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
 
             {/* colonne gauche : titre au-dessus, chips en dessous */}
             <div className="flex flex-col gap-3">

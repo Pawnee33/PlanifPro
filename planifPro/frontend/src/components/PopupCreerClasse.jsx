@@ -69,7 +69,7 @@ function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
   return (
     <div
       onClick={onFermer}
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -111,7 +111,7 @@ function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
         </h3>
         <label className="block text-white text-[13px] mb-1">Configurez la période de vos cours (ex : année scolaire du 01/09/2026 au 30/06/2027). </label>
         <div className="flex gap-3 mb-4">
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="block text-white mb-1">Date de début</label>
             <input
               type="date"
@@ -120,7 +120,7 @@ function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
               className={styleChamp}
             />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="block text-white mb-1">Date de fin</label>
             <input
               type="date"
@@ -156,7 +156,7 @@ function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
         </h3>
         <label className="block text-white text-[13px] mb-1">Définissez le nombre minimum de vœux que l'élève doit soumettre, ainsi que le nombre minimum de jours différents sur lesquels les répartir (ex : 3 vœux sur au moins 2 jours différents).</label>
         <div className="flex gap-3 mb-4">
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="block text-white text-[15px] mb-1">Nombre de vœux minimum</label>
             <input
               type="number"
@@ -166,7 +166,7 @@ function PopupCreerClasse({ ouvert, onFermer, onClasseCree }) {
               className={styleChamp}
             />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <label className="block text-white text-[15px] mb-1">Jours différents minimum</label>
             <input
               type="number"

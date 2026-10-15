@@ -180,3 +180,24 @@ input[type="color"]::-moz-color-swatch {
 .barre-onglets {
   scrollbar-width: none; /* Firefox */
 }
+
+/* Calendrier compact sur petit écran */
+@media (max-width: 640px) {
+  .fc { padding: 8px; border-radius: 14px; }
+  .fc .fc-toolbar.fc-header-toolbar { margin-bottom: 0.6rem; gap: 6px; }
+  .fc .fc-toolbar-title { font-size: 1rem; }
+  .fc .fc-button { padding: 4px 10px !important; font-size: 0.8rem !important; }
+  .fc .fc-col-header-cell { padding: 6px 0; }
+  .fc .fc-col-header-cell-cushion { font-size: 0.75rem; }
+}
+
+/* Les champs date / heure peuvent rétrécir dans les popups étroites */
+input[type="date"],
+input[type="time"] {
+  min-width: 0;
+}
+
+/* Calendrier du dashboard en plein écran sur téléphone : sans arrondi ni marge */
+@media (max-width: 767px) {
+  .calendrier-plein-ecran .fc { border-radius: 0; box-shadow: none; }
+}

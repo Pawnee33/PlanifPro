@@ -4,7 +4,7 @@ function PopupChoixAjout({ ouvert, onFermer, onChoixPerso, onChoixCours }) {
   if (!ouvert) return null
 
   return (
-    <div onClick={onFermer} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div onClick={onFermer} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div onClick={(e) => e.stopPropagation()} className="relative bg-bleu-clair border-2 border-tracer-violet rounded-2xl p-6 w-full max-w-sm">
         <button onClick={onFermer} className="absolute top-4 right-4 bg-bleu-roi rounded-lg p-1 border border-tracer-violet text-white hover:brightness-110 transition">
           <X size={18} />

@@ -23,7 +23,7 @@ function PopupScopeCreneau({ ouvert, onFermer, dateInitiale, titre, onValider })
   }
 
   return (
-    <div onClick={onFermer} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div onClick={onFermer} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div onClick={(e) => e.stopPropagation()} className="relative bg-bleu-clair border-2 border-tracer-violet rounded-2xl p-6 w-full max-w-md">
         <button onClick={onFermer} className="absolute top-4 right-4 bg-bleu-roi rounded-lg p-1 border border-tracer-violet text-white hover:brightness-110 transition">
           <X size={18} />
@@ -48,12 +48,12 @@ function PopupScopeCreneau({ ouvert, onFermer, dateInitiale, titre, onValider })
 
         {scope === 'plusieurs_jours' && (
           <div className="flex gap-3 mb-4">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <label className="block text-white mb-1 text-sm">Du</label>
               <input type="date" value={debut} onChange={(e) => setDebut(e.target.value)}
                 className="w-full bg-bleu-nuit rounded-lg px-3 py-2 text-white border border-tracer-violet" />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <label className="block text-white mb-1 text-sm">Au</label>
               <input type="date" value={fin} onChange={(e) => setFin(e.target.value)}
                 className="w-full bg-bleu-nuit rounded-lg px-3 py-2 text-white border border-tracer-violet" />

@@ -2,6 +2,7 @@ import { connecterGoogle, exporterVersGoogle, importerDepuisGoogle } from '../se
 import PopupImportGoogle from '../components/eleve/PopupImportGoogle'
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { Menu } from 'lucide-react'
 import { api } from '../services/helper'
 import logo from '../assets/logo.png'
 import EnTete from '../components/EnTete'
@@ -25,6 +26,7 @@ function DashboardProfesseur() {
   const [popupOuvert, setPopupOuvert] = useState(false)
   const [evenementSelectionne, setEvenementSelectionne] = useState(null)
   const [popupImportOuverte, setPopupImportOuverte] = useState(false)
+  const [sidebarOuverte, setSidebarOuverte] = useState(false)
 
   const chargerClasses = () => {
     api.get('/classes/')
@@ -84,7 +86,25 @@ useEffect(() => {
           }}
         />
       <div className="flex flex-1">
+        {/* Burger sidebar — mobile et tablette uniquement */}
+        <button
+          onClick={() => setSidebarOuverte(true)}
+          className="lg:hidden fixed top-24 left-4 z-40 bg-or rounded-full p-2 shadow-lg"
+        >
+          <Menu className="text-white" />
+        </button>
+
+        {/* Overlay sombre — ferme la sidebar au clic (mobile et tablette uniquement) */}
+        {sidebarOuverte && (
+          <div
+            onClick={() => setSidebarOuverte(false)}
+            className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          />
+        )}
+
         <BarreLaterale
+          ouverte={sidebarOuverte}
+          onFermer={() => setSidebarOuverte(false)}
           classes={classes}
           eleves={eleves}
           evenements={evenements}
@@ -94,30 +114,34 @@ useEffect(() => {
             setVueActive(vue)
             setEleveSelectionne(null)
             setEvenementSelectionne(null)
+            setSidebarOuverte(false)
           }}
           onChoisirEleve={(eleve) => {
             setEleveSelectionne(eleve)
             setEvenementSelectionne(null)
             setVueActive(null)
+            setSidebarOuverte(false)
           }}
           onChoisirEvenement={(evenement) => {
             setEvenementSelectionne(evenement)
             setEleveSelectionne(null)
             setVueActive(null)
+            setSidebarOuverte(false)
           }}
           onExporter={() => exporterVersGoogle(creneaux.map((creneau) => creneau.id))}
           onImporter={() => setPopupImportOuverte(true)}
         />
-      <main className="flex-1 min-w-0 p-10 pl-16 bg-bleu-moyen">
+      <main className="flex-1 min-w-0 p-4 pt-16 lg:p-10 lg:pl-16 bg-bleu-moyen">
         {/* Carte notifications classes et voeux */}
         {vueActive === 'planning' && (
           <>
-            <div className="flex flex-wrap gap-8">
+            {/* Cartes masquées sur téléphone : le calendrier prend tout l'écran */}
+            <div className="hidden md:flex flex-wrap gap-8">
               <CarteStat titre="Classes actives" valeur={classes.length} />
               <CarteStat titre="Voeux reçu" valeur={0} />
               <CarteStat titre="Voeux en attente" valeur={0} />
             </div>
-            <div className="mt-8">
+            <div className="calendrier-plein-ecran -mx-4 md:mx-0 md:mt-8">
               <Calendrier />
             </div>
           </>

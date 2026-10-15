@@ -114,9 +114,9 @@ function PanneauPlanning({ classe, eleves, signal }) {
     )
 
     return (
-      <div className="flex flex-col gap-10 px-10">
+      <div className="flex flex-col gap-10 px-2 py-2 sm:px-10">
         {/* 1. EN-TÊTE DE SECTION — une seule fois, hors du map */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-white text-3xl font-titre">Proposition générées</h2>
           <p className="text-white/70">Cliquez sur une proposition pour la sélectionner</p>
         </div>
